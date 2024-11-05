@@ -45,7 +45,7 @@
         },
         {
             "Command": "I want an order of the table",
-            "Expected": "Host: There isn't such an order here\nHost: How can I help you today?",
+            "Expected": "Host: I'm sorry, you can't order that here. Take a look at the menu to see what is available.\nHost: How can I help you today?",
             "Tree": "_the_q(x13,_table_n_1(x13),pronoun_q(x3,pron(x3),_a_q(x8,_order_n_of(x8,x13),_want_v_1(e2,x3,x8))))",
             "Enabled": true,
             "ID": "410c600c-dc36-4030-bab1-27896a1acf0e"
