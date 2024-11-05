@@ -3,7 +3,7 @@
   "Phrase": "What can I pay?",
   "MRSIndex": 1
  },
- "timestamp": "a830ef23-e651-43cd-814f-d47038881c48",
+ "timestamp": "259d5812-f15e-4d50-b30e-52c727f52ae4",
  "[ TOP: h0 INDEX: e2 [ e SF: prop TENSE: pres MOOD: indicative PROG: - PERF: - ] RELS: < [ pron LBL: h4 ARG0: x3 [ x PERS: 1 NUM: sg IND: + PT: std ] ] [ pronoun_q LBL: h5 ARG0: x3 RSTR: h6 BODY: h7 ] [ _want_v_1 LBL: h1 ARG0: e2 ARG1: x3 ARG2: h8 ] [ _pay_v_for LBL: h9 ARG0: e10 [ e SF: prop TENSE: untensed MOOD: indicative PROG: - PERF: - ] ARG1: x3 ARG2: i11 ARG3: i12 ] [ _with_p LBL: h9 ARG0: e13 [ e SF: prop TENSE: untensed MOOD: indicative PROG: - PERF: - ] ARG1: e10 ARG2: x14 [ x PERS: 3 NUM: sg GEND: n IND: - ] ] [ udef_q LBL: h15 ARG0: x14 RSTR: h16 BODY: h17 ] [ _cash_n_1 LBL: h18 ARG0: x14 ] > HCONS: < h0 qeq h1 h6 qeq h4 h8 qeq h9 h16 qeq h18 > ]": {
   "Phrase": "I want to pay with cash",
   "MRSIndex": 1
@@ -295,5 +295,9 @@
  "[ TOP: h0 INDEX: e2 [ e SF: prop ] RELS: < [ unknown LBL: h1 ARG: x4 [ x PERS: 3 NUM: sg ] ARG0: e2 ] [ udef_q LBL: h5 ARG0: x4 RSTR: h6 BODY: h7 ] [ compound LBL: h8 ARG0: e9 [ e SF: prop TENSE: untensed MOOD: indicative PROG: - PERF: - ] ARG1: x4 ARG2: x10 ] [ udef_q LBL: h11 ARG0: x10 RSTR: h12 BODY: h13 ] [ _table_n_1 LBL: h14 ARG0: x15 [ x IND: + ] ] [ exchange_n LBL: h16 ARG0: x10 ] [ interval_p_start LBL: h16 ARG0: e17 [ e SF: prop TENSE: untensed MOOD: indicative PROG: - PERF: - ] ARG1: x10 ARG2: x15 ] [ interval_p_end LBL: h16 ARG0: e18 [ e SF: prop TENSE: untensed MOOD: indicative PROG: - PERF: - ] ARG1: x10 ARG2: x19 [ x PERS: 3 NUM: sg ] ] [ udef_q LBL: h20 ARG0: x15 RSTR: h21 BODY: h22 ] [ udef_q LBL: h23 ARG0: x19 RSTR: h24 BODY: h25 ] [ card LBL: h26 ARG0: x19 ARG1: i28 CARG: \"1\" ] [ _person_n_1 LBL: h8 ARG0: x4 ] > HCONS: < h0 qeq h1 h6 qeq h8 h12 qeq h16 h21 qeq h14 h24 qeq h26 > ]": {
   "Phrase": "table for 1 person",
   "MRSIndex": 1
+ },
+ "[ TOP: h0 INDEX: e2 [ e SF: ques TENSE: pres MOOD: indicative PROG: - PERF: - ] RELS: < [ thing LBL: h4 ARG0: x3 [ x PERS: 3 NUM: sg ] ] [ _any_q LBL: h5 ARG0: x3 RSTR: h6 BODY: h7 ] [ _vegetarian_a_1 LBL: h1 ARG0: e2 ARG1: x3 ] [ _on_p_state LBL: h1 ARG0: e8 [ e SF: prop TENSE: untensed MOOD: indicative PROG: - PERF: - ] ARG1: e2 ARG2: x9 [ x PERS: 3 NUM: sg IND: + ] ] [ _the_q LBL: h10 ARG0: x9 RSTR: h11 BODY: h12 ] [ _menu_n_1 LBL: h13 ARG0: x9 ] > HCONS: < h0 qeq h1 h6 qeq h4 h11 qeq h13 > ]": {
+  "Phrase": "Is anything vegetarian on the menu?",
+  "MRSIndex": 2
  }
 }

@@ -101,7 +101,7 @@ def describe_analyzed_at_table(state, context, analysis):
                         ('reprompt', context)]
         return new_methods
 
-    if len(analysis["Bills"]) > 0:
+    if 0 < len(analysis["Bills"]) == sum([len(x[1]) for x in analysis.items() if x[0] != "UniqueItems"]):
         return [('get_bill', context, [('user', )], 1)]
 
     analysis_specials_count = len(analysis["Specials"])

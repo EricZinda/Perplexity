@@ -552,6 +552,8 @@ class ESLConcept(Concept):
                 if isinstance(concept_criterion, ConceptCriterion):
                     if concept_criterion.function == rel_subjects and concept_criterion.arg1 == "isAdj":
                         words.append(concept_criterion.arg2)
+                    elif concept_criterion.function == rel_sort_of:
+                        sort_words.append(concept_criterion.arg2)
                     else:
                         # Kind of criteria we don't understand ... abort
                         return "something"
@@ -562,7 +564,7 @@ class ESLConcept(Concept):
             if sort_count == 0:
                 words.append("something")
             else:
-                words.append(sort_words[0])
+                words += sort_words
 
             return " ".join(words)
 

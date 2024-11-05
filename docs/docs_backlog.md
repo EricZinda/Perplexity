@@ -9,3 +9,5 @@
 - Describe in more detail how errors are resolved.  look at: errorhandling.md
 - Describe how libraries work.  look at: librarydesign.md
 - Describe how initial tree transformations work
+- Pragmatics examples
+  - "what is not on the menu?": could be everything on the planet. requires understanding that "what" refers to orderable items

@@ -1,5 +1,6 @@
 import os
 import perplexity.messages
+from perplexity.state import LoadException
 from samples.esl.esl_planner import do_task
 from samples.esl.esl_planner_description import convert_to_english, convert_to_english_list
 from perplexity.plurals import VariableCriteria, GlobalCriteria, NegatedPredication
@@ -2211,17 +2212,21 @@ def _smoke_v_1(context, state, e_introduced_binding, i_binding, x_target_binding
     yield from smoked_concepts.predicate_function(context, state, e_introduced_binding, i_binding, x_target_binding)
 
 
+# Treat "x on the menu" as a special case, since it is really close to a figure of speech rather than something
+# literal
 @Predication(vocabulary, names=("_on_p_loc",))
-def on_p_loc(context, state, e_introduced_binding, x_actor_binding, x_location_binding):
+def on_p_loc_menu(context, state, e_introduced_binding, x_actor_binding, x_location_binding):
     def check_item_on_item(item1, item2):
-        if (item1, item2) in state.all_rel("on"):
+        if valid_player_request(context, state, [item1], [ESLConcept("food"),
+                          ESLConcept("drink")]): #orderable_concepts(state)):
             return True
         else:
             context.report_error(["notOn", x_actor_binding.variable.name, x_location_binding.variable.name])
 
     def all_item1_on_item2(item2):
+        # Code below already checked that item2 is a "menu"
         for i in state.all_rel("on"):
-            if i[1] == item2:
+            if i[1] == "menu":
                 yield store_to_object(state, i[0])
 
     def all_item2_containing_item1(item1):
@@ -2229,13 +2234,46 @@ def on_p_loc(context, state, e_introduced_binding, x_actor_binding, x_location_b
             if i[0] == item1:
                 yield i[1]
 
-    yield from in_style_predication_2(context,
-                                      state,
-                                      x_actor_binding,
-                                      x_location_binding,
-                                      check_item_on_item,
-                                      all_item1_on_item2,
-                                      all_item2_containing_item1)
+    # Only implemented for entailments of "menu" that resolve to a real instance of a menu
+    if x_location_binding.value is not None and len(x_location_binding.value) == 1 and is_concept(x_location_binding.value[0]) \
+            and x_location_binding.value[0].entails(context, state, ESLConcept("menu")) and x_location_binding.value[0].instances(context, state):
+        yield from in_style_predication_2(context,
+                                          state,
+                                          x_actor_binding,
+                                          x_location_binding,
+                                          check_item_on_item,
+                                          all_item1_on_item2,
+                                          all_item2_containing_item1)
+    else:
+        context.report_error(["formNotUnderstood"])
+        return
+
+
+# @Predication(vocabulary, names=("_on_p_loc",))
+# def on_p_loc(context, state, e_introduced_binding, x_actor_binding, x_location_binding):
+#     def check_item_on_item(item1, item2):
+#         if (item1, item2) in state.all_rel("on"):
+#             return True
+#         else:
+#             context.report_error(["notOn", x_actor_binding.variable.name, x_location_binding.variable.name])
+#
+#     def all_item1_on_item2(item2):
+#         for i in state.all_rel("on"):
+#             if i[1] == item2:
+#                 yield store_to_object(state, i[0])
+#
+#     def all_item2_containing_item1(item1):
+#         for i in state.all_rel("on"):
+#             if i[0] == item1:
+#                 yield i[1]
+#
+#     yield from in_style_predication_2(context,
+#                                       state,
+#                                       x_actor_binding,
+#                                       x_location_binding,
+#                                       check_item_on_item,
+#                                       all_item1_on_item2,
+#                                       all_item2_containing_item1)
 
 
 @Predication(vocabulary, names=("_with_p",))
@@ -3323,7 +3361,6 @@ def _cancel_v_1_request_group(context, state_list, e_introduced_binding_list, x_
              properties={'SF': 'ques', 'TENSE': ['pres', 'tensed'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
 def _cancel_v_1_able(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     yield from _cancel_helper(context, state, e_introduced_binding, x_actor_binding, x_object_binding)
-
 
 
 # "Cancel the steak"
@@ -4909,6 +4946,7 @@ error_priority_dict = {
     # Nothing should be higher because higher is used for phase 2 errors
     "success": 10000000
 }
+
 
 class EslEvents(object):
     def interaction_end(self, ui, interaction_records, last_phrase_response):

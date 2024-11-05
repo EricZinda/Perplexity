@@ -121,11 +121,39 @@
             "ID": "42d5f855-1b6d-4b48-9f8f-edecceec3774"
         },
         {
-            "Command": "What isn't on the menu?",
-            "Expected": "WRONG: pork\nsoup\nsalad\nsteak\nchicken\nsalmon\nWaiter: What can I get you?",
-            "Tree": "which_q(x3,thing(x3),neg(e2,_the_q(x11,_menu_n_1(x11),_on_p_loc(e10,x3,x11))))",
+            "Command": "What is on the menu?",
+            "Expected": "salmon\nsteak\nchicken\nWaiter: What can I get you?",
+            "Tree": "which_q(x3,thing(x3),_the_q(x8,_menu_n_1(x8),_on_p_loc(e2,x3,x8)))",
             "Enabled": true,
             "ID": "cd3a359d-3058-4020-8b8e-58b7f48fea10"
+        },
+        {
+            "Command": "Chicken is on the menu.",
+            "Expected": "Yes, that is true.\nWaiter: What can I get you?",
+            "Tree": "udef_q(x3,_chicken_n_1(x3),_the_q(x8,_menu_n_1(x8),_on_p_loc(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "68e059af-f4de-4cb0-8f40-20908b6d6048"
+        },
+        {
+            "Command": "Is anything vegetarian on the menu?",
+            "Expected": "Yes.\nWaiter: What can I get you?",
+            "Tree": "_the_q(x9,_menu_n_1(x9),_any_q(x3,[thing(x3), _vegetarian_a_1(e8,x3)],_on_p_loc(e2,x3,x9)))",
+            "Enabled": true,
+            "ID": "9a1dc895-a294-4baa-a3b2-377bdd094bb0"
+        },
+        {
+            "Command": "What vegetarian items are on the menu?",
+            "Expected": "vegetarian thing\nWaiter: What can I get you?",
+            "Tree": "_which_q(x3,[_thing_n_of-about(x3,i9), _vegetarian_a_1(e8,x3)],_the_q(x10,_menu_n_1(x10),_on_p_loc(e2,x3,x10)))",
+            "Enabled": true,
+            "ID": "a7c93ebb-42c4-4c95-ba47-072e452348a2"
+        },
+        {
+            "Command": "What isn't on the menu?",
+            "Expected": "tomato\nbill\ncheck\nson\nroast\nWaiter: What can I get you?",
+            "Tree": "which_q(x3,thing(x3),neg(e2,_the_q(x11,_menu_n_1(x11),_on_p_loc(e10,x3,x11))))",
+            "Enabled": true,
+            "ID": "4bf6c98e-0bb4-43b8-9652-e5054b58e1ad"
         },
         {
             "Command": "/reset",
