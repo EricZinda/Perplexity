@@ -1968,8 +1968,8 @@ def adjective_default_concepts(adjective_type, context, state, x_binding):
     def unbound_variable_concepts():
         # Phrases like "What is a green food?"
         for item in rel_subjects(state, "isAdj", adjective_type):
-            if is_concept(item):
-                yield item
+            if is_type(state, item):
+                yield ESLConcept(item)
 
     for new_state in combinatorial_predication_1(context, state, x_binding, bound_variable, unbound_variable_concepts):
         new_x_binding = new_state.get_binding(x_binding.variable.name)
@@ -4626,7 +4626,6 @@ def wh_question(context, state_list, binding_list, timed_out):
                 all_operations.append(operation)
 
         if timed_out:
-            print("did it")
             all_operations.append(RespondOperation("(that's all I can think of at the moment)"))
         new_state = current_state.apply_operations(all_operations, True)
 

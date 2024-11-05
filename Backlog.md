@@ -72,6 +72,7 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
         - "Did I order a steak for my son?" -> I'm not sure what that means.
         - USER: I don't want the chicken -> yes that is true
             - That isn't true, there isn't the chicken that isn't the chicken
+            - This works because we haven't told the system that you want chicken and thus it assumes it is false.
         - what is the green thing/what is the green item
             - don't work
         - Figure out how to make "I want 2 steaks and 1 salad" work

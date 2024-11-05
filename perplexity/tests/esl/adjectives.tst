@@ -107,6 +107,20 @@
             "ID": "b5596cde-1097-4c46-9101-bb5534463c3b"
         },
         {
+            "Command": "what is the green thing?",
+            "Expected": "Waiter: Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork.\nWaiter: What can I get you?",
+            "Tree": "which_q(x3,thing(x3),_the_q(x8,[_thing_n_of-about(x8,i14), _green_a_2(e13,x8)],_be_v_id(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "95d5158f-e442-45dc-938f-e5321d2ab65f"
+        },
+        {
+            "Command": "what is the green thing?",
+            "Expected": "salad\nWaiter: What can I get you?",
+            "Tree": "which_q(x3,thing(x3),_the_q(x8,[_thing_n_of-about(x8,i14), _green_a_2(e13,x8)],_be_v_id(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "7cf010a7-3517-4640-838d-0e9c5e1dfa62"
+        },
+        {
             "Command": "I have a green salad",
             "Expected": "Yes, that is true.\nWaiter: What can I get you?",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,[_salad_n_1(x8), _green_a_2(e13,x8)],_have_v_1(e2,x3,x8)))",

@@ -96,5 +96,6 @@
 "BooleanCompletionApproach(is_food_or_drink_predication): Is vegetarian dish either a food or a drink": "true",
 "BooleanCompletionApproach(is_food_or_drink_predication): Is thing on the menu either a food or a drink": "true",
 "BooleanCompletionApproach(is_food_or_drink_predication): Is menu vegetarian either a food or a drink": "false",
-"BooleanCompletionApproach(is_food_or_drink_predication): Is order for I either a food or a drink": "false"
+"BooleanCompletionApproach(is_food_or_drink_predication): Is order for I either a food or a drink": "false",
+"BooleanCompletionApproach(is_food_or_drink_predication): Is green thing either a food or a drink": "true"
 }

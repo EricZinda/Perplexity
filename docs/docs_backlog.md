@@ -11,3 +11,4 @@
 - Describe how initial tree transformations work
 - Pragmatics examples
   - "what is not on the menu?": could be everything on the planet. requires understanding that "what" refers to orderable items
+  - "I don't want the chicken": yes that is true. This works because we haven't told the system that you want chicken and thus it assumes it is false.
