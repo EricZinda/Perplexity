@@ -903,13 +903,12 @@ class WorldState(State):
             newState._world_state_frame = self._world_state_frame.set_variable_data(variable_name, determiner, quantifier)
             return newState
 
-    def set_x(self, variable_name, item, combinatoric=False, determiner=None, quantifier=None):
-        # return super().set_x(variable_name, item, combinatoric, determiner, quantifier)
+    def set_x(self, variable_name, item, combinatoric=False, determiner=None, quantifier=None, combined_variables=None):
         if self._world_state_frame is None:
-            return super().set_x(variable_name, item, combinatoric, determiner, quantifier)
+            return super().set_x(variable_name, item, combinatoric, determiner, quantifier, combined_variables)
         else:
             newState = copy.deepcopy(self)
-            newState._world_state_frame = self._world_state_frame.set_x(variable_name, item, combinatoric, determiner, quantifier)
+            newState._world_state_frame = self._world_state_frame.set_x(variable_name, item, combinatoric, determiner, quantifier, combined_variables)
             return newState
 
     def add_to_e(self, event_name, key, value):
@@ -1219,7 +1218,7 @@ class WorldState(State):
                     table_concept = table_concept.add_criteria(rel_subjects_greater_or_equal, "maxCapacity", x)
                     actors = [("user",)]
                     whats = [(table_concept,)]
-                    return self.find_plan(context, [('satisfy_want', context, actors, whats, 1)])
+                    return self.find_plan(context, [('satisfy_want', context, actors, whats, [[(1, "created")]])])
 
         if len(x) == 1 and x[0] == "quit":
             return [LoadWorldOperation("lobby")]
@@ -1235,7 +1234,7 @@ class WorldState(State):
 
     def handle_world_event(self, context, args):
         if args[0] == "user_wants":
-            return self.find_plan(context, [('satisfy_want', context, [("user",)], [args[1]], 1)])
+            return self.find_plan(context, [('satisfy_want', context, [("user",)], [args[1]], [[(1, "created")]])])
         elif args[0] == "user_wants_to_see":
             return self.user_wants_to_see(args[1])
         elif args[0] == "user_wants_multiple":
@@ -1254,10 +1253,6 @@ class WorldState(State):
             return self.user_wants("table1")
         elif args[0] == "user_wants_to_sit_group":
             return self.user_wants("table1")
-        elif args[0] == "user_wants_group":
-            who_list = [binding.value for binding in args[1].solution_values]
-            what_list = [binding.value for binding in args[2].solution_values]
-            return self.find_plan(context, [('satisfy_want', context, who_list, what_list)])
 
 
 pipeline_logger = logging.getLogger('Pipeline')

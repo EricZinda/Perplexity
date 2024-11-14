@@ -58,9 +58,12 @@ def count_entities(value_group):
 # Methods: Approaches to doing something that return a new list of something
 
 
-# We either have one solution with a collective "who" or one or more solutions with distributive single "who"
+# We succeed if we have one solution with a collective "who" (meaning a table together)
+# or one distributive single "who" ("I want a table for 2")
+# This is a case where we don't have to worry about cumulative or distributive answers because we
+# only accept asking for a single table (that might be *for* 2)
 # Tables are special in that, in addition to having a count ("2 tables") they can be ("for 2")
-def get_table_at_entrance(state, context, who_group, table_group, table_count_constraint):
+def get_table_at_entrance(state, context, who_group, table_group, table_count):
     # This method is designed for players, who are not yet at a table
     if any([(not all_are_players(who_value) or location_of_type(state, who_value, "table"))
             for who_value in who_group]):
@@ -68,29 +71,27 @@ def get_table_at_entrance(state, context, who_group, table_group, table_count_co
 
     # If they explicitly asked for > 1 table or
     # if there are more than one solution, it means that the player and their son are asking to be at two tables
-    if table_count_constraint != 1 or len(who_group) > 1:
+    if table_count > 1 or len(who_group) > 1:
         # The user is asking for more than one table
-        stop_plan_with_error(state, context, "Johnny: Hey, let's sit together alright?")
+        stop_plan_with_error(state, context, "Johnny: Hey, let's sit together alright?", 2)
 
     # At this point we know there is only one solution
-    # satisfy_want_group_group guarantees that the who_group will contain values (i.e. sets of one or more)
-    # and table_group will contain individuals
     who_value = who_group[0]
     table = table_group[0]
 
     # Evaluate the noun to make sure we understand all the terms that were used with it
     # If we get back a state, it means the user said something that made sense
     # and they at least meant "a table" of some kind
+    for_value = None
     instances = at_least_one_generator(table.instances(context, state))
     if instances is None:
-        return
+        stop_plan_with_error(state, context, "Host: I'm sorry, we don't have any.")
 
     else:
         # Check to see if the user specified a table "for x (i.e. 2)"
         # This needs to be done against the concept (not the instance) because there is no way, after the fact, to know
         # if the way they asked for the table specified how many people it should have or if it just happened to have
         # that many
-        for_value = None
         for_capacity = table.find_criteria(rel_subjects_greater_or_equal, "maxCapacity", None)
         for_possession = table.find_criteria(noop_criteria, "targetPossession", None)
         if for_possession is not None:
@@ -108,7 +109,7 @@ def get_table_at_entrance(state, context, who_group, table_group, table_count_co
         for_count = len(for_value)
     else:
         if for_value is not None:
-            return [('respond', context, "I'm not sure what that means.")]
+            return [('respond', context, "Host: I'm not sure what that means.")]
         else:
             if len(who_value) > 1:
                 # "We want a table"
@@ -133,20 +134,19 @@ def get_table_at_entrance(state, context, who_group, table_group, table_count_co
     elif for_count is not None:
         # They specified how big
         if for_count < 2:
-            stop_plan_with_error(state, context, "Johnny: Hey! That's not enough seats!")
+            stop_plan_with_error(state, context, "Johnny: Hey! That's not enough seats!", 2)
         elif for_count > 2:
-            stop_plan_with_error(state, context, "Host: Sorry, we don't have a table with that many seats.")
+            stop_plan_with_error(state, context, "Host: Sorry, we don't have a table with that many seats.", 2)
 
     else:
         # didn't specify size
         return [('set_response_state', context, "anticipate_party_size")]
 
 
-def get_table_repeat(state, context, who_group, table_group, table_count_constraint):
-    if any([(all_are_players(who_value) and location_of_type(state, who_value, "table")) for who_value in who_group]):
-        if table_count_constraint != 1:
-            return [('respond', context, "Waiter: I suspect you want to sit together.")]
-        else:
+# If a user asks for a table when they are already at a table
+def get_table_repeat(state, context, who_group, table_group, table_count):
+    for index in range(len(who_group)):
+        if all_are_players(who_group[index]) and location_of_type(state, who_group[index], "table"):
             return [('respond', context, "Waiter: Um... You're at a table.")]
 
 
@@ -167,13 +167,13 @@ def get_menu_seated_who_group(state, context, who_group, menu_size_constraint):
 
     # min_size either needs to be "1" and interpreted as "one each" in which case "we want a menu"
     if menu_size_constraint != 1 and len(who_group) != menu_size_constraint:
-        stop_plan_with_error(state, context, "Waiter: Our policy is to give one menu to every customer ...")
+        stop_plan_with_error(state, context, "Waiter: Our policy is to give one menu to every customer ...", 2)
 
     else:
         for who_index in range(len(who_group)):
             who_value = who_group[who_index]
             if len(who_value) > 1:
-                stop_plan_with_error(state, context, "Waiter: Our policy is to give one menu to every customer ...")
+                stop_plan_with_error(state, context, "Waiter: Our policy is to give one menu to every customer ...", 2)
 
             # At this point we know we are dealing with a single person
             # and the constraint is either "1" (which we will interpret as "one per person")
@@ -234,7 +234,7 @@ def order_food_at_entrance(state, context, who_group, what_group, what_count_con
         return [('respond', context, "Sorry, you must be seated to order.")]
 
 
-# what_size_constraint can apply to distributive OR collective.  I.e. what_size_constraint = 1 in
+# what_size_constraint can apply to distributive OR cumulative.  I.e. what_size_constraint = 1 in
 # "we want a menu" could mean (mySon, me) want (1 menu) or we each want one
 # This version assumes  what_count_constraint is cumulative
 def order_food_at_table_cumulative(state, context, who_group, what_group, what_count_constraint):
@@ -252,7 +252,7 @@ def order_food_at_table_cumulative(state, context, who_group, what_group, what_c
         # "what" is already limited to single items by satisfy_want_group_group()
         what = what_group[index]
         if len(who_value) > 1:
-            stop_plan_with_error(state, context, "Waiter: I'm sorry, we don't allow sharing orders")
+            stop_plan_with_error(state, context, "Waiter: I'm sorry, we don't allow sharing orders", 2)
 
         new_tasks.append(('order_food', context, who_value[0], what, what_count_constraint // len(who_group)))
 
@@ -266,13 +266,14 @@ def order_food_at_table_distributive(state, context, who_group, what_group, what
         return
 
     assert len(who_group) == len(what_group)
+
     new_tasks = []
     for index in range(len(who_group)):
         who_value = who_group[index]
         # "what" is already limited to single items by satisfy_want_group_group()
         what = what_group[index]
         if len(who_value) > 1:
-            stop_plan_with_error(state, context, "Waiter: I'm sorry, we don't allow sharing orders")
+            stop_plan_with_error(state, context, "Waiter: I'm sorry, we don't allow sharing orders", 2)
 
         new_tasks.append(('order_food', context, who_value[0], what, what_count_constraint))
 
@@ -285,7 +286,7 @@ def order_food_at_table_per_person_per_item(state, context, who, what, what_coun
             all_are_players([who]) and location_of_type(state, who, "table"):
         food_instances = [x for x in find_unused_instances_from_concept(context, state, ESLConcept(what))]
         if len(food_instances) < what_count_constraint:
-            stop_plan_with_error(state, context, s("Waiter: I'm sorry, we don't have enough {bare *convert_to_english(state, what):} for your order."))
+            stop_plan_with_error(state, context, s("Waiter: I'm sorry, we don't have enough {bare *convert_to_english(state, what):} for your order."), 2)
 
         else:
             what_english = s("{Bare *convert_to_english(state, what):}")
@@ -399,7 +400,7 @@ def get_bill_at_table(state, context, who_group, what_count_constraint):
         return
 
     if len(who_group) > 1:
-        stop_plan_with_error(state, context, "Waiter: There is only one bill ...")
+        stop_plan_with_error(state, context, "Waiter: There is only one bill ...", 2)
 
     for i in state.all_rel("valueOf"):
         if i[1] == "bill1":
@@ -434,8 +435,8 @@ def divide_size(group_who, orig_min_size):
 
 
 # This is the top level method for any kind of "wanting" phrase. It is passed an iterable of iterables representing
-# the solution group values of who and what
-# This task deals with lists that map to each other. I.e. the first "who" goes with the first "what"
+# the solution group values of who and what and constraints
+# This task deals with lists that map to each other. I.e. the first "who" goes with the first "what" and constraint
 # Its job is to analyze the top level solution group. It could have a lot of different combinations
 # that need to be analyzed.  One or more people, one or more things wanted, etc.
 #
@@ -451,140 +452,161 @@ def divide_size(group_who, orig_min_size):
 # Requirements/Design:
 # - Since it is unclear what wanting them "together" means, we force each solution in the group to have only one "what"
 # - We only deal with wanting concepts, not particular items
-# - what_size_constraint can apply to distributive OR collective.  I.e. what_size_constraint = 1 in
+# - what_size_constraint has a list of lists of tuples of the form (constraint, variable). Each element of the outer list itself holds a list
+#   because there might be more than one item in a variable, and we need to know what other variables they come from since they might have different constraints
+#   Each of the items in the inner list is a tuple of the form (constraint, variable) so we can tell which "whats" must add up to the constraint
+#   Its constraint can apply to distributive OR cumulative.  I.e. what_size_constraint = 1 in
 #   "we want a menu" could mean (mySon, me) want (1 menu) or we each want one
-# - if what_size_constraint > 1, then all the solutions in the group should be about the same kind of thing
-#   because the phrase must have been something like "we want two menus/steaks"
+# - if what_size_constraint > 1, then the solutions can be interpreted as either cumulative or distributive and there are separate
+#   methods for those
+# - The constraints might be on different variables from the MRS so they need to get broken apart so that items from only one variable are
+#   sent to the methods to accomplish them. At that point, there will be a single constraint since they are all from the same variable
 # For concepts, it requires that the caller has made sure that wanted concepts are valid, meaning "I want *the* (conceptual) table"
 # should never get to this point
-def satisfy_want_group_group(state, context, group_who, group_what, what_size_constraint):
-    # Only need to check the first item since they will all be concepts or instances
+def satisfy_want_group_group(state, context, group_who_initial, group_what_initial, what_size_constraints_initial):
+    # For concept checking: Only need to check the first item since they will all be concepts or instances
     # Since that is the way solution groups work
-    if not isinstance(group_who, (list, tuple, set)) or not isinstance(group_what, (list, tuple, set)) \
-            or not is_concept(group_what[0][0]):
+    if not isinstance(group_who_initial, (list, tuple, set)) or not isinstance(group_what_initial, (list, tuple, set)) or not isinstance(what_size_constraints_initial, (list, tuple, set)) \
+            or not is_concept(group_what_initial[0][0]):
         return
 
     # Iterate through each group_who / group_what pair
-    assert len(group_what) == len(group_who)
+    assert len(group_what_initial) == len(group_who_initial) == len(what_size_constraints_initial)
 
-    # At the front door we only handle getting a table and ignore the rest
+    # Different things are legal at the table or the front door
     not_at_table = False
-    for who in group_who:
+    for who in group_who_initial:
         if not location_of_type(state, who, "table"):
             not_at_table = True
             break
 
-    task_dict = {}
-    ask_server_about = []
-    for index in range(len(group_what)):
-        what_list = group_what[index]
-        if len(what_list) > 1:
+    # Because the "whats" might be coming from different variables, with different constraints,
+    # We need to slice up the list and just do a task for a single variable at a time so we can
+    # properly handle the constraints on it
+    group_by_variable = {}
+    for index in range(len(group_who_initial)):
+        if len(group_what_initial[index]) > 1:
             # Since it is unclear what wanting them "together" means, we force each solution to have only one "what"
             # If any has more than one we halt and let the system give us a different solution group
             return
 
-        # At this point, "what" is a single item
-        what = what_list[0]
+        constraint_variable = what_size_constraints_initial[index][0][1]
+        if constraint_variable not in group_by_variable:
+            group_by_variable[constraint_variable] = [[], [], []]
+        group_by_variable[constraint_variable][0].append(group_who_initial[index])
+        group_by_variable[constraint_variable][1].append(group_what_initial[index])
+        group_by_variable[constraint_variable][2].append(what_size_constraints_initial[index][0][0])
 
-        # If "I want x for somebody" we need to fixup the "who" to be "somebody"
-        # Note that "somebody" could be "my son and me", i.e. more than one person
-        target_criteria = what.find_criteria(noop_criteria, "targetPossession", None)
-        if target_criteria is not None:
-            who_list = target_criteria.arg2
-        else:
-            who_list = group_who[index]
-
-        # Now figure out what kind of thing this is by seeing what concepts it entails
-        things_we_know = requestable_concepts_by_sort(state)
-
-        # Now see if it is a thing we can give the speaker
-        concept_analysis = {}
-        if ESLConcept("dish").entails(context, state, what):
-            # This is something like "I want lunch", i.e. a high level representation of a meal
-            concept_analysis = {"meal": {"dish": 1}}
-
-        else:
-            _, instances_of_concepts = what.instances_of_concepts(context, state, things_we_know.keys())
-            for item in instances_of_concepts.items():
-                concept_category = things_we_know[item[0]][0]
-                concept_name = things_we_know[item[0]][1]
-                if concept_category not in concept_analysis:
-                    concept_analysis[concept_category] = {}
-
-                if concept_name not in concept_analysis[concept_category]:
-                    concept_analysis[concept_category][concept_name] = 1
-                else:
-                    concept_analysis[concept_category][concept_name] += 1
-
-        # If we don't even know what this concept it, fail generally ("I want steel")
-        if len(concept_analysis) == 0:
-            if is_concept(what) and ESLConcept("food").entailed_by(context, state, what):
-                stop_plan_with_error(state, context, s("Host: I'm sorry, you can't order that here. Take a look at the menu to see what is available."))
-            else:
-                stop_plan_with_error(state, context, s("Host: Sorry, I don't think we have that here."))
-
-        # If it entails things across the various classes we know ("I want something small" entails "the bill" and various "menu items") fail with a general message
-        if len(concept_analysis) > 1:
-            return [('respond', context, s("Host: Sorry, could you be more specific, that could be several different kinds of thing.")),
-                    ('reprompt', context)]
-
-        # At this point it is exactly one class of thing.
-        # If it entails various concepts within that class ("I want something vegetarian" is only menu items) be more specific in the failure
-        concept_subconcepts = next(iter(concept_analysis.items()))
-        if len(concept_subconcepts[1]) > 1:
-            return [('respond', context, s("Host: Sorry, I'm not sure which one you mean.")),
-                    ('reprompt', context)]
-
-        concept_name = concept_subconcepts[0]
-        subconcept = next(iter(concept_subconcepts[1]))
-        if concept_name == "table" or (concept_name == "meal" and not_at_table):
-            if "get_table" not in task_dict:
-                task_dict["get_table"] = [[], []]
-            task_dict["get_table"][0].append(who_list)
-            if concept_name == "meal":
-                task_dict["get_table"][1].append(ESLConcept("table"))
-            else:
-                task_dict["get_table"][1].append(what)
-
-        else:
-            if not_at_table:
-                ask_server_about.append(subconcept)
-
-            else:
-                if concept_name == "menu" or concept_name == "meal":
-                    if "get_menu" not in task_dict:
-                        task_dict["get_menu"] = [[]]
-
-                    task_dict["get_menu"][0].extend([(x, ) for x in who_list])
-
-                elif concept_name == "dish":
-                    if "order_food" not in task_dict:
-                        task_dict["order_food"] = [[], []]
-                    task_dict["order_food"][0].append(who_list)
-                    task_dict["order_food"][1].append(subconcept)
-
-                elif concept_name == "bill":
-                    if "get_bill" not in task_dict:
-                        task_dict["get_bill"] = [[]]
-                    task_dict["get_bill"][0].append(who_list)
-
-    # If what_size_constraint > 1, then all the solutions in the group should be about the same kind of thing
-    # because the phrase must have been something like "we want two menus/steaks"
-    if what_size_constraint > 1 and len(task_dict) > 1:
-        # Not all items are the same and there is a constraint > 1 ...
-        # unclear what to do (or even what scenario would cause this)
-        return
-
-    # Now we have a set of wants for different groups of people
-    # Now run the different tasks for the different kind of things that are wanted
     tasks = []
-    for task_group in task_dict.items():
-        tasks.append(tuple([task_group[0], context] + task_group[1] + [what_size_constraint]))
+    for group_who, group_what, what_size_constraints in group_by_variable.values():
+        # All the constraints should be the same since they are all from the same variable
+        assert all(constraint == what_size_constraints[0] for constraint in what_size_constraints)
 
-    if ask_server_about:
-        unique_items = set([convert_to_english(state, item) for item in ask_server_about])
-        items = oxford_comma(list(unique_items))
-        tasks.insert(0, ('respond', context, s("Host: Sorry, you'll need to talk to your waiter about {a *items:} when you have a table.")))
+        # Build up a dict of tasks that we need to complete for the items for this variable
+        task_dict = {}
+        ask_server_about = []
+        # There is only one size since this is for a single variable
+        what_size = what_size_constraints[0]
+        for index in range(len(group_what)):
+            what_list = group_what[index]
+
+            # At this point, "what" is a single item
+            what = what_list[0]
+
+            # If "I want x for somebody" we need to fixup the "who" to be "somebody"
+            # Note that "somebody" could be "my son and me", i.e. more than one person
+            target_criteria = what.find_criteria(noop_criteria, "targetPossession", None)
+            if target_criteria is not None:
+                who_list = target_criteria.arg2
+            else:
+                who_list = group_who[index]
+
+            # Now figure out what kind of thing this is by seeing what concepts it entails
+            things_we_know = requestable_concepts_by_sort(state)
+
+            # Now see if it is a thing we can give the speaker
+            concept_analysis = {}
+            if ESLConcept("dish").entails(context, state, what):
+                # This is something like "I want lunch", i.e. a high level representation of a meal
+                concept_analysis = {"meal": {"dish": 1}}
+
+            else:
+                _, instances_of_concepts = what.instances_of_concepts(context, state, things_we_know.keys())
+                for item in instances_of_concepts.items():
+                    concept_category = things_we_know[item[0]][0]
+                    concept_name = things_we_know[item[0]][1]
+                    if concept_category not in concept_analysis:
+                        concept_analysis[concept_category] = {}
+
+                    if concept_name not in concept_analysis[concept_category]:
+                        concept_analysis[concept_category][concept_name] = 1
+                    else:
+                        concept_analysis[concept_category][concept_name] += 1
+
+            # If we don't even know what this concept it, fail generally ("I want steel")
+            if len(concept_analysis) == 0:
+                if is_concept(what) and ESLConcept("food").entailed_by(context, state, what):
+                    stop_plan_with_error(state, context, s("Host: I'm sorry, you can't order that here. Take a look at the menu to see what is available."), 2)
+                else:
+                    stop_plan_with_error(state, context, s("Host: Sorry, I don't think we have that here."))
+
+            # If it entails things across the various classes we know ("I want something small" entails "the bill" and various "menu items") fail with a general message
+            if len(concept_analysis) > 1:
+                return [('respond', context, s("Host: Sorry, could you be more specific, that could be several different kinds of thing.")),
+                        ('reprompt', context)]
+
+            # At this point it is exactly one class of thing.
+            # If it entails various concepts within that class ("I want something vegetarian" is only menu items) be more specific in the failure
+            concept_subconcepts = next(iter(concept_analysis.items()))
+            if len(concept_subconcepts[1]) > 1:
+                return [('respond', context, s("Host: Sorry, I'm not sure which one you mean.")),
+                        ('reprompt', context)]
+
+            # Now we can actually create the task to give it to them
+            concept_name = concept_subconcepts[0]
+            subconcept = next(iter(concept_subconcepts[1]))
+            if concept_name == "table" or (concept_name == "meal" and not_at_table):
+                if "get_table" not in task_dict:
+                    task_dict["get_table"] = [[], []]
+                task_dict["get_table"][0].append(who_list)
+                if concept_name == "meal":
+                    task_dict["get_table"][1].append(ESLConcept("table"))
+                else:
+                    task_dict["get_table"][1].append(what)
+
+            else:
+                if not_at_table:
+                    ask_server_about.append(subconcept)
+
+                else:
+                    if concept_name == "menu" or concept_name == "meal":
+                        if "get_menu" not in task_dict:
+                            task_dict["get_menu"] = [[]]
+
+                        task_dict["get_menu"][0].extend([(x, ) for x in who_list])
+
+                    elif concept_name == "dish":
+                        if "order_food" not in task_dict:
+                            task_dict["order_food"] = [[], []]
+                        task_dict["order_food"][0].append(who_list)
+                        task_dict["order_food"][1].append(subconcept)
+
+                    elif concept_name == "bill":
+                        if "get_bill" not in task_dict:
+                            task_dict["get_bill"] = [[]]
+                        task_dict["get_bill"][0].append(who_list)
+
+        # Now we have a set of wants for different groups of people
+        # Now run the different tasks for the different kind of things that are wanted
+        items = list(task_dict.items())
+        for task_group_index in range(len(items)):
+            task_group = items[task_group_index]
+            tasks.append(tuple([task_group[0], context] + task_group[1] + [what_size]))
+
+        if ask_server_about:
+            unique_items = set([convert_to_english(state, item) for item in ask_server_about])
+            items = oxford_comma(list(unique_items))
+            tasks.insert(0, ('respond', context, s("Host: Sorry, you'll need to talk to your waiter about {a *items:} when you have a table.")))
 
     if len(tasks) > 0:
         return tasks + [('reprompt', context)]
@@ -768,8 +790,9 @@ class ExitNowException(Exception):
 # If the intuition is to succeed with a failure message like "I couldn't do that!"
 # But there might be alternatives that can work, use this. It stops the planner immediately
 # but records a high priority error so that, if nothing else works, that error will get shown
-def stop_plan_with_error(state, context, error_text):
-    context.report_error(["understoodFailureMessage", error_text], force=True)
+def stop_plan_with_error(state, context, error_text, priority=None):
+    priority = "" if priority is None else str(priority)
+    context.report_error(["understoodFailureMessage" + priority, error_text], force=True)
     raise ExitNowException()
 
 

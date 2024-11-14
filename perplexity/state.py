@@ -115,14 +115,14 @@ class State(object):
         # represents a variable binding in Perplexity
         return self.variables.get(variable_name, VariableBinding(VariableData(variable_name), None))
 
-    def set_variable_data(self, variable_name, determiner=None, quantifier=None):
+    def set_variable_data(self, variable_name, determiner=None, quantifier=None, combined_variables=None):
         binding = self.get_binding(variable_name)
-        return self.set_x(variable_name, binding.value, binding.variable.combinatoric, determiner=determiner, quantifier=quantifier)
+        return self.set_x(variable_name, binding.value, binding.variable.combinatoric, determiner=determiner, quantifier=quantifier, combined_variables=combined_variables)
 
     # This is how predications will set the value
     # of an "x" variable (or another type of variable
     # that is acting like an unquantified "x" variable)
-    def set_x(self, variable_name, item, combinatoric=False, determiner=None, quantifier=None):
+    def set_x(self, variable_name, item, combinatoric=False, determiner=None, quantifier=None, combined_variables=None):
         # Make a *copy* of the entire object using the built-in Python
         # class called "copy", we pass it "self" so it copies this
         # instance of the object
@@ -143,7 +143,8 @@ class State(object):
 
         variable_data = initial_variable_data.copy_with_changes(combinatoric=combinatoric,
                                                                 determiner=determiner,
-                                                                quantifier=quantifier)
+                                                                quantifier=quantifier,
+                                                                combined_variables=combined_variables)
 
         # Need to copy the item so that if the list is changed it won't affect
         # the state which is supposed to be immutable

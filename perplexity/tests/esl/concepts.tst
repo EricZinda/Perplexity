@@ -52,7 +52,7 @@
         },
         {
             "Command": "my son and I want tables",
-            "Expected": "Waiter: I suspect you want to sit together.\nWaiter: What can I get you?",
+            "Expected": "Waiter: Um... You're at a table.\nWaiter: What can I get you?",
             "Tree": "pronoun_q(x13,pron(x13),pronoun_q(x20,pron(x20),udef_q(x25,_table_n_1(x25),udef_q(x3,def_explicit_q(x8,[_son_n_of(x8,i18), poss(e12,x8,x13)],_and_c(x3,x8,x20)),_want_v_1(e2,x3,x25)))))",
             "Enabled": true,
             "ID": "b9a0586b-14db-41d0-acd7-40142ebdc0fa"

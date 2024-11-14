@@ -1,4 +1,5 @@
 import copy
+import itertools
 import logging
 import numbers
 import perplexity.predications
@@ -236,23 +237,26 @@ def and_c(context, state, x_binding_introduced, x_binding_first, x_binding_secon
     solution_second = state.get_binding(x_binding_second.variable.name)
     assert not solution_first.variable.combinatoric and not solution_second.variable.combinatoric
 
-    and_value = solution_first.value + solution_second.value
+    and_value = (solution_first.value, x_binding_first.variable.name), (solution_second.value, x_binding_second.variable.name)
 
     if x_binding_first.variable.determiner is not None and x_binding_first.variable.determiner.required_values is not None:
         required_values = x_binding_first.variable.determiner.required_values + solution_second.value
     else:
-        required_values = and_value
+        required_values = tuple(itertools.chain(*[x[0] for x in and_value]))
 
     # Everything must be of the same type
-    if len(set([perplexity.predications.value_type(x) for x in and_value])) > 1:
+    if len(set([perplexity.predications.value_type(x[0]) for x in and_value])) > 1:
         return
 
     for value in perplexity.predications.used_combinations(context, x_binding_introduced, and_value):
+        combined_variables = [x[1] for x in value]
+        combined_values = tuple(itertools.chain(*[x[0] for x in value]))
         yield state.set_x(x_binding_introduced.variable.name,
-                          value,
+                          combined_values,
                           determiner=VariableCriteria(context.current_predication(),
                                                       x_binding_introduced.variable.name,
-                                                      required_values=required_values))
+                                                      required_values=required_values),
+                          combined_variables=combined_variables)
 
 
 # "and salmon" said just by itself should just be transparent

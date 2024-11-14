@@ -261,7 +261,7 @@ def generate_message(state, tree_info, error_term):
     elif error_constant == "tooManyItemsTogether":
         return "I don't understand using terms in a way that means 'together' in that sentence"
 
-    elif error_constant == "understoodFailureMessage":
+    elif error_constant.startswith("understoodFailureMessage"):
         return error_arguments[1]
 
     elif error_constant == "unexpected":

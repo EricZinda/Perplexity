@@ -7,7 +7,7 @@ import perplexity.plurals
 from perplexity.utilities import at_least_one_generator, get_function, sentence_force, timeout_check
 
 
-def constraints_for_variable(context, state, variable_name):
+def constraints_for_variable(state, variable_name):
     declared_criteria_list = [data for data in declared_determiner_infos(state.get_binding("tree").value[0], state)]
     tree_info = state.get_binding("tree").value[0]
     this_sentence_force = sentence_force(tree_info["Variables"])
@@ -25,7 +25,7 @@ def constraints_for_variable(context, state, variable_name):
 
 # Used to create new GroupVariableValues() when predications need to create them at runtime
 def create_group_variable_values(context, state_list, variable_name):
-    found_constraint = constraints_for_variable(context, state_list[0], variable_name)
+    found_constraint = constraints_for_variable(state_list[0], variable_name)
     return perplexity.plurals.GroupVariableValues(found_constraint, state_list, variable_name[0], variable_name)
 
 

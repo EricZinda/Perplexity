@@ -710,6 +710,27 @@
             "ID": "d8ca1c3b-7a12-4913-8427-67c51d28ecb0"
         },
         {
+            "Command": "Cancel my order",
+            "Expected": "Waiter: I have removed the order for you.\nWaiter: What can I get you?",
+            "Tree": "pronoun_q(x14,pron(x14),pronoun_q(x3,pron(x3),def_explicit_q(x8,[_order_n_of(x8), poss(e13,x8,x14)],_cancel_v_1(e2,x3,x8))))",
+            "Enabled": true,
+            "ID": "84adee7f-5273-4621-bc06-86b481ba54e5"
+        },
+        {
+            "Command": "I want 2 steaks and 1 salad",
+            "Expected": "Waiter: steak is an excellent choice!\nSon: Wait, let's not order salad before we know how much it costs.\nWaiter: Can I get you anything besides 2 steaks for you?",
+            "Tree": "udef_q(x13,[_steak_n_1(x13), card(2,e18,x13)],udef_q(x20,[_salad_n_1(x20), card(1,e26,x20)],pronoun_q(x3,pron(x3),udef_q(x8,_and_c(x8,x13,x20),_want_v_1(e2,x3,x8)))))",
+            "Enabled": true,
+            "ID": "5cf794bf-d096-4277-9de9-e1b0a1480e2c"
+        },
+        {
+            "Command": "I ordered 2 steaks",
+            "Expected": "Yes, that is true.\nWaiter: Can I get you anything besides 2 steaks for you?",
+            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,[_steak_n_1(x8), card(2,e14,x8)],_order_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "20d71ea3-a742-4215-bbf2-4649fff8da3c"
+        },
+        {
             "Command": "/new samples.esl.tutorial.reset",
             "Expected": "",
             "Tree": "None",

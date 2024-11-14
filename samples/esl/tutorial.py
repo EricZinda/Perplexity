@@ -8,7 +8,7 @@ from perplexity.predications import combinatorial_predication_1, in_style_predic
     lift_style_predication_2, concept_meets_constraint
 from perplexity.set_utilities import Measurement
 from perplexity.solution_groups import declared_determiner_infos, optimize_determiner_infos, \
-    create_group_variable_values
+    create_group_variable_values, constraints_for_variable
 from perplexity.system_vocabulary import system_vocabulary, quantifier_raw
 from perplexity.transformer import TransformerMatch, TransformerProduction, PropertyTransformerMatch, \
     PropertyTransformerProduction, ConjunctionMatchTransformer, ConjunctionProduction
@@ -174,6 +174,66 @@ def valid_player_request(context, state, x_objects, valid_concepts=None):
             return False
 
     return True
+
+
+# Determine the global constraints on every value that is contained in a variable
+# that holds a combined value, such as might be formed by and_c or or_c
+#
+# The returned list matches the order of values currently in variable_name
+# A solution group comes in with Concepts foo and bar assigned like this:
+# x3->min=2, max=2, x5->min=1, max=1
+# x3=(foo, ), x5=(bar, ), x8=(foo, bar)
+# or
+# x3=(foo, ), x5=(bar, ), x8=(foo, )
+# x3=(foo, ), x5=(bar, ), x8=(bar, )
+
+# x3=(foo, ), x5=(bar, ), x6=(goo, ), x8=(foo, bar, goo)
+# or
+# x3=(foo, ), x5=(bar, ), x8=(foo, )
+# x3=(foo, ), x5=(bar, ), x8=(bar, )
+
+# Given
+# Return a constraint list that has one constraint for every variable in variables
+# def constraints_for_combined_values(state, variable_name):
+#     variable_binding = state.get_binding(variable_name)
+#     constraint_list = []
+#     constraint_list = [constraints_for_combined_values(state, combined_variable) for combined_variable in variable_binding.combined_variables]
+#         constraint_list += constraints_for_combined_values(state, combined_variable)
+#
+#     if variable_binding.combined_variables is None:
+#         return [constraints_for_variable(state, variable_name)]
+#     else:
+#         constraint_list = []
+#         for combined_variable in variable_binding.combined_variables:
+#             constraint_list += constraints_for_combined_values(state, combined_variable)
+#         return constraint_list
+
+
+# Every combined variable contains 1 or more standalone (non-combined) variables
+# The constraint on these standalone values will be the same for every row since they are global constraints
+# The job here is to return the global constraint for each
+def constraints_from_variable_group_combined_values(group, variable_group):
+    constraint_list_by_solution = []
+    for state in group:
+        variable_binding = state.get_binding(variable_group.variable_constraints.variable_name)
+        if variable_binding.variable.combined_variables is None:
+            constraint_list_by_solution.append([variable_group.variable_constraints])
+        else:
+            constraint_list = [constraints_for_variable(state, individual_variable) for individual_variable in
+                               variable_binding.variable.combined_variables]
+            constraint_list_by_solution.append(constraint_list)
+
+    return constraint_list_by_solution
+
+
+# returns a list of tuples where the first item is the constraint and the second is the variable it came from
+# This is so that callers can tell which constraints have to add together to meet the constraint
+def min_from_variable_group_combined_values(group, variable_group):
+    constraint_list_by_solution = constraints_from_variable_group_combined_values(group, variable_group)
+    min_by_solution = []
+    for constraint_list in constraint_list_by_solution:
+        min_by_solution.append([((constraint.min_size, constraint.variable_name) if constraint is not None else (1, constraint.variable_name)) for constraint in constraint_list])
+    return min_by_solution
 
 
 def min_from_variable_group(variable_group):
@@ -1297,7 +1357,7 @@ def for_update_state(context, solution, x_what_type, for_type, x_what_binding, x
             amount_value = None
             if is_concept(x_for_value):
                 # We've already checked that it entails person and that it is a user type
-                for_variable_constraints = perplexity.solution_groups.constraints_for_variable(context, solution, x_for_binding.variable.name)
+                for_variable_constraints = perplexity.solution_groups.constraints_for_variable(solution, x_for_binding.variable.name)
                 amount_value = for_variable_constraints.min_size if for_variable_constraints is not None else 1
 
             else:
@@ -2336,7 +2396,7 @@ def _pay_v_for_object_group(context, state_list, e_introduced_list, x_actor_vari
 
     else:
         # As long as these were valid objects to pay for, just interpret as "give me the bill"
-        task = ('satisfy_want', context, variable_group_values_to_list(x_actor_variable_group), [(ESLConcept("bill"),)], 1)
+        task = ('satisfy_want', context, variable_group_values_to_list(x_actor_variable_group), [(ESLConcept("bill"),)], [[(1, "created")]])
         final_state = do_task(state_list[0].world_state_frame(), [task])
         if final_state:
             yield [final_state]
@@ -2480,7 +2540,7 @@ def want_group_helper(context, state_list, e_introduced_binding_list, x_actor_va
                                       context,
                                       variable_group_values_to_list(x_actor_variable_group),
                                       variable_group_values_to_list(x_what_variable_group),
-                                      min_from_variable_group(x_what_variable_group))])
+                                      min_from_variable_group_combined_values(state_list, x_what_variable_group))])
             if current_state:
                 yield [current_state]
 
@@ -2612,7 +2672,7 @@ def _show_v_cause_group(context, state_list, e_introduced_binding, x_actor_varia
     to_actor_list = variable_group_values_to_list(x_to_actor_variable_group)
     show_list = variable_group_values_to_list(x_target_variable_group)
     current_state = do_task(state_list[0].world_state_frame(),
-                            [('satisfy_want', context, to_actor_list, show_list, min_from_variable_group(x_target_variable_group))])
+                            [('satisfy_want', context, to_actor_list, show_list, min_from_variable_group_combined_values(state_list, x_target_variable_group))])
     if current_state:
         yield [current_state]
 
@@ -2656,7 +2716,7 @@ def _seat_v_cause(context, state, e_introduced_binding, x_actor_binding, x_objec
              properties_from=_seat_v_cause)
 def _seat_v_cause_group(context, state_list, e_introduced_binding, x_actor_variable_group, x_what_variable_group):
     new_state = do_task(state_list[0].world_state_frame(),
-                        [('satisfy_want', context, variable_group_values_to_list(x_what_variable_group), [(ESLConcept("table"),)], 1)])
+                        [('satisfy_want', context, variable_group_values_to_list(x_what_variable_group), [(ESLConcept("table"),)], [[(1, "created")]])])
     if new_state:
         yield [new_state]
 
@@ -2931,7 +2991,7 @@ def _sit_v_down_future_bad_english(context, state, e_introduced_binding, x_actor
 @Predication(vocabulary, names=["solution_group__sit_v_down", "solution_group__sit_v_1"])
 def _sit_v_down_future_group(context, state_list, e_list, x_actor_variable_group):
     # The planner will only satisfy a want wrt the players
-    task = ('satisfy_want', context, variable_group_values_to_list(x_actor_variable_group), [[ESLConcept("table")]], 1)
+    task = ('satisfy_want', context, variable_group_values_to_list(x_actor_variable_group), [[ESLConcept("table")]], [[(1, "created")]])
     final_state = do_task(state_list[0].world_state_frame(), [task])
     if final_state:
         yield [final_state]
@@ -3039,7 +3099,7 @@ def _sit_v_down_able_group(context, state_list, e_introduced_binding_list, x_act
     else:
         # 'satisfy_want' understands ("user", "son") want (table) as meaning they want a table *together*
         actors = variable_group_values_to_list(x_actor_variable_group)
-        task = ('satisfy_want', context, actors, [(ESLConcept("table"),)] * len(actors), 1)
+        task = ('satisfy_want', context, actors, [(ESLConcept("table"),)] * len(actors), [[(1, "created")]] * len(actors))
         final_state = do_task(state_list[0].world_state_frame(), [task])
         if final_state:
             yield [final_state]
@@ -3081,11 +3141,12 @@ def _eat_v_1_command_group(context, state_list, e_list, x_actor_variable_group, 
     # The only valid scenario is "let's eat" so ...
     actor_group_values = variable_group_values_to_list(x_actor_variable_group)
     what_group_values = [(ESLConcept("dish"), )] * len(actor_group_values)
+    min_size_values = [[(1, "created")]] * len(actor_group_values)
     task = ('satisfy_want',
             context,
             actor_group_values,
             what_group_values,
-            1)
+            min_size_values)
     final_state = do_task(state_list[0].world_state_frame(), [task])
     if final_state:
         yield [final_state]
@@ -3187,7 +3248,7 @@ def _see_v_1_able_group(context, state_list, e_list, x_actor_variable_group, x_o
             context,
             variable_group_values_to_list(x_actor_variable_group),
             variable_group_values_to_list(x_object_variable_group),
-            min_from_variable_group(x_object_variable_group))
+            min_from_variable_group_combined_values(state_list, x_object_variable_group))
     final_state = do_task(state_list[0].world_state_frame(), [task])
     if final_state:
         yield [final_state]
@@ -3260,7 +3321,7 @@ def _see_v_1_future_group(context, state_list, e_list, x_actor_variable_group, x
             context,
             variable_group_values_to_list(x_actor_variable_group),
             variable_group_values_to_list(x_object_variable_group),
-            min_from_variable_group(x_object_variable_group))
+            min_from_variable_group_combined_values(state_list, x_object_variable_group))
     final_state = do_task(state_list[0].world_state_frame(), [task])
     if final_state:
         yield [final_state]
@@ -3562,7 +3623,7 @@ def _get_v_1_command_group(context, state_list, e_variable_group, x_actor_variab
             context,
             actor_list,
             object_list,
-            min_from_variable_group(x_object_variable_group))
+            min_from_variable_group_combined_values(state_list, x_object_variable_group))
     final_state = do_task(state_list[0].world_state_frame(), [task])
     if final_state:
         yield [final_state]
@@ -3652,7 +3713,7 @@ def _have_v_1_order_group(context, state_list, e_variable_group, x_actor_variabl
             context,
             variable_group_values_to_list(x_actor_variable_group),
             variable_group_values_to_list(x_object_variable_group),
-            min_from_variable_group(x_object_variable_group))
+            min_from_variable_group_combined_values(state_list, x_object_variable_group))
     final_state = do_task(state_list[0].world_state_frame(), [task])
     if final_state:
         yield [final_state]
@@ -3759,17 +3820,17 @@ def _have_v_1_request_order_group(context, state_list, e_list, x_actor_variable_
             # Only asking about specials
             task = ('describe', context, [tuple(x for x in all_bucketed_instances_of_concepts.keys()) ])
         else:
-            task = ('satisfy_want', context, [("user",)], [(ESLConcept("menu"),) ], 1)
+            task = ('satisfy_want', context, [("user",)], [(ESLConcept("menu"),)], [[(1, "created")]])
 
     else:
         min = min_from_variable_group(x_object_variable_group)
         if min == 2 and x_object_value[0].entails(context, state_list[0], ESLConcept("menu")):
             # Something like "Do you have menus? or 2 menus?" was said
             # Assume it means we each want one
-            task = ('satisfy_want', context, [("user",), ("son1",)], [x_object_value, x_object_value], 1)
+            task = ('satisfy_want', context, [("user",), ("son1",)], [x_object_value, x_object_value], [[(1, "created")], [(1, "created")]])
 
         else:
-            task = ('satisfy_want', context, [("user",)], [x_object_value], min_from_variable_group(x_object_variable_group))
+            task = ('satisfy_want', context, [("user",)], [x_object_value], min_from_variable_group_combined_values(state_list, x_object_variable_group))
 
     final_state = do_task(state_list[0].world_state_frame(), [task])
     if final_state:
@@ -3928,7 +3989,11 @@ def _have_v_1_able_group(context, state_list, e_variable_group, x_actor_variable
             ((wh_variable and x_object_variable_group.solution_values[0].value[0] == ESLConcept("menu")) or
              not wh_variable):
         # The planner will only satisfy a want wrt the players
-        task = ('satisfy_want', context, variable_group_values_to_list(x_actor_variable_group), variable_group_values_to_list(x_object_variable_group), min_from_variable_group(x_object_variable_group))
+        task = ('satisfy_want',
+                context,
+                variable_group_values_to_list(x_actor_variable_group),
+                variable_group_values_to_list(x_object_variable_group),
+                min_from_variable_group_combined_values(state_list, x_object_variable_group))
         final_state = do_task(state_list[0].world_state_frame(), [task])
         if final_state:
             yield [final_state]
@@ -4904,6 +4969,15 @@ def error_priority(error_string):
 error_priority_dict = {
     "verbDoesntApply": 960,
     "defaultPriority": 1000,
+    # Have different priorities for the messages so that
+    # we can sort the errors and give the best one
+    "understoodFailureMessage": 1010,
+    "understoodFailureMessage1": 1011,
+    "understoodFailureMessage2": 1012,
+    "understoodFailureMessage3": 1013,
+    "understoodFailureMessage4": 1014,
+    "understoodFailureMessage5": 1015,
+    "understoodFailureMessage6": 1016,
     # This is just used when sorting to indicate no error, i.e. success.
     # Nothing should be higher because higher is used for phase 2 errors
     "success": 10000000
@@ -4989,6 +5063,6 @@ if __name__ == '__main__':
     # ShowLogging("UserInterface")
     # ShowLogging("Determiners")
     ShowLogging("SolutionGroups")
-    ShowLogging("Transformer")
+    # ShowLogging("Transformer")
 
     hello_world()
