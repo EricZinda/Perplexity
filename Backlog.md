@@ -68,14 +68,14 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
         - Document!!!! For the solution handlers for conceptual stuff, they should not allow solutions through that are not ever going to work
             - i.e. solution handlers should fail if the solution could never work in the solution group handler
         - Handling groups of things that can be "anded" goes beyond "want", look for other code with this problem
+
+
         - Bug: When we run "I want one menu for me and two menus for johnny" there are different errors returned from each solution group
             - We record the last one that failed in solution_groups.py line 282
             - what we *should* be doing, is using the logic that ExecutionContext/UserInterface uses to compare them and return the *best* one
                 - should the logic be: deepest, and then highest priority if there is a tie?
                     - but the trees will be different so "deepest" probably doesn't make sense
                     - so maybe it is just highest priority?
-        - Bug: We'd like to start with some water and menus -> "I'm sorry, we don't allow sharing orders"
-            - should be: "Can I get you anything besides a water and a menu for you and a water for Johnny?"
         - Bug: table for one person --> I'm not sure what to do about that
         - Need to add tests to every kind of thing you can ask for to make sure we are handling criteria right
             - I want a water and a steak for me and 2 salads for johnny

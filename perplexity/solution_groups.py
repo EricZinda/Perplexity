@@ -23,6 +23,7 @@ def constraints_for_variable(state, variable_name):
 
     return found_constraint
 
+
 # Used to create new GroupVariableValues() when predications need to create them at runtime
 def create_group_variable_values(context, state_list, variable_name):
     found_constraint = constraints_for_variable(state_list[0], variable_name)
@@ -162,11 +163,16 @@ class SolutionMaximalGroupGenerator(object):
             else:
                 existing_solution_group_id = ""
 
-            if existing_solution_group_id == "":
-                # There wasn't an existing solution group to put this in, start tracking this as a new one
+            # Create a new group if:
+            # There wasn't an existing solution group to put this in,
+            # OR: There was one, but it was not a maximal group so it'll never request it
+            create_new_group = existing_solution_group_id == "" or \
+                    (existing_solution_group_id != "" and not self.solution_groups[existing_solution_group_id].generate_maximal_group)
+            if create_new_group:
                 groups_logger.debug(f"SolutionGroupGenerator: There wasn't an existing solution group for solution, start a new group: {next_group}")
                 self.solution_groups[next_id] = SingleMaximalGroupGenerator(next_id, self, next_group, self.generate_maximal_group)
                 self.unyielded_solution_groups[next_id] = None
+                existing_solution_group_id = ""
 
             else:
                 # This is an update to an existing solution group, either a parent or the exact id
@@ -189,8 +195,10 @@ class SolutionMaximalGroupGenerator(object):
                     self.unyielded_solution_groups.pop(existing_solution_group_id)
                     self.unyielded_solution_groups[next_id] = None
 
-            if existing_solution_group_id == current_id:
+            if existing_solution_group_id == current_id :
                 # Only return True if there is new data for current_id.
+                # or if current_id == "" and we created a new group
+                #
                 # This happens if the requested group id (current_id)
                 # is the same as existing_solution_group_id, which happens if:
                 #   - current_id was "" and a new group was created (thus existing_solution_group_id == "")

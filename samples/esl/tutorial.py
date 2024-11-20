@@ -2337,9 +2337,12 @@ def on_p_loc_menu(context, state, e_introduced_binding, x_actor_binding, x_locat
 
 @Predication(vocabulary, names=("_with_p",))
 def _with_p(context, state, e_introduced_binding, e_main, x_binding):
-    yield state.add_to_e(e_main.variable.name, "With", {"VariableName": x_binding.variable.name,
-                                                        "Value": x_binding.value[0],
+    yield state.add_to_e(e_main.variable.name, "With", {"Binding": x_binding,
                                                         "Originator": context.current_predication_index()})
+
+    # yield state.add_to_e(e_main.variable.name, "With", {"VariableName": x_binding.variable.name,
+    #                                                     "Value": x_binding.value[0],
+    #                                                     "Originator": context.current_predication_index()})
 
 
 # Can I pay the bill?
@@ -2892,8 +2895,9 @@ def _thanks_a_1(context, state, i_binding, h_binding):
              arguments=[("e",), ("x", ValueSize.all)],
              handles=[("With", EventOption.required)])
 def _start_v_1_with_request(context, state, e_binding, x_actor_binding):
-    variable_data = VariableData(e_binding.value["With"]["VariableName"])
-    x_object_binding = VariableBinding(variable_data, (e_binding.value["With"]["Value"], ))
+    x_object_binding = e_binding.value["With"]["Binding"]
+    # variable_data = VariableData(e_binding.value["With"]["VariableName"])
+    # x_object_binding = VariableBinding(variable_data, (e_binding.value["With"]["Value"], ))
 
     variable_data_e = VariableData(e_binding.variable.name)
     want_e_binding = VariableBinding(variable_data_e, copy.deepcopy(e_binding.value))
@@ -2907,7 +2911,7 @@ def _start_v_1_with_request(context, state, e_binding, x_actor_binding):
              names=["solution_group__start_v_1_request", "solution_group__start_v_1_able"],
              properties_from=_start_v_1_with_request)
 def solution_group__start_v_1_request(context, state_list, e_introduced_binding_list, x_actor_variable_group):
-    x_what_variable_name = e_introduced_binding_list.solution_values[0].value["With"]["VariableName"]
+    x_what_variable_name = e_introduced_binding_list.solution_values[0].value["With"]["Binding"].variable.name
     yield from want_group_helper(context, state_list, e_introduced_binding_list, x_actor_variable_group, create_group_variable_values(context, state_list, x_what_variable_name))
 
 
@@ -5054,7 +5058,7 @@ if __name__ == '__main__':
     # concept = concept.add_criteria(rel_subjects, "isAdj", "roast")
     # print(concept.instances(None, test_state))
 
-    ShowLogging("Pipeline")
+    # ShowLogging("Pipeline")
     # ShowLogging("ChatGPT")
     # ShowLogging("Testing")
     # ShowLogging("Execution")
