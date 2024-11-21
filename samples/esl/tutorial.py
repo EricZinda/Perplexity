@@ -2430,20 +2430,27 @@ def _pay_v_for(context, state, e_introduced_binding, x_actor_binding, i_binding1
         way_to_pay_state = state
 
     if e_introduced_binding.value is not None and "With" in e_introduced_binding.value:
-        if is_concept(e_introduced_binding.value["With"]["Value"]):
-            values = [x for x in e_introduced_binding.value["With"]["Value"].instances(context, way_to_pay_state)]
+        with_object_value = e_introduced_binding.value["With"]["Binding"].value
+        if len(with_object_value) > 1:
+            yield do_task(way_to_pay_state, [("respond", context, "You can't pay with those together.")])
+            return
+        else:
+            with_object_value = with_object_value[0]
+
+        if is_concept(with_object_value):
+            values = [x for x in with_object_value.instances(context, way_to_pay_state)]
             if len(values) == 0:
                 yield do_task(way_to_pay_state, [("respond", context, "You don't have one of those.")])
                 return
         else:
-            values = [e_introduced_binding.value["With"]["Value"]]
+            values = [with_object_value]
 
         if not any(x in ["cash", "card"] for x in values):
             yield do_task(way_to_pay_state, [("respond", context, "You can't pay with that.")])
             return
 
         yield way_to_pay_state.record_operations(
-            way_to_pay_state.handle_world_event(context, ["unknown", (e_introduced_binding.value["With"]["Value"],)]))
+            way_to_pay_state.handle_world_event(context, ["unknown", (with_object_value,)]))
 
     else:
         yield way_to_pay_state
@@ -2928,9 +2935,7 @@ def solution_group__start_v_1_request(context, state_list, e_introduced_binding_
              arguments=[("e",), ("x", ValueSize.all)],
              handles=[("With", EventOption.required)])
 def _start_v_1_order(context, state, e_binding, x_actor_binding):
-    variable_data = VariableData(e_binding.value["With"]["VariableName"])
-    x_object_binding = VariableBinding(variable_data, (e_binding.value["With"]["Value"],))
-
+    x_object_binding = e_binding.value["With"]["Binding"]
     variable_data_e = VariableData(e_binding.variable.name)
     have_e_binding = VariableBinding(variable_data_e, copy.deepcopy(e_binding.value))
     have_e_binding.value.pop("With")
@@ -2942,7 +2947,7 @@ def _start_v_1_order(context, state, e_binding, x_actor_binding):
              names=["solution_group__start_v_1"],
              properties_from=_start_v_1_order)
 def _start_v_1_order_group(context, state_list, e_variable_group, x_actor_variable_group):
-    x_what_variable_name = e_variable_group.solution_values[0].value["With"]["VariableName"]
+    x_what_variable_name = e_variable_group.solution_values[0].value["With"]["Binding"].variable.name
     yield from _have_v_1_order_group(context, state_list, e_variable_group, x_actor_variable_group, create_group_variable_values(context, state_list, x_what_variable_name))
 
 
@@ -5058,7 +5063,7 @@ if __name__ == '__main__':
     # concept = concept.add_criteria(rel_subjects, "isAdj", "roast")
     # print(concept.instances(None, test_state))
 
-    # ShowLogging("Pipeline")
+    ShowLogging("Pipeline")
     # ShowLogging("ChatGPT")
     # ShowLogging("Testing")
     # ShowLogging("Execution")

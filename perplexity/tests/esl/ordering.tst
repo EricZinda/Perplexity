@@ -443,7 +443,7 @@
         },
         {
             "Command": "We'd like to start with some water and menus",
-            "Expected": "Waiter: water is an excellent choice!\nWaiter: Oh, I forgot to give you the menu! I'll get you one right away.\nWaiter: Can I get you anything besides a water and a menu for you and a water for Johnny?",
+            "Expected": "Waiter: water is an excellent choice!\nWaiter: Oh, I forgot to give you the menu! I'll get you one right away.\nWaiter: Oh, I forgot to give Johnny the menu! I'll get Johnny one right away.\nWaiter: Can I get you anything besides a water and a menu for you and a water and a menu for Johnny?",
             "Tree": "_some_q(x15,udef_q(x20,_water_n_1(x20),udef_q(x25,_menu_n_1(x25),_and_c(x15,x20,x25))),pronoun_q(x3,pron(x3),[_with_p(e14,e13,x15), event_replace(u99,e2,e13), _start_v_1_request(e2,x3)]))",
             "Enabled": true,
             "ID": "2ef6be00-e7ea-44a9-b73f-aea220402f94"
@@ -452,7 +452,9 @@
             "Command": "What did I order?",
             "Expected": [
                 "menu\nwater\nWaiter: Can I get you anything besides a water and a menu for you and a water for Johnny?",
-                "water\nmenu\nWaiter: Can I get you anything besides a water and a menu for you and a water for Johnny?"
+                "water\nmenu\nWaiter: Can I get you anything besides a water and a menu for you and a water for Johnny?",
+                "water\nmenu\nWaiter: Can I get you anything besides a water and a menu for you and a water and a menu for Johnny?",
+                "menu\nwater\nWaiter: Can I get you anything besides a water and a menu for you and a water and a menu for Johnny?"
             ],
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
@@ -460,7 +462,7 @@
         },
         {
             "Command": "What did my son order?",
-            "Expected": "water\nWaiter: Can I get you anything besides a water and a menu for you and a water for Johnny?",
+            "Expected": "menu\nwater\nWaiter: Can I get you anything besides a water and a menu for you and a water and a menu for Johnny?",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x14,pron(x14),def_explicit_q(x3,[_son_n_of(x3,i19), poss(e13,x3,x14)],_order_v_1(e2,x3,x5))))",
             "Enabled": true,
             "ID": "b076a0b6-5b3c-431c-afef-bb7a74b42df0"
