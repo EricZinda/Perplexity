@@ -483,7 +483,10 @@
         },
         {
             "Command": "What did my son order?",
-            "Expected": "menu\nwater\nWaiter: Can I get you anything besides a water and a menu for you and a water and a menu for Johnny?",
+            "Expected": [
+                "menu\nwater\nWaiter: Can I get you anything besides a water and a menu for you and a water and a menu for Johnny?",
+                "water\nmenu\nWaiter: Can I get you anything besides a water and a menu for you and a water and a menu for Johnny?"
+            ],
             "Tree": "which_q(x5,thing(x5),pronoun_q(x14,pron(x14),def_explicit_q(x3,[_son_n_of(x3,i19), poss(e13,x3,x14)],_order_v_1(e2,x3,x5))))",
             "Enabled": true,
             "ID": "b076a0b6-5b3c-431c-afef-bb7a74b42df0"
@@ -554,7 +557,8 @@
                 "steak\nmenu\nwater\n2 soup\nWaiter: Can I get you anything besides a water, a menu, a steak, and 2 soups for you and a water and a menu for Johnny?",
                 "steak\n2 soup\nwater\nmenu\nWaiter: Can I get you anything besides a water, a menu, a steak, and 2 soups for you and a water and a menu for Johnny?",
                 "menu\nsteak\n2 soup\nwater\nWaiter: Can I get you anything besides a water, a menu, a steak, and 2 soups for you and a water and a menu for Johnny?",
-                "steak\nwater\n2 soup\nmenu\nWaiter: Can I get you anything besides a water, a menu, a steak, and 2 soups for you and a water and a menu for Johnny?"
+                "steak\nwater\n2 soup\nmenu\nWaiter: Can I get you anything besides a water, a menu, a steak, and 2 soups for you and a water and a menu for Johnny?",
+                "menu\n2 soup\nsteak\nwater\nWaiter: Can I get you anything besides a water, a menu, a steak, and 2 soups for you and a water and a menu for Johnny?"
             ],
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,

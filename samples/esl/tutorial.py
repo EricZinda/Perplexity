@@ -1926,7 +1926,8 @@ def match_all_n_concepts(noun_type, context, state, x_binding):
 
         noun_lemmas = [noun_type]
         for noun_lemma in noun_lemmas:
-            yield from concept_disjunctions(state, noun_lemma)
+            for item in concept_disjunctions(state, noun_lemma):
+                yield item
 
     # Then yield a combinatorial value of all types
     for new_state in combinatorial_predication_1(context, state, x_binding, bound_variable, unbound_variable_concepts):

@@ -69,6 +69,8 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
             - i.e. solution handlers should fail if the solution could never work in the solution group handler
         - Handling groups of things that can be "anded" goes beyond "want", look for other code with this problem
 
+        - "are any dishes vegetarian?" --> Yes (there are more)
+        - also "soup and salad are vegetarian dishes" -> Yes (there are more)
         - Write up how "and" works for solution group handlers
         - Make sure other constructions like "I ordered one steak" also work
 

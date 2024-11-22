@@ -2,6 +2,8 @@ import copy
 import logging
 import numbers
 import pickle
+from collections import OrderedDict
+
 import samples.esl.esl_planner
 import samples.esl.esl_planner_description
 from perplexity.predications import is_concept, Concept, ConceptCriterion, ConceptSortCriterion
@@ -128,6 +130,8 @@ def concept_disjunctions(state, root_concept, ignore_root=False):
     next_level = [root_concept]
     lineage = 0
     while len(next_level) > 0:
+        # remove duplicates
+        next_level = list(OrderedDict.fromkeys(next_level))
         next_next_level = []
         for next_level_type in next_level:
             if not ignore_root or (ignore_root and lineage > 0):
