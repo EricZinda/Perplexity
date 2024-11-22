@@ -71,6 +71,7 @@ def orderable_concepts(state):
         things_we_know.append(ESLConcept(menu_item))
 
     things_we_know += specials_concepts(state)
+    # things_we_know += [ESLConcept("menu")]
 
     for menu_item in rel_subjects(state, "specializes", "drink"):
         things_we_know.append(ESLConcept(menu_item))
@@ -1070,21 +1071,24 @@ class WorldState(State):
 
         assert False, f"Unknown state {self.sys['responseState']}"
 
-    def food_in_order(self, order):
+    def anything_in_order(self, order):
         # First figure out who this order belongs to
         owner_list = [x for x in rel_subjects(self, "have", order)]
         owners = owner_list[0]
         if not isinstance(owners, (tuple, list)):
             owners = (owners, )
 
-        for who_food in self.ordered_food():
-            if who_food[0] in owners:
-                yield who_food[1]
+        for who_item in self.ordered_anything():
+            if who_item[0] in owners:
+                yield who_item[1]
 
     def have_food(self):
         for who_item in self.all_rel("have"):
             if is_user_type(who_item[0]) and sort_of(self, who_item[1], ["food"]):
                 yield who_item
+
+    def ordered_anything(self):
+        yield from self.all_rel("ordered")
 
     def ordered_food(self):
         for who_item in self.all_rel("ordered"):

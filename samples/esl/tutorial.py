@@ -4163,13 +4163,13 @@ def _be_v_id_order_base(context, state, e_introduced_binding, x_subject_binding,
     def unbound(x_object):
         # The phrase "What is my order?" means "what are the things in my order"
         order = x_object[0]
-        order_foods = tuple([x for x in state.food_in_order(order)])
+        order_foods = tuple([x for x in state.anything_in_order(order)])
         if len(order_foods) > 0:
             yield order_foods
         else:
             context.report_error(["errorText", "Nothing"])
 
-    orderable = orderable_concepts(state)
+    orderable = orderable_concepts(state) + [ESLConcept("menu")]
 
     # Only use this interpretation if we are talking about an instance of "order"
     # The other argument will be checked in the bound/unbound functions above
@@ -4215,7 +4215,7 @@ def _be_v_id_order_group(context, state_list, e_introduced_binding_list, x_subje
 
         # Figure out the count of things ordered that "are" this concept
         order = order_variable_group.solution_values[0].value[0]
-        order_foods = sorted([x for x in state_list[0].food_in_order(order)])
+        order_foods = sorted([x for x in state_list[0].anything_in_order(order)])
 
         # Now go through each variable's value and see which items in the order it describes
         # and remove them
