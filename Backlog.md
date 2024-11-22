@@ -69,6 +69,15 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
             - i.e. solution handlers should fail if the solution could never work in the solution group handler
         - Handling groups of things that can be "anded" goes beyond "want", look for other code with this problem
 
+        - START HERE NEXT:
+            Bug: My order is one steak --> succeeds when there are two steaks
+        - Make sure other constructions like "I ordered one steak" also work
+        - Bug: My order is a steak and a steak doesn't work for two steaks
+            - Also: Johnny's order is a water and a menu
+                - seems like the same problem
+            - Seems like it is just timing out before it finds the combinations of interpretations that would actually work
+            - Need to have a more optimal way to discard interpretations that simply won't work together
+                - start with the verb interpretations and only try the other ones that will actually work with it
 
         - Bug: When we run "I want one menu for me and two menus for johnny" there are different errors returned from each solution group
             - We record the last one that failed in solution_groups.py line 282
@@ -77,6 +86,8 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
                     - but the trees will be different so "deepest" probably doesn't make sense
                     - so maybe it is just highest priority?
         - Bug: table for one person --> I'm not sure what to do about that
+            - Seems to be the same bug as the previous one
+
         - Need to add tests to every kind of thing you can ask for to make sure we are handling criteria right
             - I want a water and a steak for me and 2 salads for johnny
             - I want a steak and the bill

@@ -411,7 +411,7 @@ def Predication(vocabulary,
                 phrases=None,
                 properties=None,
                 properties_from=None,
-                handles_interpretation=None,
+                handles_interpretations=None,
                 handles_negation=False):
     # Work around Python's odd handling of default arguments that are objects
     if handles is None:
@@ -420,13 +420,13 @@ def Predication(vocabulary,
         virtual_args = []
     if library is None:
         library = "user"
-    if handles_interpretation is not None and not isinstance(handles_interpretation, (list, tuple)):
-        handles_interpretation = (handles_interpretation, )
+    if handles_interpretations is not None and not isinstance(handles_interpretations, (list, tuple)):
+        handles_interpretations = (handles_interpretations,)
 
-    if handles_interpretation is not None and properties_from is not None and properties_from not in handles_interpretation:
+    if handles_interpretations is not None and properties_from is not None and properties_from not in handles_interpretations:
         # if handles_interpretation forces this handler to only be called for one interpretation, it doesn't make sense to use
         # properties from another
-        assert False, f"Predication `properties_from={str(properties_from)}` must be None or match `handles_interpretation={str(handles_interpretation)}`"
+        assert False, f"Predication `properties_from={str(properties_from)}` must be None or match `handles_interpretation={str(handles_interpretations)}`"
 
     # handles = [(Name, EventOption), ...]
     # returns True or False, if False sets an error using report_error
@@ -587,12 +587,12 @@ def Predication(vocabulary,
             # by comparing the interpretation used for the index_predication and the one
             # this solution group said it can handle
             if is_solution_group:
-                if handles_interpretation is not None:
+                if handles_interpretations is not None:
                     solution_interpretation = state.get_binding("interpretation").value[0]
                     index_predication = perplexity.tree.find_index_predication(tree_info)
                     solution_index_interpretation = solution_interpretation[index_predication.index]
                     found = False
-                    for handles_item in handles_interpretation:
+                    for handles_item in handles_interpretations:
                         if handles_item.__module__ == solution_index_interpretation.module and handles_item.__name__ == solution_index_interpretation.function:
                             found = True
                             break

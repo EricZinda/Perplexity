@@ -226,8 +226,9 @@ def constraints_from_variable_group_combined_values(group, variable_group):
     return constraint_list_by_solution
 
 
-# returns a list of tuples where the first item is the constraint and the second is the variable it came from
+# Returns a list of tuples where the first item is the constraint and the second is the variable it came from
 # This is so that callers can tell which constraints have to add together to meet the constraint
+# All the items with the same variable share the same constraint
 def min_from_variable_group_combined_values(group, variable_group):
     constraint_list_by_solution = constraints_from_variable_group_combined_values(group, variable_group)
     min_by_solution = []
@@ -242,6 +243,23 @@ def min_from_variable_group(variable_group):
 
 def max_from_variable_group(variable_group):
     return variable_group.variable_constraints.max_size if variable_group.variable_constraints is not None else float('inf')
+
+
+def solution_group_values_by_shared_constraint(variable_group, variable_group_constraints):
+    # Because the "whats" might be coming from different variables, with different constraints,
+    # We need to slice up the list and just do a task for a single variable at a time so we can
+    # properly handle the constraints on it
+    solution_values = list(variable_group.solution_values)
+
+    group_by_variable = {}
+    for index in range(len(solution_values)):
+        constraint_variable = variable_group_constraints[index][0][1]
+        if constraint_variable not in group_by_variable:
+            group_by_variable[constraint_variable] = [[], []]
+        group_by_variable[constraint_variable][0].append(solution_values[index])
+        group_by_variable[constraint_variable][1].append(variable_group_constraints[index][0][0])
+
+    return group_by_variable
 
 
 # **** Transforms ****
@@ -2076,7 +2094,7 @@ def _vegetarian_a_1_concepts_menu(context, state, e_introduced_binding, x_target
 @Predication(vocabulary,
              names=["solution_group__vegetarian_a_1"],
              properties_from=_vegetarian_a_1_concepts_menu,
-             handles_interpretation=_vegetarian_a_1_concepts_menu)
+             handles_interpretations=_vegetarian_a_1_concepts_menu)
 def _vegetarian_a_1_concepts_menu_group(context, state_list, e_introduced_binding_list, x_target_binding_list):
     # Since the arguments are concepts constraints need to be checked
     if x_target_binding_list.solution_values[0].value is not None and is_concept(x_target_binding_list.solution_values[0].value[0]):
@@ -2155,7 +2173,7 @@ class PastParticipleConcepts:
                 new_value = new_state_x_target_binding.value[0]
                 if term_used_predicatively:
                     if self.only_attributive:
-                        context.report_error(["formNotUnderstood"])
+                        context.report_error(["formNotUnderstood", "PastParticipleConcepts", "requires attributive"])
                         return
 
                 # Add extra criteria to the concept to represent the past participle
@@ -3540,7 +3558,7 @@ def _order_v_1_past(context, state, e_introduced_binding, x_actor_binding, x_obj
             return True
 
         else:
-            context.report_error(["verbDoesntApplyArg", x_actor_binding.variable.name, "order", x_object_binding.variable.name])
+            context.report_error(["verbDoesntApplyArg", x_actor_binding.variable.name, "order", x_object_binding.variable.name, "_order_v_1_past"])
             return False
 
     def actor_from_object(x_object):
@@ -3716,7 +3734,7 @@ def _have_v_1_order(context, state, e_introduced_binding, x_actor_binding, x_obj
 @Predication(vocabulary,
              names=["solution_group__have_v_1", "solution_group__take_v_1", "solution_group__get_v_1"],
              properties_from=_have_v_1_order,
-             handles_interpretation=[_have_v_1_order, _start_v_1_order])
+             handles_interpretations=[_have_v_1_order, _start_v_1_order])
 def _have_v_1_order_group(context, state_list, e_variable_group, x_actor_variable_group, x_object_variable_group):
     task = ('satisfy_want',
             context,
@@ -3797,7 +3815,7 @@ def _have_v_1_request_order(context, state, e_introduced_binding, x_actor_bindin
 @Predication(vocabulary,
              names=["solution_group__have_v_1"],
              properties_from=_have_v_1_request_order,
-             handles_interpretation=_have_v_1_request_order)
+             handles_interpretations=_have_v_1_request_order)
 def _have_v_1_request_order_group(context, state_list, e_list, x_actor_variable_group, x_object_variable_group):
     # "Can I have a table/menu/bill?" is really about the instances thus check_concepts=False
     if not check_concept_solution_group_constraints(context, state_list, x_object_variable_group, check_concepts=False):
@@ -3878,7 +3896,7 @@ def _have_v_1_fact_check(context, state, e_introduced_binding, x_actor_binding, 
             return True
 
         else:
-            context.report_error(["verbDoesntApplyArg", x_actor_binding.variable.name, "have", x_object_binding.variable.name])
+            context.report_error(["verbDoesntApplyArg", x_actor_binding.variable.name, "have", x_object_binding.variable.name, "_have_v_1_fact_check"])
             return False
 
     def actor_from_object(x_object):
@@ -4032,7 +4050,7 @@ def poss_lift_style(context, state, e_introduced_binding, x_object_binding, x_ac
             else:
                 context.report_error(
                     ["verbDoesntApplyArg", x_actor_binding.variable.name, "have", x_object_binding.variable.name,
-                     state.get_reprompt()])
+                     state.get_reprompt(), "poss_lift_style"])
                 return False
 
     def actor_from_objects(x_objects):
@@ -4113,60 +4131,34 @@ def _be_v_id_order_1(context, state, e_introduced_binding, x_subject_binding, x_
 def _be_v_id_order_2(context, state, e_introduced_binding, x_subject_binding, x_object_binding):
     yield from _be_v_id_order_base(context, state, e_introduced_binding, x_subject_binding, x_object_binding)
 
+
 # There are two alternative _be_v_id_order implementations: _be_v_id_order_1 and _be_v_id_order_2 because the base
 # requires that one of the arguments is a singular order and this allows us to not generate a *ton* of alternatives
 # Discussions about the customers order are about a *particular* order, and thus deal with order instances, not concepts
 # However: the items *in* the order must be concepts
 def _be_v_id_order_base(context, state, e_introduced_binding, x_subject_binding, x_object_binding):
     def criteria_bound(x_subject, x_object):
+        nonlocal orderable
+
         # Either argument could be the order
+        # In phase 1 we just make sure that they are asking about things that could
+        # actually be ordered
         for order_item in [x_subject, x_object]:
             if len(order_item) == 1 and instance_of_what(state, order_item[0]) == "order":
                 # "My order is X" or "X is my order] --> See if the set of items in x_object entail what was ordered
                 potential_concepts_in_order = x_subject if order_item == x_object else x_object
                 order = order_item[0]
-                order_food_instances = sorted([x for x in state.food_in_order(order)])
-                if len(order_food_instances) > 0:
-                    for food_concept in potential_concepts_in_order:
-                        if not is_concept(food_concept):
-                            return False
-                        found_instances = food_concept.instances(context, state, order_food_instances)
-                        found_type = len(found_instances) > 0
-                        if found_type:
-                            for found_instance in found_instances:
-                                order_food_instances.remove(found_instance)
-
-                        else:
-                            break
-
-                    if found_type and len(order_food_instances) == 0:
-                        return True
-
-                else:
-                    context.report_error(["errorText", "Nothing"])
-
-        if len(x_subject) == 1 and not is_concept(x_subject[0]) and sort_of(state, x_subject[0], "order"):
-            # "My order is X" --> See if the set of items in x_object entail what was ordered
-            order = x_subject[0]
-            order_food_instances = sorted([x for x in state.food_in_order(order)])
-            if len(order_food_instances) > 0:
-                for food_concept in x_object:
+                for food_concept in potential_concepts_in_order:
                     if not is_concept(food_concept):
+                        context.report_error(["formNotUnderstood", "_be_v_id_order_base_not_concept", str(food_concept)])
                         return False
-                    found_instances = food_concept.instances(context, state, order_food_instances)
-                    found_type = len(found_instances) > 0
-                    if found_type:
-                        for found_instance in found_instances:
-                            order_food_instances.remove(found_instance)
 
-                    else:
-                        break
+                    _, entails_orderable = food_concept.entails_which(context, state, orderable)
+                    if len(entails_orderable) == 0:
+                        context.report_error(["instanceIsNotInstance", food_concept, "orderable"])
+                        return False
 
-                if found_type and len(order_food_instances) == 0:
-                    return True
-
-            else:
-                context.report_error(["errorText", "Nothing"])
+                return True
 
     def unbound(x_object):
         # The phrase "What is my order?" means "what are the things in my order"
@@ -4176,6 +4168,8 @@ def _be_v_id_order_base(context, state, e_introduced_binding, x_subject_binding,
             yield order_foods
         else:
             context.report_error(["errorText", "Nothing"])
+
+    orderable = orderable_concepts(state)
 
     # Only use this interpretation if we are talking about an instance of "order"
     # The other argument will be checked in the bound/unbound functions above
@@ -4187,7 +4181,7 @@ def _be_v_id_order_base(context, state, e_introduced_binding, x_subject_binding,
             break
 
     if not has_instance:
-        context.report_error(["formNotUnderstood"])
+        context.report_error(["formNotUnderstood", "_be_v_id_order_base_not_order_instance"])
         return
 
     # Use lift_style so that we get everything in the order as a single value, meaning "together"
@@ -4198,7 +4192,7 @@ def _be_v_id_order_base(context, state, e_introduced_binding, x_subject_binding,
 @Predication(vocabulary,
              names=["solution_group__be_v_id"],
              properties_from=_be_v_id_order_1,
-             handles_interpretation=_be_v_id_order_1)
+             handles_interpretations=[_be_v_id_order_1, _be_v_id_order_2])
 def _be_v_id_order_group(context, state_list, e_introduced_binding_list, x_subject_variable_group, x_object_variable_group):
     # Since one of the arguments holds concepts, constraints need to be checked
     # Figure out which argument it is
@@ -4210,33 +4204,44 @@ def _be_v_id_order_group(context, state_list, e_introduced_binding_list, x_subje
 
     if not concept_variable_group:
         # This solution group handler requires conceptual things in an order
-        context.report_error(["formNotUnderstood"])
+        context.report_error(["formNotUnderstood", "_be_v_id_order_group", "must be conceptual things to order"])
         return
 
     else:
-        # Get the global criteria
-        min = min_from_variable_group(check_variable_group)
-        max = max_from_variable_group(check_variable_group)
+        # Get the global criteria for all the values
+        min_per_value = min_from_variable_group_combined_values(state_list, concept_variable_group)
+        # First reorganize the values so they are grouped by the criteria they share
+        values_constraints_by_variable = solution_group_values_by_shared_constraint(concept_variable_group, min_per_value)
 
         # Figure out the count of things ordered that "are" this concept
-        # Then compare the actual count across the solution group to the global criteria
-        tree_info = state_list[0].get_binding("tree")
         order = order_variable_group.solution_values[0].value[0]
         order_foods = sorted([x for x in state_list[0].food_in_order(order)])
-        found_count = 0
-        for food_concept_binding in concept_variable_group.solution_values:
-            for food_concept in food_concept_binding.value:
-                found_instances = food_concept.instances(context, state_list[0], order_foods)
-                found_count += len(found_instances)
-                for found_instance in found_instances:
-                    order_foods.remove(found_instance)
 
-        if found_count < min:
-            context.report_error(["phase2LessThan", concept_variable_group.variable_constraints.variable_name, min], force=True, phase=2)
-            return
+        # Now go through each variable's value and see which items in the order it describes
+        # and remove them
+        for bindings, criteria in values_constraints_by_variable.values():
+            for index in range(len(bindings)):
+                binding = bindings[index]
+                number = criteria[index]
+                found = binding.value[0].instances(context, state_list[0], order_foods)
+                # Only remove the first number items from the list
+                # If this doesn't hit all of them, report an error but don't quit in case something
+                # else covers the rest
+                if len(found) == 0:
+                    context.report_error(["notError", concept_variable_group.variable_constraints.variable_name], force=True, phase=2)
+                    return
+                elif len(found) < number:
+                    context.report_error(["phase2LessThan", concept_variable_group.variable_constraints.variable_name, number], force=True, phase=2)
+                elif len(found) > number:
+                    context.report_error(["phase2MoreThan", concept_variable_group.variable_constraints.variable_name, number], force=True, phase=2)
 
-        elif found_count > max:
-            context.report_error(["phase2MoreThan", concept_variable_group.variable_constraints.variable_name, max], force=True, phase=2)
+                found = found[:number]
+                order_foods = [item for item in order_foods if item not in found]
+
+        if len(order_foods) > 0:
+            # This didn't cover all the foods, fail
+            context.report_error(["is_not", x_subject_variable_group.variable_constraints.variable_name, x_object_variable_group.variable_constraints.variable_name],
+                                 force=True, phase=2)
             return
 
         yield state_list
@@ -4336,7 +4341,7 @@ def _be_v_id_list(context, state, e_introduced_binding, x_subject_binding, x_obj
 @Predication(vocabulary,
              names=["solution_group__be_v_id"],
              properties_from=_be_v_id_list,
-             handles_interpretation=_be_v_id_list,
+             handles_interpretations=_be_v_id_list,
              handles_negation=True)
 def _be_v_id_list_group(context, state_list, e_introduced_binding_list, x_subject_variable_group, x_object_variable_group):
     # Don't use this interpretation if we are talking about an "order"
@@ -4446,7 +4451,7 @@ def _be_v_id_much_many(context, state, e_introduced_binding, x_subject_binding, 
 @Predication(vocabulary,
              names=["solution_group__be_v_id"],
              properties_from=_be_v_id_much_many,
-             handles_interpretation=_be_v_id_much_many)
+             handles_interpretations=_be_v_id_much_many)
 def _be_v_id_much_many_group(context, state_list, e_introduced_binding_list, x_subject_variable_group, x_object_variable_group):
     # If the arguments are concepts constraints need to be checked
     for check_variable_group in [x_subject_variable_group, x_object_variable_group]:
@@ -4499,11 +4504,13 @@ def _be_v_id_instance_concept(context, state, e_introduced_binding, x_subject_bi
 
     # Don't use this interpretation if we are talking about an "order", we have a different implementation for that
     if is_be_v_id_order(context, state, x_subject_binding, x_object_binding):
+        context.report_error(["formNotUnderstood", "_be_v_id_instance_concept", "doesn't handle orders"])
         return
 
     # Require that the subject is an instance
     # Only need to check one value since there is never a mix of instances and concepts
     if x_subject_binding.value is not None and not is_instance(state, x_subject_binding.value[0]):
+        context.report_error(["formNotUnderstood", "_be_v_id_instance_concept", "subject not an instance"])
         return
 
     for success_state in in_style_predication_2(context, state, x_subject_binding, x_object_binding, criteria_bound, unbound, unbound):
@@ -4513,7 +4520,7 @@ def _be_v_id_instance_concept(context, state, e_introduced_binding, x_subject_bi
 @Predication(vocabulary,
              names=["solution_group__be_v_id"],
              properties_from=_be_v_id_instance_concept,
-             handles_interpretation=_be_v_id_instance_concept)
+             handles_interpretations=_be_v_id_instance_concept)
 def _be_v_id_instance_concept_group(context, state_list, e_introduced_binding_list, x_subject_variable_group, x_object_variable_group):
     # If object is a concept, constraints need to be checked
     if x_object_variable_group.solution_values[0].value is not None and is_concept(x_object_variable_group.solution_values[0].value[0]):
@@ -4555,11 +4562,13 @@ def _be_v_id_concept_concept(context, state, e_introduced_binding, x_subject_bin
 
     # Don't use this interpretation if we are talking about an "order", we have a different implementation for that
     if is_be_v_id_order(context, state, x_subject_binding, x_object_binding):
+        context.report_error(["formNotUnderstood", "_be_v_id_concept_concept", "doesn't handle orders"])
         return
 
     # Require that any bound value is a concept
     for check_binding in [x_subject_binding, x_object_binding]:
         if check_binding.value is not None and not is_concept(check_binding.value[0]):
+            context.report_error(["formNotUnderstood", "_be_v_id_concept_concept", "must be concepts"])
             return
 
     for success_state in in_style_predication_2(context, state, x_subject_binding, x_object_binding, criteria_bound, unbound, unbound):
@@ -4569,7 +4578,7 @@ def _be_v_id_concept_concept(context, state, e_introduced_binding, x_subject_bin
 @Predication(vocabulary,
              names=["solution_group__be_v_id"],
              properties_from=_be_v_id_concept_concept,
-             handles_interpretation=_be_v_id_concept_concept)
+             handles_interpretations=_be_v_id_concept_concept)
 def _be_v_id_concept_concept_group(context, state_list, e_introduced_binding_list, x_subject_variable_group, x_object_variable_group):
     # If object is a concept, constraints need to be checked
     for check_variable_group in [x_subject_variable_group, x_object_variable_group]:
@@ -4779,6 +4788,8 @@ def generate_custom_message(state, tree_info, error_term):
         return s("{arg1} {'is':<arg1} not {*arg2}", tree_info, reverse_pronouns=True)
     if error_constant == "notOn":
         return s("{arg1} is not on {arg2}", tree_info)
+    if error_constant == "instanceIsNotInstance":
+        return s("{*arg1} {'is':<arg1} not {*arg2}", tree_info, reverse_pronouns=True)
     if error_constant == "notWant":
         return s("{arg1} {'do':<arg1} not want {arg2}", tree_info, reverse_pronouns=True)
     if error_constant == "verbDoesntApplyArg":
@@ -4978,15 +4989,6 @@ def error_priority(error_string):
 error_priority_dict = {
     "verbDoesntApply": 960,
     "defaultPriority": 1000,
-    # Have different priorities for the messages so that
-    # we can sort the errors and give the best one
-    "understoodFailureMessage": 1010,
-    "understoodFailureMessage1": 1011,
-    "understoodFailureMessage2": 1012,
-    "understoodFailureMessage3": 1013,
-    "understoodFailureMessage4": 1014,
-    "understoodFailureMessage5": 1015,
-    "understoodFailureMessage6": 1016,
     # This is just used when sorting to indicate no error, i.e. success.
     # Nothing should be higher because higher is used for phase 2 errors
     "success": 10000000

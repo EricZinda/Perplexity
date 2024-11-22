@@ -79,6 +79,13 @@
             "ID": "14a455aa-94e6-46d5-9fb6-b93b72188a9b"
         },
         {
+            "Command": "Johnny's order is a water and a menu",
+            "Expected": "[WRONG] Johnny do not have johnny's order\nWaiter: Can I get you anything besides a steak, 2 waters, and a menu for you and a water and a menu for Johnny?",
+            "Tree": "def_explicit_q(x3,proper_q(x5,named(Johnny,x5),[_order_n_of(x3), poss(e14,x3,x5)]),udef_q(x15,_a_q(x20,_water_n_1(x20),_a_q(x25,_menu_n_1(x25),_and_c(x15,x20,x25))),_be_v_id(e2,x3,x15)))",
+            "Enabled": true,
+            "ID": "531b23e0-ef49-4b4e-8cc9-c11df35ea93a"
+        },
+        {
             "Command": "That's all",
             "Expected": "You realize that you'll need at least two dishes for the two of you.\nWaiter: Can I get you anything besides a steak, 2 waters, and a menu for you and a water and a menu for Johnny?",
             "Tree": "no_standalone(e2)",
@@ -161,6 +168,20 @@
             "Tree": "pronoun_q(x9,pron(x9),udef_q(x14,[_steak_n_1(x14), card(2,e20,x14)],def_explicit_q(x3,[_order_n_of(x3), poss(e8,x3,x9)],_be_v_id(e2,x3,x14))))",
             "Enabled": true,
             "ID": "121f854a-efb4-447f-b774-7532df6eedbc"
+        },
+        {
+            "Command": "My order is a water",
+            "Expected": "There isn't a water\nWaiter: Can I get you anything besides 2 steaks for you?",
+            "Tree": "pronoun_q(x9,pron(x9),_a_q(x14,_water_n_1(x14),def_explicit_q(x3,[_order_n_of(x3), poss(e8,x3,x9)],_be_v_id(e2,x3,x14))))",
+            "Enabled": true,
+            "ID": "aa85a7cb-930c-480f-a7f7-8bc17edf629c"
+        },
+        {
+            "Command": "My order is a steak and a steak",
+            "Expected": "Yes, that is true.\nWaiter: Can I get you anything besides 2 steaks for you?",
+            "Tree": "pronoun_q(x9,pron(x9),udef_q(x14,[_steak_n_1(x14), card(2,e20,x14)],def_explicit_q(x3,[_order_n_of(x3), poss(e8,x3,x9)],_be_v_id(e2,x3,x14))))",
+            "Enabled": true,
+            "ID": "0d3e0a42-3409-475e-8934-abc5aa10d6c8"
         },
         {
             "Command": "what is my order",

@@ -360,7 +360,15 @@ error_priority_dict = {
     "tooComplicated": 1000,
     # Indicates we understood the phrase, but trying to accomplish it generated a failure. It should
     # be a very high priority message
-    "understoodFailureMessage": 1200,
+    # Have different priorities for the messages so that
+    # we can sort the errors and give the best one
+    "understoodFailureMessage": 1010,
+    "understoodFailureMessage1": 1011,
+    "understoodFailureMessage2": 1012,
+    "understoodFailureMessage3": 1013,
+    "understoodFailureMessage4": 1014,
+    "understoodFailureMessage5": 1015,
+    "understoodFailureMessage6": 1016,
     # This is just used when sorting to indicate no error, i.e. success.
     # Nothing should be higher because higher is used for phase 2 errors
     "success": 10000000
