@@ -244,6 +244,12 @@ def and_c(context, state, x_binding_introduced, x_binding_first, x_binding_secon
     else:
         required_values = tuple(itertools.chain(*[x[0] for x in and_value]))
 
+    # remove duplicates but maintain order
+    # This is so "My order is a steak and a steak" will work because otherwise
+    # VariableCriteria will look for values in its unique set and never find more than one
+    # since it is a unique set
+    required_values = tuple(dict.fromkeys(required_values))
+
     # Everything must be of the same type
     if len(set([perplexity.predications.value_type(x[0]) for x in and_value])) > 1:
         return

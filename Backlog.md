@@ -68,16 +68,13 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
         - Document!!!! For the solution handlers for conceptual stuff, they should not allow solutions through that are not ever going to work
             - i.e. solution handlers should fail if the solution could never work in the solution group handler
         - Handling groups of things that can be "anded" goes beyond "want", look for other code with this problem
-
-        - START HERE NEXT:
-            Bug: My order is one steak --> succeeds when there are two steaks
-        - Make sure other constructions like "I ordered one steak" also work
-        - Bug: My order is a steak and a steak doesn't work for two steaks
-            - Also: Johnny's order is a water and a menu
-                - seems like the same problem
+        - Also: Johnny's order is a water and a menu
             - Seems like it is just timing out before it finds the combinations of interpretations that would actually work
             - Need to have a more optimal way to discard interpretations that simply won't work together
                 - start with the verb interpretations and only try the other ones that will actually work with it
+
+        - Write up how "and" works for solution group handlers
+        - Make sure other constructions like "I ordered one steak" also work
 
         - Bug: When we run "I want one menu for me and two menus for johnny" there are different errors returned from each solution group
             - We record the last one that failed in solution_groups.py line 282
