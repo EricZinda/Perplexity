@@ -518,7 +518,7 @@ class UserInterface(object):
                                                     return False
 
                                             solution_group_solutions = [solution for solution in solution_group]
-                                            operation_responses, last_phrase_responses, new_state = apply_solutions_to_state(self.state, wh_aware_has_more, solution_group_solutions)
+                                            operation_responses, last_phrase_responses, new_state, last_solution_group = apply_solutions_to_state(self.state, wh_aware_has_more, solution_group_solutions)
                                             self.state = new_state
 
                                             # Now deal with any resets that have been registered
@@ -558,6 +558,7 @@ class UserInterface(object):
                                             operation_responses = []
                                             last_phrase_responses = []
                                             new_world_responses = []
+                                            last_solution_group = False
 
                                         if len(operation_responses) > 0:
                                             response = self.output_sorted_responses(operation_responses)
@@ -575,7 +576,7 @@ class UserInterface(object):
                                             else:
                                                 response = "(no response)"
 
-                                        if len(operation_responses) == 0:
+                                        if len(operation_responses) == 0 and not last_solution_group:
                                             # Only shown if the developer didn't provide a custom message
                                             more_message = self.generate_more_message(tree_info, solution_group_generator)
                                             if more_message is not None:

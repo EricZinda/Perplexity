@@ -69,11 +69,10 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
             - i.e. solution handlers should fail if the solution could never work in the solution group handler
         - Handling groups of things that can be "anded" goes beyond "want", look for other code with this problem
 
-        - "are any dishes vegetarian?" --> Yes (there are more)
-        - also "soup and salad are vegetarian dishes" -> Yes (there are more)
+
         - Write up how "and" works for solution group handlers
         - Make sure other constructions like "I ordered one steak" also work
-
+        - order tomato soup --> sorry you can't order that here
         - Bug: When we run "I want one menu for me and two menus for johnny" there are different errors returned from each solution group
             - We record the last one that failed in solution_groups.py line 282
             - what we *should* be doing, is using the logic that ExecutionContext/UserInterface uses to compare them and return the *best* one

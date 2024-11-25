@@ -18,6 +18,14 @@ class NoopOperation(object):
         pass
 
 
+# Added to any state in a solution group to indicate that this should
+# be considered the final solution group with respect to responding
+# Using it will stop any "(there are more)" responses
+class NoMoreSolutionGroups(object):
+    def apply_to(self, state):
+        pass
+
+
 class RespondOperation(object):
     def __init__(self, response, location=ResponseLocation.middle, show_if_has_more=None, show_if_last_phrase=None):
         self._response = response

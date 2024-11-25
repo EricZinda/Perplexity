@@ -1,6 +1,6 @@
 import copy
 import logging
-from perplexity.response import RespondOperation
+from perplexity.response import RespondOperation, NoMoreSolutionGroups
 from perplexity.set_utilities import DisjunctionValue
 from perplexity.variable_binding import VariableBinding, VariableData
 
@@ -13,6 +13,7 @@ def apply_solutions_to_state(state, has_more_func, solutions, record_operations=
     # Collect all the operations that were done
     responses = []
     last_phrase_response_operations = []
+    last_solution_group = False
     all_operations = []
     has_more = None
     for solution in solutions:
@@ -33,7 +34,8 @@ def apply_solutions_to_state(state, has_more_func, solutions, record_operations=
                     # phrase in a series. Such as "No. I'll take something else.  Thank you."
                     # The caller has to decide if it is the last phrase or not, we just collect them here
                     last_phrase_response_operations.append(operation)
-
+            elif isinstance(operation, NoMoreSolutionGroups):
+                last_solution_group = True
             else:
                 all_operations.append(operation)
 
@@ -55,7 +57,7 @@ def apply_solutions_to_state(state, has_more_func, solutions, record_operations=
             if response_string not in last_phrase_responses:
                 last_phrase_responses.append(response_string)
 
-    return responses, last_phrase_responses, new_state
+    return responses, last_phrase_responses, new_state, last_solution_group
 
 
 class SetXOperation(object):

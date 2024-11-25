@@ -1,5 +1,6 @@
 import os
 import perplexity.messages
+from perplexity.response import NoMoreSolutionGroups
 from perplexity.state import LoadException
 from samples.esl.esl_planner import do_task
 from samples.esl.esl_planner_description import convert_to_english, convert_to_english_list
@@ -4587,6 +4588,8 @@ def _be_v_id_concept_concept_group(context, state_list, e_introduced_binding_lis
             if not check_concept_solution_group_constraints(context, state_list, check_variable_group, check_concepts=True):
                 return
 
+    state_iterated = list(state_list)
+    state_list = [state_iterated[0].apply_operations([NoMoreSolutionGroups()])] + state_iterated[1:]
     yield state_list
 
 
