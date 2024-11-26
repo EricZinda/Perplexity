@@ -59,8 +59,8 @@
         },
         {
             "Command": "I want one menu for me and two menus for johnny",
-            "Expected": "Waiter: You already ordered a menu for you\nWaiter: You already ordered a menu for Johnny\nWaiter: Can I get you anything besides a menu for you and a menu for Johnny?",
-            "Tree": "_a_q(x12,_menu_n_1(x12),pronoun_q(x3,pron(x3),[_both_a_1(i9,e2), _want_v_1(e2,x3,x12)]))",
+            "Expected": "Waiter: Our policy is to give one menu to every customer ...\nWaiter: Can I get you anything besides a menu for you and a menu for Johnny?",
+            "Tree": "udef_q(x13,pronoun_q(x20,pron(x20),[_menu_n_1(x13), _for_p(e19,x13,x20), card(1,e18,x13)]),udef_q(x26,proper_q(x34,named(Johnny,x34),[_menu_n_1(x26), _for_p(e33,x26,x34), card(2,e32,x26)]),pronoun_q(x3,pron(x3),udef_q(x8,_and_c(x8,x13,x26),_want_v_1(e2,x3,x8)))))",
             "Enabled": true,
             "ID": "29c11ecb-431c-4fd3-b465-178433d09b48"
         },
