@@ -68,7 +68,7 @@ def check_group_against_code_criteria(execution_context, handlers, optimized_cri
         return group_list, next_best_error_info
 
     elif isinstance(created_solution_group, (tuple, list)) and len(created_solution_group) == 0:
-        pipeline_logger.debug(f"Handler said this is not a valid solution group")
+        pipeline_logger.debug(f"Handler said this is not a valid solution group. best error: {next_best_error_info}")
         return None, next_best_error_info
 
     else:
@@ -86,6 +86,10 @@ def check_group_against_code_criteria(execution_context, handlers, optimized_cri
 #   The solution group has already passed phase 1 and has been checked to meet phase 2 criteria.  The group
 #   handler is designed for actually "doing whatever we should do" with the solution group
 #   If we treated handlers as "Solution Group Interpretations"
+#
+# Errors:
+# - Handlers will be run against one solution group, and they are all operating off of the same tree
+#   so, since the tree is the same, we can use the same "deepest error logic" to return the best error
 def run_handlers(execution_context, handlers, variable_constraints, group, index_predication):
     # Remember the initial error information because we may need to reset it if we run multiple handlers
     initial_error_info = execution_context.get_error_info()

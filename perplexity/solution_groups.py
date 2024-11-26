@@ -272,9 +272,12 @@ def solution_groups(execution_context,
                                                                                              this_sentence_force,
                                                                                              tree_info,
                                                                                              "solution_group")
-        next_best_error_info = perplexity.execution.ExecutionContext.blank_error_info()
+        # create a context that will track errors across solution groups
+        temp_context = execution_context.new_initial_context()
         for solution_group in group_generator:
-            created_solution_group, next_best_error_info = perplexity.plurals.check_group_against_code_criteria(
+            # The context is cleared every time so we need to remember the "best" error
+            # Since the trees are the same for every solution group, we can use the normal logic
+            created_solution_group, last_error_info = perplexity.plurals.check_group_against_code_criteria(
                 execution_context,
                 handlers,
                 optimized_criteria_list,
@@ -285,12 +288,18 @@ def solution_groups(execution_context,
                 # so that the error that gets returned is whatever happens while *processing* the solution group
                 execution_context.clear_error()
                 yield created_solution_group
+            else:
+                temp_context.report_error_for_index(predication_index=last_error_info[2],
+                                                    error=last_error_info[0], force=last_error_info[1],
+                                                    phase=last_error_info[3])
 
-        # Set the error to the last one that failed
-        execution_context.set_error_info(next_best_error_info)
-
+        # Set the error to the best failure we recorded
+        next_best_error_info = temp_context.get_error_info()
+        execution_context.set_error_info(temp_context.get_error_info())
+        groups_logger.debug(f"solution_groups recorded error: {execution_context.get_error_info()}")
     else:
         execution_context.set_error_info(solutions_orig.error_info)
+        groups_logger.debug(f"solution_groups recorded error: {execution_context.get_error_info()}")
 
 
 # Return the infos in the order they will be executed in
