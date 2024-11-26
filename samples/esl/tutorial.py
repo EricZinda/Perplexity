@@ -87,37 +87,129 @@ def variable_group_values_to_list(variable_group):
     return [binding.value for binding in variable_group.solution_values]
 
 
+# Determine the global constraints on every value that is contained in a variable
+# that holds a combined value, such as might be formed by and_c or or_c
+#
+# The returned list matches the order of values currently in variable_name
+# A solution group comes in with Concepts foo and bar assigned like this:
+# x3->min=2, max=2, x5->min=1, max=1
+# x3=(foo, ), x5=(bar, ), x8=(foo, bar)
+# or
+# x3=(foo, ), x5=(bar, ), x8=(foo, )
+# x3=(foo, ), x5=(bar, ), x8=(bar, )
+
+# x3=(foo, ), x5=(bar, ), x6=(goo, ), x8=(foo, bar, goo)
+# or
+# x3=(foo, ), x5=(bar, ), x8=(foo, )
+# x3=(foo, ), x5=(bar, ), x8=(bar, )
+#
+# Every combined variable contains 1 or more standalone (non-combined) variables
+# The constraint on these standalone values will be the same for every row since they are global constraints
+# The job here is to return the global constraint for each, in the same order as the values are in the
+# combined variable, for each solution
+def constraints_from_variable_group_combined_values(group, variable_group):
+    constraint_list_by_solution = []
+    for state in group:
+        variable_binding = state.get_binding(variable_group.variable_constraints.variable_name)
+        if variable_binding.variable.combined_variables is None:
+            constraint_list_by_solution.append([variable_group.variable_constraints])
+        else:
+            constraint_list = [constraints_for_variable(state, individual_variable) for individual_variable in
+                               variable_binding.variable.combined_variables]
+            constraint_list_by_solution.append(constraint_list)
+
+    return constraint_list_by_solution
+
+
+# Returns a list of tuples where the first item is the constraint and the second is the variable it came from
+# This is so that callers can tell which constraints have to add together to meet the constraint
+# All the items with the same variable share the same constraint
+def min_from_variable_group_combined_values(group, variable_group):
+    constraint_list_by_solution = constraints_from_variable_group_combined_values(group, variable_group)
+    min_by_solution = []
+    for constraint_list in constraint_list_by_solution:
+        min_by_solution.append([((constraint.min_size, constraint.variable_name) if constraint is not None else (1, constraint.variable_name)) for constraint in constraint_list])
+    return min_by_solution
+
+
+def min_from_variable_group(variable_group):
+    return variable_group.variable_constraints.min_size if variable_group.variable_constraints is not None else 1
+
+
+def max_from_variable_group(variable_group):
+    return variable_group.variable_constraints.max_size if variable_group.variable_constraints is not None else float('inf')
+
+
+def solution_group_values_by_shared_constraint(variable_group, variable_group_constraints):
+    # Because the "whats" might be coming from different variables, with different constraints,
+    # We need to slice up the list and just do a task for a single variable at a time so we can
+    # properly handle the constraints on it
+    solution_values = list(variable_group.solution_values)
+
+    group_by_variable = {}
+    for index in range(len(solution_values)):
+        constraint_variable = variable_group_constraints[index][0][1]
+        if constraint_variable not in group_by_variable:
+            group_by_variable[constraint_variable] = [[], []]
+        group_by_variable[constraint_variable][0].append(solution_values[index])
+        group_by_variable[constraint_variable][1].append(variable_group_constraints[index][0][0])
+
+    return group_by_variable
+
+
+# Given a (potentially combined) variable and a list of solutions for a solution group,
+# Go through that variable from each solution.
+#   for a given value in a given solution, determine which original variables the values in the set came from
+#       sort the values into the dict so that are grouped under the value they came from
+# Also record the constraints on the various original values we find
+def solution_group_values_and_constraints_by_variable(state_iterable, variable_group):
+    state_list = list(state_iterable)
+    constraint_list_by_solution = constraints_from_variable_group_combined_values(state_list, variable_group)
+
+    group_by_variable = {}
+    for solution_index in range(len(state_list)):
+        values = variable_group.solution_values[solution_index]
+        for constraint_index in range(len(constraint_list_by_solution[solution_index])):
+            constraint = constraint_list_by_solution[solution_index][constraint_index]
+            constraint_variable = constraint.variable_name
+            if constraint_variable not in group_by_variable:
+                group_by_variable[constraint_variable] = [constraint, set()]
+            group_by_variable[constraint_variable][1].add(values.value[constraint_index])
+
+    return group_by_variable
+
+
 def check_concept_solution_group_constraints(context, state_list, x_what_variable_group, check_concepts):
-    # These are concepts. Only need to check the first because:
-    # If one item in the group is a concept, they all are
     assert x_what_variable_group.solution_values[0].value is not None, "variable_group is unbound, and thus not a concept, probably because it is scoped under negation"
-    assert is_concept(x_what_variable_group.solution_values[0].value[0])
-    x_what_variable = x_what_variable_group.solution_values[0].variable.name
+    by_variable = solution_group_values_and_constraints_by_variable(state_list, x_what_variable_group)
+    for variable, constraints_individuals in by_variable.items():
+        # These are concepts we are checking. Only need to check the first because
+        # If one item in the group is a concept, they all are
+        assert is_concept(next(iter(constraints_individuals[1])))
+        individuals_set = constraints_individuals[1]
 
-    # First we need to check to make sure that the specific concepts in the solution group like "steak", "menu",
-    # etc meet the requirements I.e. if there are two preparations of steak on the menu and you say
-    # "I'll have the steak" you should get an error
-    x_what_values = [x.value for x in x_what_variable_group.solution_values]
-    x_what_individuals_set = set()
-    for value in x_what_values:
-        x_what_individuals_set.update(value)
-    counts = count_of_instances_and_concepts(context, state_list[0], x_what_variable, list(x_what_individuals_set), not check_concepts)
-    if counts is None:
-        return False
-    else:
-        concept_count, concept_in_scope_count, instance_count, instance_in_scope_count = counts
-        success = concept_meets_constraint(context,
-                                            state_list[0].get_binding("tree").value[0],
-                                            x_what_variable_group.variable_constraints,
-                                            concept_count,
-                                            concept_in_scope_count,
-                                            instance_count,
-                                            check_concepts,
-                                            variable=x_what_variable)
-        if not success:
-            pipeline_logger.debug(f"check_concept_solution_group_constraints failed: {context.error()}")
+        # First we need to check to make sure that the specific concepts in the solution group like "steak", "menu",
+        # etc meet the requirements I.e. if there are two preparations of steak on the menu and you say
+        # "I'll have the steak" you should get an error
+        counts = count_of_instances_and_concepts(context, state_list[0], variable, list(individuals_set), not check_concepts)
+        if counts is None:
+            return False
+        else:
+            concept_count, concept_in_scope_count, instance_count, instance_in_scope_count = counts
+            success = concept_meets_constraint(context,
+                                               state_list[0].get_binding("tree").value[0],
+                                               constraints_individuals[0],
+                                               concept_count,
+                                               concept_in_scope_count,
+                                               instance_count,
+                                               check_concepts,
+                                               variable=variable)
+            if not success:
+                pipeline_logger.debug(f"check_concept_solution_group_constraints failed: {context.error()}")
+                return False
 
-        return success
+    return True
+
 
 def is_past_tense(tree_info):
     return tree_info["Variables"][tree_info["Index"]]["TENSE"] in ["past"]
@@ -175,92 +267,6 @@ def valid_player_request(context, state, x_objects, valid_concepts=None):
             return False
 
     return True
-
-
-# Determine the global constraints on every value that is contained in a variable
-# that holds a combined value, such as might be formed by and_c or or_c
-#
-# The returned list matches the order of values currently in variable_name
-# A solution group comes in with Concepts foo and bar assigned like this:
-# x3->min=2, max=2, x5->min=1, max=1
-# x3=(foo, ), x5=(bar, ), x8=(foo, bar)
-# or
-# x3=(foo, ), x5=(bar, ), x8=(foo, )
-# x3=(foo, ), x5=(bar, ), x8=(bar, )
-
-# x3=(foo, ), x5=(bar, ), x6=(goo, ), x8=(foo, bar, goo)
-# or
-# x3=(foo, ), x5=(bar, ), x8=(foo, )
-# x3=(foo, ), x5=(bar, ), x8=(bar, )
-
-# Given
-# Return a constraint list that has one constraint for every variable in variables
-# def constraints_for_combined_values(state, variable_name):
-#     variable_binding = state.get_binding(variable_name)
-#     constraint_list = []
-#     constraint_list = [constraints_for_combined_values(state, combined_variable) for combined_variable in variable_binding.combined_variables]
-#         constraint_list += constraints_for_combined_values(state, combined_variable)
-#
-#     if variable_binding.combined_variables is None:
-#         return [constraints_for_variable(state, variable_name)]
-#     else:
-#         constraint_list = []
-#         for combined_variable in variable_binding.combined_variables:
-#             constraint_list += constraints_for_combined_values(state, combined_variable)
-#         return constraint_list
-
-
-# Every combined variable contains 1 or more standalone (non-combined) variables
-# The constraint on these standalone values will be the same for every row since they are global constraints
-# The job here is to return the global constraint for each
-def constraints_from_variable_group_combined_values(group, variable_group):
-    constraint_list_by_solution = []
-    for state in group:
-        variable_binding = state.get_binding(variable_group.variable_constraints.variable_name)
-        if variable_binding.variable.combined_variables is None:
-            constraint_list_by_solution.append([variable_group.variable_constraints])
-        else:
-            constraint_list = [constraints_for_variable(state, individual_variable) for individual_variable in
-                               variable_binding.variable.combined_variables]
-            constraint_list_by_solution.append(constraint_list)
-
-    return constraint_list_by_solution
-
-
-# Returns a list of tuples where the first item is the constraint and the second is the variable it came from
-# This is so that callers can tell which constraints have to add together to meet the constraint
-# All the items with the same variable share the same constraint
-def min_from_variable_group_combined_values(group, variable_group):
-    constraint_list_by_solution = constraints_from_variable_group_combined_values(group, variable_group)
-    min_by_solution = []
-    for constraint_list in constraint_list_by_solution:
-        min_by_solution.append([((constraint.min_size, constraint.variable_name) if constraint is not None else (1, constraint.variable_name)) for constraint in constraint_list])
-    return min_by_solution
-
-
-def min_from_variable_group(variable_group):
-    return variable_group.variable_constraints.min_size if variable_group.variable_constraints is not None else 1
-
-
-def max_from_variable_group(variable_group):
-    return variable_group.variable_constraints.max_size if variable_group.variable_constraints is not None else float('inf')
-
-
-def solution_group_values_by_shared_constraint(variable_group, variable_group_constraints):
-    # Because the "whats" might be coming from different variables, with different constraints,
-    # We need to slice up the list and just do a task for a single variable at a time so we can
-    # properly handle the constraints on it
-    solution_values = list(variable_group.solution_values)
-
-    group_by_variable = {}
-    for index in range(len(solution_values)):
-        constraint_variable = variable_group_constraints[index][0][1]
-        if constraint_variable not in group_by_variable:
-            group_by_variable[constraint_variable] = [[], []]
-        group_by_variable[constraint_variable][0].append(solution_values[index])
-        group_by_variable[constraint_variable][1].append(variable_group_constraints[index][0][0])
-
-    return group_by_variable
 
 
 # **** Transforms ****
@@ -4354,7 +4360,7 @@ def _be_v_id_list_group(context, state_list, e_introduced_binding_list, x_subjec
         context.report_error(["formNotUnderstood"])
         return
 
-    # Since the arguments are concepts constraints need to be checked
+    # Since the arguments are concepts, constraints need to be checked
     for check_variable_group in [x_subject_variable_group, x_object_variable_group]:
         if check_variable_group.solution_values[0].value is not None and is_concept(check_variable_group.solution_values[0].value[0]):
             if not check_concept_solution_group_constraints(context, state_list, check_variable_group, check_concepts=True):

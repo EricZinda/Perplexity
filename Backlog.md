@@ -69,41 +69,17 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
             - i.e. solution handlers should fail if the solution could never work in the solution group handler
         - Handling groups of things that can be "anded" goes beyond "want", look for other code with this problem
         - Write up how "and" works for solution group handlers
-        - Make sure other constructions like "I ordered one steak" also work
         - order tomato soup --> sorry you can't order that here
 
-        - Bug: table for one person --> I'm not sure what to do about that
-            - Seems to be the same bug as the previous one
+        - Make sure other constructions like "I ordered one steak" also work
+            - Literally go through each solution group handler from top to bottom and see if we are handling combination variables properly
+            - Need to add tests to every kind of thing you can ask for to make sure we are handling criteria right
+                - I want a water and a steak for me and 2 salads for johnny
+                - I want a steak and the bill
+                - Cancel 1 steak and 2 salads
 
-        - Need to add tests to every kind of thing you can ask for to make sure we are handling criteria right
-            - I want a water and a steak for me and 2 salads for johnny
-            - I want a steak and the bill
-            - Cancel 1 steak and 2 salads
-        - Need to make check_concept_solution_group_constraints() actually check the constraints for anded value
+        - Need to make check_concept_solution_group_constraints() actually check the constraints for combination (i.e. anded) values
 
-        - Figure out how to make "I want 2 steaks and 1 salad" work
-            - Problem: The constraints aren't pulled through the _and_c, just the required values and "NUM:PL"
-            - For instances, the constraints on the predications that manipulate those values directly will ensure the solution group has the right count
-            - For concepts: the problem is that we need a way to get the real constraints for each anded value
-                - Need to capture
-                - Need to make satisfy_want_group_group() able to figure out what is needed
-                    - Need to make what_size_constraint() a list too and somehow populate it
-                        - Need to capture the variable that is used for each part of the and as part of the and
-                            - The solution group is either distributive (one value per solution) or collective (all values in one solution)
-                                - we could ignore the combined value and just pay attention to the original referenced variables and the values they contain
-                                    - We know that x8=2..2 and x9=1..1 but we don't know what the combined value contains
-                                        - We need to record something in the actual binding
-                                            - The binding information is changeable per binding, BUT: We currently use the first solution to work out the binding constraints and assume it is
-                                                the same for all of them
-                                            - Options:
-                                                - leave the binding metadata to be just about this particular value
-                                                - The metadata value could point us to which variables it came from
-                                                - The function that scans the metadata has to walk the tree of metadata, which might lead to more metadata, since the and_c's could be chained
-                                                    - The metadata needs to have a way to figure out if it is and_c or or_c, etc.
-                                                - It really just needs to be a list
-                                                    - The list should say which other variables this is composed of, so that they can be retrieved and tested
-                                                    - It has to be the same constraint across the whole solution set since there is only one
-                                                    - When we are dealing with concepts
         - How much does the soup and the salad cost? --> I don't know the way you used: cost
             - Needs to be cost_v_1() but referencing and?
         - "Did I order a steak for my son?" -> I'm not sure what that means.

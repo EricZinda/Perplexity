@@ -112,6 +112,8 @@ def run_handlers(execution_context, handlers, variable_constraints, group, index
                         if constraint.variable_name == arg:
                             found_constraint = constraint
                             break
+                    if found_constraint is None:
+                        found_constraint = VariableCriteria(index_predication, arg)
                     handler_args.append(GroupVariableValues(found_constraint, state_list, index_predication.argument_types()[arg_index], arg))
 
                 handler_args = [execution_context, state_list] + handler_args
