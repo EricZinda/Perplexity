@@ -16,11 +16,18 @@
             "ID": "5f6ab01b-f45d-45e0-80e5-2f73e4387ece"
         },
         {
+            "Command": "soup, salad and steak are vegetarian",
+            "Expected": "soup, salad, and steak are not vegetarian\nWaiter: What can I get you?",
+            "Tree": "udef_q(x13,udef_q(x18,_salad_n_1(x18),udef_q(x23,_steak_n_1(x23),_and_c(x13,x18,x23))),udef_q(x3,udef_q(x8,_soup_n_1(x8),implicit_conj(x3,x8,x13)),_vegetarian_a_1(e2,x3)))",
+            "Enabled": true,
+            "ID": "e0096011-560c-4806-b093-402709a8419b"
+        },
+        {
             "Command": "vegetarian",
             "Expected": "Host: Sorry, I'm not sure which one you mean.\nWaiter: What can I get you?",
             "Tree": "udef_q(x4,_vegetarian_n_1(x4),unknown(e2,x4))",
             "Enabled": true,
-            "ID": "e0096011-560c-4806-b093-402709a8419b"
+            "ID": "d5b42217-827a-4c43-8200-5f8bd6192cff"
         },
         {
             "Command": "which vegetarian items do you have?",

@@ -240,9 +240,16 @@ def and_c(context, state, x_binding_introduced, x_binding_first, x_binding_secon
     and_value = (solution_first.value, x_binding_first.variable.name), (solution_second.value, x_binding_second.variable.name)
 
     if x_binding_first.variable.determiner is not None and x_binding_first.variable.determiner.required_values is not None:
-        required_values = x_binding_first.variable.determiner.required_values + solution_second.value
+        first_required_values  = x_binding_first.variable.determiner.required_values
     else:
-        required_values = tuple(itertools.chain(*[x[0] for x in and_value]))
+        first_required_values = (solution_first.value, )
+
+    if x_binding_second.variable.determiner is not None and x_binding_second.variable.determiner.required_values is not None:
+        second_required_values  = x_binding_second.variable.determiner.required_values
+    else:
+        second_required_values = (solution_second.value, )
+
+    required_values = first_required_values + second_required_values
 
     # remove duplicates but maintain order
     # This is so "My order is a steak and a steak" will work because otherwise

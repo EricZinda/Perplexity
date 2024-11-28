@@ -78,7 +78,8 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
                 - I want a steak and the bill
                 - Cancel 1 steak and 2 salads
 
-        - Need to make check_concept_solution_group_constraints() actually check the constraints for combination (i.e. anded) values
+        - soup, salad and steak are vegetarian --> yes
+            - looks like the conjunction constraints don't get set up properly for 3 things
 
         - How much does the soup and the salad cost? --> I don't know the way you used: cost
             - Needs to be cost_v_1() but referencing and?
