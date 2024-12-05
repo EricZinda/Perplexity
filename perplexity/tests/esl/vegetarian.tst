@@ -30,6 +30,13 @@
             "ID": "945f1d11-fa30-46a6-ac2f-ef1f2ec325c8"
         },
         {
+            "Command": "soup and soup and salad are vegetarian",
+            "Expected": "Yes, that is true.\n(there are more)\nWaiter: What can I get you?",
+            "Tree": "udef_q(x12,_soup_n_1(x12),udef_q(x17,_soup_n_1(x17),udef_q(x23,_salad_n_1(x23),udef_q(x3,udef_q(x8,_and_c(x8,x12,x17),_and_c(x3,x8,x23)),_vegetarian_a_1(e2,x3)))))",
+            "Enabled": true,
+            "ID": "291a1146-c4a8-4253-8dda-a9e1a83c59df"
+        },
+        {
             "Command": "vegetarian",
             "Expected": "Host: Sorry, I'm not sure which one you mean.\nWaiter: What can I get you?",
             "Tree": "udef_q(x4,_vegetarian_n_1(x4),unknown(e2,x4))",

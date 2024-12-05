@@ -79,8 +79,6 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
 
         - "salmon and steak and salad are not vegetarian" -> yes
             - FAILS
-        - "soup and soup and salad are vegetarian" --> no
-            - Problem is probably that the plurals() uses unique values and never matches the criteria properly
         - order tomato soup --> sorry you can't order that here
         - How much does the soup and the salad cost? --> I don't know the way you used: cost
             - Needs to be cost_v_1() but referencing and?

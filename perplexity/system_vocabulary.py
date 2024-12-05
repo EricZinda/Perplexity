@@ -278,7 +278,7 @@ def and_c(context, state, x_binding_introduced, x_binding_first, x_binding_secon
 
     else:
         for value in perplexity.predications.used_combinations(context, x_binding_introduced, list(zip(and_values, and_variables))):
-            combined_variables = [x[1] for x in value]
+            combined_variables = tuple([x[1] for x in value])
             combined_values = tuple(itertools.chain(*[x[0] for x in value]))
             yield state.set_x(x_binding_introduced.variable.name,
                               combined_values,
