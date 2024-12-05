@@ -78,6 +78,7 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
                 - Cancel 1 steak and 2 salads
 
         - "salmon and steak and salad are not vegetarian" -> yes
+            - FAILS
         - "soup and soup and salad are vegetarian" --> no
             - Problem is probably that the plurals() uses unique values and never matches the criteria properly
         - order tomato soup --> sorry you can't order that here

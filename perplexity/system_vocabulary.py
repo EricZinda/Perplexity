@@ -254,13 +254,13 @@ def and_c(context, state, x_binding_introduced, x_binding_first, x_binding_secon
     # and_value = (solution_first.value, x_binding_first.variable.name), (solution_second.value, x_binding_second.variable.name)
 
     and_variables = first_combined_variables + second_combined_variables
-    required_values = first_required_values + second_required_values
+    and_values = first_required_values + second_required_values
 
     # remove duplicates but maintain order
     # This is so "My order is a steak and a steak" will work because otherwise
     # VariableCriteria will look for values in its unique set and never find more than one
     # since it is a unique set
-    required_values = tuple(dict.fromkeys(required_values))
+    required_values = tuple(dict.fromkeys(and_values))
 
     # Everything must be of the same type
     if len(set([perplexity.predications.value_type(x) for x in required_values])) > 1:
@@ -268,7 +268,7 @@ def and_c(context, state, x_binding_introduced, x_binding_first, x_binding_secon
 
     if not is_this_last_joining_predication(context, state, ["and_c", "implicit_conj"]):
         # Just yield a single value that is the combination of A and B if we are not the last
-        collective_value = tuple(list(itertools.chain(*required_values)))
+        collective_value = tuple(list(itertools.chain(*and_values)))
         yield state.set_x(x_binding_introduced.variable.name,
                           collective_value,
                           determiner=VariableCriteria(context.current_predication(),
@@ -277,7 +277,7 @@ def and_c(context, state, x_binding_introduced, x_binding_first, x_binding_secon
                           combined_variables=and_variables)
 
     else:
-        for value in perplexity.predications.used_combinations(context, x_binding_introduced, list(zip(required_values, and_variables))):
+        for value in perplexity.predications.used_combinations(context, x_binding_introduced, list(zip(and_values, and_variables))):
             combined_variables = [x[1] for x in value]
             combined_values = tuple(itertools.chain(*[x[0] for x in value]))
             yield state.set_x(x_binding_introduced.variable.name,

@@ -24,8 +24,8 @@
         },
         {
             "Command": "salmon, pork and steak are not vegetarian",
-            "Expected": "Yes, that is true.\nYes, that is true.\nWaiter: What can I get you?",
-            "Tree": "neg(e28,udef_q(x13,udef_q(x18,_pork_n_1(x18),udef_q(x23,_steak_n_1(x23),_and_c(x13,x18,x23))),udef_q(x3,udef_q(x8,_salmon_n_1(x8),implicit_conj(x3,x8,x13)),_vegetarian_a_1(e2,x3))))<end>neg(e28,udef_q(x13,udef_q(x18,_pork_n_1(x18),udef_q(x23,_steak_n_1(x23),_and_c(x13,x18,x23))),udef_q(x3,udef_q(x8,_salmon_n_1(x8),implicit_conj(x3,x8,x13)),_vegetarian_a_1(e2,x3))))",
+            "Expected": "Yes, that is true.\nWaiter: What can I get you?",
+            "Tree": "neg(e28,udef_q(x13,udef_q(x18,_pork_n_1(x18),udef_q(x23,_steak_n_1(x23),_and_c(x13,x18,x23))),udef_q(x3,udef_q(x8,_salmon_n_1(x8),implicit_conj(x3,x8,x13)),_vegetarian_a_1(e2,x3))))",
             "Enabled": true,
             "ID": "945f1d11-fa30-46a6-ac2f-ef1f2ec325c8"
         },
