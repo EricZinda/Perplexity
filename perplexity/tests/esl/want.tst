@@ -6,7 +6,35 @@
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
+            "ID": "4aa93473-4563-47c6-a77d-5982e8638c74"
+        },
+        {
+            "Command": "I want salmon and pork",
+            "Expected": "Host: Sorry, you'll need to talk to your waiter about a pork when you have a table.\nHost: Sorry, you'll need to talk to your waiter about a salmon when you have a table.\nHost: How can I help you today?",
+            "Tree": "udef_q(x13,_salmon_n_1(x13),udef_q(x18,_pork_n_1(x18),pronoun_q(x3,pron(x3),udef_q(x8,_and_c(x8,x13,x18),_want_v_1(e2,x3,x8)))))",
+            "Enabled": true,
             "ID": "09781c14-ff1a-4525-8e73-3652771694bb"
+        },
+        {
+            "Command": "/reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "b75c7ad9-dc81-48e5-b041-7ed68322457a"
+        },
+        {
+            "Command": "I want salmon, a steak and pork",
+            "Expected": "Host: Sorry, you'll need to talk to your waiter about a pork when you have a table.\nHost: Sorry, you'll need to talk to your waiter about a steak when you have a table.\nHost: Sorry, you'll need to talk to your waiter about a salmon when you have a table.\nHost: How can I help you today?",
+            "Tree": "udef_q(x13,_salmon_n_1(x13),udef_q(x18,_a_q(x23,_steak_n_1(x23),udef_q(x28,_pork_n_1(x28),_and_c(x18,x23,x28))),pronoun_q(x3,pron(x3),udef_q(x8,implicit_conj(x8,x13,x18),_want_v_1(e2,x3,x8)))))",
+            "Enabled": true,
+            "ID": "1ea69bc2-a7f5-4049-9a10-bcb6e3e63852"
+        },
+        {
+            "Command": "/reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "24241b93-cad8-40bb-a6e0-902b08886f10"
         },
         {
             "Command": "I want a table and some water",
@@ -69,7 +97,7 @@
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
-            "ID": "4aa93473-4563-47c6-a77d-5982e8638c74"
+            "ID": "cdeec459-0c2c-46a4-a4fd-3f95b280c921"
         },
         {
             "Command": "table for 2",

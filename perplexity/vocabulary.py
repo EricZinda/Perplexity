@@ -773,11 +773,14 @@ class Vocabulary(object):
         if yield_original:
             yield self.select_tree_conjunct(tree_info, conjunct_index_list=conjunct_index_list)
 
-    # Remove any conjunction terms like implicit_con() as well as all but one of the verbs it points to
+    # Remove any conjunction terms like implicit_conj() as well as all but one of the verbs it points to
     # Which one is kept is indicated by conjunct_index_list
     def select_tree_conjunct(self, tree_info, conjunct_index_list=None):
         # Remove all the actual conjunctions
         conjunctions = perplexity.tree.find_predications(tree_info["Tree"], ["implicit_conj"])
+
+        # Remove the ones that aren't joining two clauses
+        conjunctions = [x for x in conjunctions if x.argument_types()[x.introduced_variable_index()] == "e"]
         if len(conjunctions) == 0:
             return tree_info
 

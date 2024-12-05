@@ -2064,7 +2064,6 @@ def adjective_default_concepts(adjective_type, context, state, x_binding):
             yield state.set_x(new_x_binding.variable.name, (x,))
 
 
-
 def adjective_default_instances(adjective_type, context, state, x_binding):
     def bound_variable(value):
         if not is_concept(value):

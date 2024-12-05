@@ -863,7 +863,7 @@ class VariableCriteria(object):
 
             # See if we have the right individuals
             for value in unique_individuals_list:
-                if value not in self.required_values:
+                if (value, ) not in self.required_values:
                     return CriteriaResult.fail_one
 
             if len(unique_individuals_list) == len(self.required_values):

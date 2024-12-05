@@ -69,7 +69,6 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
             - i.e. solution handlers should fail if the solution could never work in the solution group handler
         - Handling groups of things that can be "anded" goes beyond "want", look for other code with this problem
         - Write up how "and" works for solution group handlers
-        - order tomato soup --> sorry you can't order that here
 
         - Make sure other constructions like "I ordered one steak" also work
             - Literally go through each solution group handler from top to bottom and see if we are handling combination variables properly
@@ -78,9 +77,10 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
                 - I want a steak and the bill
                 - Cancel 1 steak and 2 salads
 
-        - soup, salad and steak are vegetarian --> yes
-            - looks like the conjunction constraints don't get set up properly for 3 things
-
+        - "salmon and steak and salad are not vegetarian" -> yes
+        - "soup and soup and salad are vegetarian" --> no
+            - Problem is probably that the plurals() uses unique values and never matches the criteria properly
+        - order tomato soup --> sorry you can't order that here
         - How much does the soup and the salad cost? --> I don't know the way you used: cost
             - Needs to be cost_v_1() but referencing and?
         - "Did I order a steak for my son?" -> I'm not sure what that means.

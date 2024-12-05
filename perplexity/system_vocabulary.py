@@ -7,7 +7,7 @@ from perplexity.execution import TreeSolver
 from perplexity.plurals import VariableCriteria, GlobalCriteria, NegatedPredication
 from perplexity.predications import combinatorial_predication_1
 from perplexity.tree import TreePredication, gather_scoped_variables_from_tree_at_index, \
-    gather_referenced_x_variables_from_tree
+    gather_referenced_x_variables_from_tree, is_this_last_joining_predication
 from perplexity.vocabulary import Predication, Vocabulary
 
 
@@ -237,18 +237,23 @@ def and_c(context, state, x_binding_introduced, x_binding_first, x_binding_secon
     solution_second = state.get_binding(x_binding_second.variable.name)
     assert not solution_first.variable.combinatoric and not solution_second.variable.combinatoric
 
-    and_value = (solution_first.value, x_binding_first.variable.name), (solution_second.value, x_binding_second.variable.name)
-
     if x_binding_first.variable.determiner is not None and x_binding_first.variable.determiner.required_values is not None:
         first_required_values  = x_binding_first.variable.determiner.required_values
+        first_combined_variables = x_binding_first.variable.combined_variables
     else:
         first_required_values = (solution_first.value, )
+        first_combined_variables = (x_binding_first.variable.name, )
 
     if x_binding_second.variable.determiner is not None and x_binding_second.variable.determiner.required_values is not None:
-        second_required_values  = x_binding_second.variable.determiner.required_values
+        second_required_values = x_binding_second.variable.determiner.required_values
+        second_combined_variables = x_binding_second.variable.combined_variables
     else:
         second_required_values = (solution_second.value, )
+        second_combined_variables = (x_binding_second.variable.name, )
 
+    # and_value = (solution_first.value, x_binding_first.variable.name), (solution_second.value, x_binding_second.variable.name)
+
+    and_variables = first_combined_variables + second_combined_variables
     required_values = first_required_values + second_required_values
 
     # remove duplicates but maintain order
@@ -258,18 +263,29 @@ def and_c(context, state, x_binding_introduced, x_binding_first, x_binding_secon
     required_values = tuple(dict.fromkeys(required_values))
 
     # Everything must be of the same type
-    if len(set([perplexity.predications.value_type(x[0]) for x in and_value])) > 1:
+    if len(set([perplexity.predications.value_type(x) for x in required_values])) > 1:
         return
 
-    for value in perplexity.predications.used_combinations(context, x_binding_introduced, and_value):
-        combined_variables = [x[1] for x in value]
-        combined_values = tuple(itertools.chain(*[x[0] for x in value]))
+    if not is_this_last_joining_predication(context, state, ["and_c", "implicit_conj"]):
+        # Just yield a single value that is the combination of A and B if we are not the last
+        collective_value = tuple(list(itertools.chain(*required_values)))
         yield state.set_x(x_binding_introduced.variable.name,
-                          combined_values,
+                          collective_value,
                           determiner=VariableCriteria(context.current_predication(),
                                                       x_binding_introduced.variable.name,
                                                       required_values=required_values),
-                          combined_variables=combined_variables)
+                          combined_variables=and_variables)
+
+    else:
+        for value in perplexity.predications.used_combinations(context, x_binding_introduced, list(zip(required_values, and_variables))):
+            combined_variables = [x[1] for x in value]
+            combined_values = tuple(itertools.chain(*[x[0] for x in value]))
+            yield state.set_x(x_binding_introduced.variable.name,
+                              combined_values,
+                              determiner=VariableCriteria(context.current_predication(),
+                                                          x_binding_introduced.variable.name,
+                                                          required_values=required_values),
+                              combined_variables=combined_variables)
 
 
 # "and salmon" said just by itself should just be transparent

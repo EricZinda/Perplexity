@@ -642,12 +642,27 @@ def walk_tree_args_until(term, predication_func, arg_func):
     return None
 
 
+# True if a "joining" predication like `fw_seq` or `and_c` predication is used by something *besides* another joining predication
+# because that means it is the final one
+def is_this_last_joining_predication(context, state, joining_synonyms):
+    this_tree = state.get_binding("tree").value[0]
+    this_predication = predication_from_index(this_tree, context.current_predication_index())
+    return is_last_joining_predication(this_tree["Tree"], this_predication, joining_synonyms)
+
+
+def is_last_joining_predication(tree, joining_predication, joining_synonyms):
+    consuming_predications = find_predications_using_variable(tree, joining_predication.args[0])
+    return len([predication for predication in consuming_predications if predication.name not in joining_synonyms]) > 0
+
+
 # True if an `fw_seq` predication is used by something *besides* an `fw_seq` predication
 # because that means it is the final one
 def is_this_last_fw_seq(context, state):
-    this_tree = state.get_binding("tree").value[0]
-    this_predication = predication_from_index(this_tree, context.current_predication_index())
-    return is_last_fw_seq(this_tree["Tree"], this_predication)
+    return is_this_last_joining_predication(context, state, ["fw_seq"])
+
+
+def is_last_fw_seq(tree, fw_seq_predication):
+    return is_this_last_joining_predication(tree, fw_seq_predication, ["fw_seq"])
 
 
 # As per this thread: https://delphinqa.ling.washington.edu/t/converting-mrs-output-to-a-logical-form/413/29
@@ -655,11 +670,6 @@ def used_predicatively(context, state):
     tree_info = state.get_binding("tree").value[0]
     this_predication = predication_from_index(tree_info, context.current_predication_index())
     return not predication_in_conjunction(tree_info, this_predication.index)
-
-
-def is_last_fw_seq(tree, fw_seq_predication):
-    consuming_predications = find_predications_using_variable(tree, fw_seq_predication.args[0])
-    return len([predication for predication in consuming_predications if predication.name != "fw_seq"]) > 0
 
 
 def get_wh_question_variable(tree_info):
@@ -950,7 +960,6 @@ def predication_in_conjunction(tree_info, index):
 
     in_conjunction = walk_tree_predications_until(tree_info["Tree"], stop_at_index)
     return in_conjunction is True
-
 
 
 # Return the predication at a particular index
