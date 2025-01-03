@@ -17,7 +17,7 @@
         },
         {
             "Command": "which files are large",
-            "Expected": "There are less than 2 large file",
+            "Expected": "(File(name=/Desktop/the yearly budget.txt, size=10000000),)",
             "Tree": "_which_q(x3,_file_n_of(x3,i8),_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "aa892111-3d4a-477e-8ae2-858d95d9074c"
@@ -136,10 +136,7 @@
         },
         {
             "Command": "which files are 20 mb?",
-            "Expected": [
-                "(File(name=/Desktop/bigfile.txt, size=20000000),)(File(name=/Desktop/bigfile2.txt, size=20000000),)",
-                "(File(name=/Desktop/the yearly budget.txt, size=10000000), File(name=/Desktop/blue, size=10000000))"
-            ],
+            "Expected": "(File(name=/Desktop/bigfile.txt, size=20000000),)(File(name=/Desktop/bigfile2.txt, size=20000000),)\n(there are more)",
             "Tree": "_which_q(x3,_file_n_of(x3,i8),udef_q(x9,[_megabyte_n_1(x9,u16), card(20,e15,x9)],loc_nonsp(e2,x3,x9)))",
             "Enabled": true,
             "ID": "05f835da-64f9-4c95-aabe-2dc8ba26bf73"

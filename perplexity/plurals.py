@@ -64,7 +64,15 @@ def check_group_against_code_criteria(execution_context, handlers, optimized_cri
                                                                             index_predication)
 
     if created_solution_group is None:
+        # if index_predication is not None and perplexity.tree.is_introduced_variable_scoped_by_negation(group_list[0], index_predication.introduced_variable()):
+        #     pipeline_logger.debug(f"Index verb is scoped by negation so don't run the default handler since it is unclear how to manage the logical not. Best error: {next_best_error_info}")
+        #     return None, next_best_error_info
+        #
+        # else:
         pipeline_logger.debug(f"No solution group handlers, or none handled it: just do the default behavior")
+        # if it contains Concepts and there wasn't a solution group handler, then the constraints did not get
+        # validated, and we can't, so fail
+        # TODO
         return group_list, next_best_error_info
 
     elif isinstance(created_solution_group, (tuple, list)) and len(created_solution_group) == 0:
@@ -732,7 +740,7 @@ def check_criteria_all(execution_context, var_criteria, new_set_stats_group, new
         variable_stats = new_set_stats_group.variable_stats[index]
 
         state = None
-        if perplexity.tree.is_variable_scoped_by_negation(new_solution, variable_stats.variable_name):
+        if perplexity.tree.ignore_global_constraints_on_variable(new_solution, variable_stats.variable_name):
             # This variable is under a neg() predication at negated_index,
             # This means its plurals were already evaluated by neg(), and because it is here, they must be true
             state = CriteriaResult.meets

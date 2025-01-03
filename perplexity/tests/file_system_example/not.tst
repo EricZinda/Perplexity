@@ -38,7 +38,7 @@
         },
         {
             "Command": "files are not large",
-            "Expected": "That isn't true, there aren't file that aren't large file",
+            "Expected": "That isn't true",
             "Tree": "neg(e9,udef_q(x3,_file_n_of(x3,i8),_large_a_1(e2,x3)))",
             "Enabled": true,
             "ID": "e9a380ed-3d6a-4e7b-9f0b-d17d947d9d68"
@@ -66,7 +66,7 @@
         },
         {
             "Command": "a file is not large",
-            "Expected": "That isn't true, there isn't a file that isn't a large file",
+            "Expected": "That isn't true",
             "Tree": "neg(e9,_a_q(x3,_file_n_of(x3,i8),_large_a_1(e2,x3)))",
             "Enabled": true,
             "ID": "ad36aee8-3362-498b-a32c-4770a1a37497"
@@ -170,5 +170,5 @@
             "ID": "863f82ba-f37f-4ebd-a8f4-0fd35aafa5fb"
         }
     ],
-    "ElapsedTime": 11.83057
+    "ElapsedTime": 10.52293
 }

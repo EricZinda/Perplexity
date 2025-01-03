@@ -148,6 +148,7 @@ def generate_message(state, tree_info, error_term):
     arg2 = error_arguments[2] if arg_length > 2 else None
     arg3 = error_arguments[3] if arg_length > 3 else None
     arg4 = error_arguments[4] if arg_length > 4 else None
+    arg5 = error_arguments[5] if arg_length > 5 else None
 
     if error_constant == "answerWithList":
         # This is the default for a wh_question: just print out the values
@@ -160,7 +161,7 @@ def generate_message(state, tree_info, error_term):
 
         wh_variable = arg2
         solution_group = arg3
-        timed_out = arg4
+        timed_out = arg5
         response = ""
         answer_items = set()
         for solution in solution_group:
@@ -250,7 +251,7 @@ def generate_message(state, tree_info, error_term):
         return s("That isn't true for all {arg1:@error_predicate_index}", tree_info)
 
     elif error_constant == "notAllError":
-        return s("That isn't true, there {'is':<arg2}n't {arg1} that {'is':<arg2}n't {arg2}", tree_info)
+        return s("That isn't true")
 
     elif error_constant == "notClause":
         return s("That isn't true")

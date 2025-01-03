@@ -293,6 +293,12 @@ def solution_groups(execution_context,
                                                     error=last_error_info[0], force=last_error_info[1],
                                                     phase=last_error_info[3])
 
+        # Make sure to record the last error (of the final solution or solution group that didn't work)
+        last_error_info = execution_context.get_error_info()
+        temp_context.report_error_for_index(predication_index=last_error_info[2],
+                                            error=last_error_info[0], force=last_error_info[1],
+                                            phase=last_error_info[3])
+
         # Set the error to the best failure we recorded
         next_best_error_info = temp_context.get_error_info()
         execution_context.set_error_info(temp_context.get_error_info())

@@ -268,8 +268,13 @@ class TreePredication(object):
             _tree_predication_context.reset(old_context)
 
 
-def is_variable_scoped_by_negation(solution, variable_name):
-    negated_predications_binding = solution.get_binding("negated_predications")
+def index_and_is_index_scoped_by_negation(tree_info):
+    index_predication = find_index_predication(tree_info)
+    return index_predication, is_introduced_variable_scoped_by_negation(tree_info["Tree"], index_predication.introduced_variable())
+
+
+def is_variable_scoped_by_predications_in_binding(solution, predication_list_binding_name, variable_name):
+    negated_predications_binding = solution.get_binding(predication_list_binding_name)
     negated_index = None
     if negated_predications_binding.value is not None:
         # There are negated predications in this tree,
@@ -280,6 +285,29 @@ def is_variable_scoped_by_negation(solution, variable_name):
                 break
 
     return negated_index is not None
+
+
+def is_variable_scoped_by_negation(solution, variable_name):
+    return is_variable_scoped_by_predications_in_binding(solution, "negated_predications", variable_name)
+
+
+def ignore_global_constraints_on_variable(solution, variable_name):
+    return is_variable_scoped_by_predications_in_binding(solution, "negated_predications", variable_name) or \
+        is_variable_scoped_by_predications_in_binding(solution, "ignore_constraints_scoped_by", variable_name)
+
+
+def is_introduced_variable_scoped_by_negation(solution, variable_name):
+    if solution.get_binding("tree").value[0].get("NegatedSubtree", False):
+        return True
+
+    negated_predications_binding = solution.get_binding("negated_predications")
+    if negated_predications_binding.value is not None:
+        for negation_scope in negated_predications_binding.value.values():
+            # See if variable_name is introduced in this scope
+            if find_predication_from_introduced(negation_scope.predication, variable_name):
+                return True
+
+    return False
 
 
 # Phrases like "Hi, I'd love to have a table for 2, please" have more than one syntactic head
@@ -662,10 +690,12 @@ def is_this_last_fw_seq(context, state):
 
 
 def is_last_fw_seq(tree, fw_seq_predication):
-    return is_this_last_joining_predication(tree, fw_seq_predication, ["fw_seq"])
+    return is_last_joining_predication(tree, fw_seq_predication, ["fw_seq"])
 
 
 # As per this thread: https://delphinqa.ling.washington.edu/t/converting-mrs-output-to-a-logical-form/413/29
+# "Predicatively" means used as a verb, as in "the dog is brown" where "brown" is used predicatively
+# "attributively" means used as an adjective, as in "the brown dog barked" where "brown" is used adjectively
 def used_predicatively(context, state):
     tree_info = state.get_binding("tree").value[0]
     this_predication = predication_from_index(tree_info, context.current_predication_index())
@@ -777,6 +807,17 @@ def gather_remaining_syntactic_heads(tree_info):
     remaining_heads = []
     walk_tree_predications_until(tree_info["Tree"], gather_heads)
     return remaining_heads
+
+
+def find_last_predication(tree):
+    def process(predication):
+        nonlocal last_predication
+        if predication.index > last_predication.index:
+            last_predication = predication
+
+    last_predication = tree
+    walk_tree_predications_until(tree, process)
+    return last_predication
 
 
 def gather_quantifier_order(tree_info):

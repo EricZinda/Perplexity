@@ -119,6 +119,19 @@ def all_user_type(val):
     return True
 
 
+# True if this term like "smoked" or "vegetarian" is modelled as an adjective
+# as opposed to inheritance
+def is_adj(state, potential_adjective):
+    for _ in rel_subjects(state, "isAdj", potential_adjective):
+        return True
+
+    for _ in rel_subjects(state, "specializes", potential_adjective):
+        return False
+
+    # if it isn't in the system at all, return True so we can fail with "we don't have something that is X"
+    return True
+
+
 # Yield the different concept abstraction levels, each as a different
 # disjunction set, where levels are like this:
 # 1.    special

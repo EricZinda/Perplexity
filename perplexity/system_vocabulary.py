@@ -3,11 +3,11 @@ import itertools
 import logging
 import numbers
 import perplexity.predications
-from perplexity.execution import TreeSolver
+from perplexity.execution import TreeSolver, NotUnderstoodException
 from perplexity.plurals import VariableCriteria, GlobalCriteria, NegatedPredication
 from perplexity.predications import combinatorial_predication_1
 from perplexity.tree import TreePredication, gather_scoped_variables_from_tree_at_index, \
-    gather_referenced_x_variables_from_tree, is_this_last_joining_predication
+    gather_referenced_x_variables_from_tree, is_this_last_joining_predication, find_last_predication
 from perplexity.vocabulary import Predication, Vocabulary
 
 
@@ -357,7 +357,14 @@ def generate_not_error(context, unscoped_referenced_variables):
 # of its scopal arg in order to know if that arg was "true", it isn't enough to know if a particular solution is true
 @Predication(vocabulary, library="system", names=["neg"])
 def neg(context, state, e_introduced_binding, h_scopal):
-    pipeline_logger.debug(f"Neg: {str(state)}")
+    pipeline_logger.debug(f"Neg: {str(h_scopal)}")
+
+    # TODO: Make Non-logical Failures work properly by returning the right error when the final predication doesn't run
+    # If we fail before we hit the "verb" (which we have to approximate as the predication
+    # with the biggest index since sometimes the index is not the verb), then we
+    # assume something didn't make sense about the phrase and return *that* error
+    # last_predication = find_last_predication(h_scopal)
+
     # Gather all the bound x variables and their values that are referenced in h_scopal
     referenced_x_variables = gather_referenced_x_variables_from_tree(h_scopal)
 
@@ -399,9 +406,15 @@ def neg(context, state, e_introduced_binding, h_scopal):
             generate_not_error(context, unscoped_referenced_variables)
             had_negative_success = True
             break
+
         elif tree_record["Error"] is not None and tree_record["Error"][1] is not None and tree_record["Error"][1][0] == "formNotUnderstood":
             # this was not a logical failure, we simply didn't understand
             continue
+
+        # TODO Make Non-logical Failures work properly by returning the right error when the final predication doesn't run
+        # elif tree_record["Error"] is not None:
+        #     pass
+
         else:
             had_negative_failure = True
 
@@ -412,7 +425,17 @@ def neg(context, state, e_introduced_binding, h_scopal):
         negative_success_state = state.add_to_e("negated_predications",
                                                 context.current_predication_index(),
                                                 negated_predication_info)
+        pipeline_logger.debug(f"Neg: was neg(false) thus true")
         yield negative_success_state.add_to_e("negated_successes", context.current_predication_index(), True)
+
+    elif not had_negative_success and not had_negative_failure:
+        pipeline_logger.debug(f"Neg: formNotUnderstood was all we got under negation, thus false")
+        raise NotUnderstoodException
+
+    else:
+        pipeline_logger.debug(f"Neg: was neg(true) thus false")
+
+    pipeline_logger.debug(f"END Neg: {str(h_scopal)}")
 
 
 pipeline_logger = logging.getLogger('Pipeline')

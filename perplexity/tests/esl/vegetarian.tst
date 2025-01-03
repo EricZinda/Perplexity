@@ -16,11 +16,25 @@
             "ID": "5f6ab01b-f45d-45e0-80e5-2f73e4387ece"
         },
         {
+            "Command": "salad is vegetarian",
+            "Expected": "Yes, that is true.\nWaiter: What can I get you?",
+            "Tree": "udef_q(x3,_salad_n_1(x3),_vegetarian_a_1(e2,x3))",
+            "Enabled": true,
+            "ID": "e0096011-560c-4806-b093-402709a8419b"
+        },
+        {
+            "Command": "salmon and steak and salad are not vegetarian",
+            "Expected": "Yes, that is true.\nWaiter: What can I get you?",
+            "Tree": "neg(e28,udef_q(x12,_salmon_n_1(x12),udef_q(x17,_steak_n_1(x17),udef_q(x23,_salad_n_1(x23),udef_q(x3,udef_q(x8,_and_c(x8,x12,x17),_and_c(x3,x8,x23)),_vegetarian_a_1(e2,x3))))))",
+            "Enabled": true,
+            "ID": "8fcc1b7f-8728-43a8-92e3-c6a44a2bd360"
+        },
+        {
             "Command": "soup, salad and steak are vegetarian",
             "Expected": "soup, salad, and steak are not vegetarian\nWaiter: What can I get you?",
             "Tree": "udef_q(x13,udef_q(x18,_salad_n_1(x18),udef_q(x23,_steak_n_1(x23),_and_c(x13,x18,x23))),udef_q(x3,udef_q(x8,_soup_n_1(x8),implicit_conj(x3,x8,x13)),_vegetarian_a_1(e2,x3)))",
             "Enabled": true,
-            "ID": "e0096011-560c-4806-b093-402709a8419b"
+            "ID": "4aee1a8f-7e50-461a-9448-c7e055b142de"
         },
         {
             "Command": "salmon, pork and steak are not vegetarian",

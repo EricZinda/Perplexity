@@ -5,6 +5,7 @@ import inspect
 import itertools
 import json
 import logging
+import perplexity.plurals
 import os
 from typing import NamedTuple
 import re
@@ -561,10 +562,21 @@ def Predication(vocabulary,
 
             state = args[system_added_state_arg + extra_arg_in_front_count][0] if is_solution_group else args[system_added_state_arg + extra_arg_in_front_count]
             tree_info = state.get_binding("tree").value[0]
+
+            arg0_index = system_added_group_arg_count + extra_arg_in_front_count if is_solution_group else system_added_arg_count + extra_arg_in_front_count
+            if isinstance(args[arg0_index], str):
+                arg0_variable_name = args[arg0_index + 1].variable.name
+            else:
+                if isinstance(args[arg0_index], perplexity.plurals.GroupVariableValues):
+                    arg0_variable_name = args[arg0_index].variable_constraints.variable_name
+                elif isinstance(args[arg0_index], VariableBinding):
+                    arg0_variable_name = args[arg0_index].variable.name
+                else:
+                    arg0_variable_name = None
+
             if properties_to_use:
                 # Check the properties that the predication can handle vs. what the phrase has
                 # Also collect all properties provided for the verb event
-                arg0_variable_name = args[system_added_group_arg_count + extra_arg_in_front_count].solution_values[0].variable.name if is_solution_group else args[system_added_arg_count + extra_arg_in_front_count].variable.name
                 phrase_properties = {}
                 assert final_arg_types[0] == "e", f"verb '{function_to_decorate.__module__}.{function_to_decorate.__name__}' doesn't have an event as arg 0"
                 phrase_properties.update(tree_info["Variables"][arg0_variable_name])
@@ -577,7 +589,7 @@ def Predication(vocabulary,
             # Same is true for any type of solution group
             if properties_to_use or is_solution_group:
                 # Predications have to be written with negation in mind, so don't call it if it wasn't considered
-                if tree_info.get("NegatedSubtree", False):
+                if perplexity.tree.is_introduced_variable_scoped_by_negation(state, arg0_variable_name):
                     if not handles_negation:
                         pipeline_logger.debug(f"{function_to_decorate.__name__} --> can't be called because it doesn't support negation")
                         args[system_added_context_arg + extra_arg_in_front_count].report_error(["formNotUnderstood", function_to_decorate.__name__])

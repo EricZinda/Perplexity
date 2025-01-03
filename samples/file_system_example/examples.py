@@ -550,7 +550,7 @@ def Example_ui(loading_info=None, file=None, user_output=None, debug_output=None
 
 if __name__ == '__main__':
     ShowLogging("Pipeline")
-    # ShowLogging("SolutionGroups")
+    ShowLogging("SolutionGroups")
     # ShowLogging("Execution")
     # ShowLogging("Generation")
     # ShowLogging("UserInterface")
@@ -588,6 +588,7 @@ if __name__ == '__main__':
     # Example22()
     Example23()
     # Example24()
+
     # Example25()
     # Example26()
     # Example27()

@@ -1064,7 +1064,7 @@ def count(context, state, e_binding, x_total_count_binding, x_item_to_count_bind
 
                     # Mark as a "negated_predication" so we don't try to check global constraints on it
                     measurement = Measurement(measurement_units if measurement_units is not None else "", len(unique_values) + measurement_count)
-                    yield new_state.set_x(x_total_count_binding.variable.name, (measurement,)).add_to_e("negated_predications",
+                    yield new_state.set_x(x_total_count_binding.variable.name, (measurement,)).add_to_e("ignore_constraints_scoped_by",
                                                                                                     context.current_predication_index(),
                                                                                                     negated_predication_info)
                     return
@@ -1858,7 +1858,7 @@ def understood_noun(state, noun_lemma):
 
 # Succeeds when concepts that "are" type_name (when is_adjective is False) or "isAdj" type_name (when is_adjective is True)
 # are entailed by something that is orderable
-def match_all_concepts_with_adjective_menu(type_name, context, state, x_binding, is_adjective=True):
+def match_all_concepts_with_adjective_menu(type_name, context, state, x_binding):
     def bound_variable(value):
         # When "not" is used ("what is not vegetarian?"), the argument will be bound since thing(x) binds every possible
         # thing into the argument. To be true, x_binding must be a single orderable thing and must entail type_name
@@ -1888,9 +1888,10 @@ def match_all_concepts_with_adjective_menu(type_name, context, state, x_binding,
         context.report_error(["formNotUnderstood"])
         return
 
+    is_adjective = is_adj(state, type_name)
     if is_adjective:
         type_name_concept = ESLConcept()
-        type_name_concept = adjective.add_criteria(rel_subjects, "isAdj", type_name)
+        type_name_concept = type_name_concept.add_criteria(rel_subjects, "isAdj", type_name)
     else:
         type_name_concept = ESLConcept(type_name)
 
@@ -1959,7 +1960,11 @@ def match_all_n_concepts(noun_type, context, state, x_binding):
 @Predication(vocabulary, names=["match_all_n"], matches_lemma_function=handles_noun)
 def match_all_n_instances(noun_type, context, state, x_binding):
     def bound_variable(value):
-        if sort_of(state, value, noun_type):
+        if is_concept(value):
+            context.report_error(["formNotUnderstood", "match_all_n_instances"])
+            return False
+
+        elif sort_of(state, value, noun_type):
             return True
 
         else:
@@ -2026,22 +2031,31 @@ def the_q(context, state, x_variable_binding, h_rstr, h_body):
 
 def adjective_default_predicative_concepts(adjective_type, context, state, x_binding):
     def bound_variable(value):
-        if rel_check(state, value, "isAdj", adjective_type):
-            return True
-
-        else:
+        if not is_concept(value):
             # Give an "I did not know that!" error if the user makes a statement about themselves
             # because we really don't know anything about them
             if is_user_type(value):
                 context.report_error(["not_adj_about_player", value, adjective_type, "adjective_default_predicative_concepts"])
             else:
-                context.report_error(["arg_is_not_value", x_binding.variable.name, adjective_type])
+                context.report_error(["formNotUnderstood", "adjective_default_predicative_concepts"])
+                return False
+
+        elif rel_check(state, value, "isAdj", adjective_type):
+            return True
+
+        else:
+            context.report_error(["arg_is_not_value", x_binding.variable.name, adjective_type])
+            return False
 
     def unbound_variable_concepts():
         # Phrases like "What is a green food?"
         for item in rel_subjects(state, "isAdj", adjective_type):
             if is_concept(item):
                 yield item
+
+    if not is_adj(state, adjective_type):
+        context.report_error(["formNotUnderstood", "adjective_default_predicative_concepts"])
+        return
 
     yield from combinatorial_predication_1(context, state, x_binding, bound_variable, unbound_variable_concepts)
 
@@ -2050,12 +2064,19 @@ def adjective_default_concepts(adjective_type, context, state, x_binding):
     def bound_variable(value):
         if is_concept(value):
             return True
+        else:
+            context.report_error(["formNotUnderstood", "adjective_default_concepts"])
+            return False
 
     def unbound_variable_concepts():
         # Phrases like "What is a green food?"
         for item in rel_subjects(state, "isAdj", adjective_type):
             if is_type(state, item):
                 yield ESLConcept(item)
+
+    if not is_adj(state, adjective_type):
+        context.report_error(["formNotUnderstood", "adjective_default_predicative_concepts"])
+        return
 
     for new_state in combinatorial_predication_1(context, state, x_binding, bound_variable, unbound_variable_concepts):
         new_x_binding = new_state.get_binding(x_binding.variable.name)
@@ -2079,11 +2100,18 @@ def adjective_default_instances(adjective_type, context, state, x_binding):
                 if not has_match:
                     context.report_error(["not_adj", x_binding.variable.name, adjective_type])
                     return False
+        else:
+            context.report_error(["formNotUnderstood", "match_all_n_instances"])
+            return False
 
     def unbound_variable_instances():
         for item in rel_subjects(state, "isAdj", adjective_type):
             if not is_concept(item):
                 yield item
+
+    if not is_adj(state, adjective_type):
+        context.report_error(["formNotUnderstood", "adjective_default_predicative_concepts"])
+        return
 
     yield from combinatorial_predication_1(context, state, x_binding, bound_variable, unbound_variable_instances)
 
@@ -2095,7 +2123,9 @@ def _vegetarian_a_1_concepts_menu(context, state, e_introduced_binding, x_target
     if used_predicatively(context, state):
         # If "vegetarian" is used predicatively ('What is vegetarian?') attempt to interpret as
         # asking about properties of things on the menu
-        yield from match_all_concepts_with_adjective_menu("vegetarian", context, state, x_target_binding, is_adjective=False)
+        yield from match_all_concepts_with_adjective_menu("vegetarian", context, state, x_target_binding)
+    else:
+        context.report_error(["formNotUnderstood", "_vegetarian_a_1_concepts_menu"])
 
 
 @Predication(vocabulary,
@@ -2104,23 +2134,27 @@ def _vegetarian_a_1_concepts_menu(context, state, e_introduced_binding, x_target
              handles_interpretations=_vegetarian_a_1_concepts_menu)
 def _vegetarian_a_1_concepts_menu_group(context, state_list, e_introduced_binding_list, x_target_binding_list):
     # Since the arguments are concepts constraints need to be checked
-    if x_target_binding_list.solution_values[0].value is not None and is_concept(x_target_binding_list.solution_values[0].value[0]):
-        if not check_concept_solution_group_constraints(context, state_list, x_target_binding_list, check_concepts=True):
-            return
+    if is_concept(x_target_binding_list.solution_values[0].value[0]):
+        if x_target_binding_list.solution_values[0].value is not None:
+            if not check_concept_solution_group_constraints(context, state_list, x_target_binding_list, check_concepts=True):
+                return
 
-    yield state_list
+        yield state_list
+    else:
+        context.report_error(["formNotUnderstood", "_vegetarian_a_1_concepts_menu_group"])
 
 
 @Predication(vocabulary, names=["_vegetarian_a_1"])
 def _vegetarian_a_1_concepts(context, state, e_introduced_binding, x_target_binding):
     if not used_predicatively(context, state):
         yield from match_all_n_concepts("vegetarian", context, state, x_target_binding)
+    else:
+        context.report_error(["formNotUnderstood", "_vegetarian_a_1_concepts"])
 
 
 @Predication(vocabulary, names=["_vegetarian_a_1"])
 def _vegetarian_a_1_instances(context, state, e_introduced_binding, x_target_binding):
     yield from match_all_n_instances("vegetarian", context, state, x_target_binding)
-
 
 
 @Predication(vocabulary,
@@ -2162,7 +2196,6 @@ class PastParticipleConcepts:
                 return True
 
             else:
-                # context.report_error(["formNotUnderstood", "PastParticipleConcepts"])
                 context.report_error(["not_adj", x_target_binding.variable.name, self.lemma])
                 return False
 
@@ -2206,7 +2239,6 @@ class PastParticipleInstances:
                 return True
 
             else:
-                # context.report_error(["formNotUnderstood", "PastParticipleInstances"])
                 context.report_error(["not_adj", self.lemma,state.get_reprompt()])
                 return False
 
@@ -3896,7 +3928,8 @@ def _have_v_1_request_order_group(context, state_list, e_list, x_actor_variable_
                 "We have 2 menus": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                 "I have a son": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
              },
-             properties={'SF': ['ques', 'prop'], 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
+             properties={'SF': ['ques', 'prop'], 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+             handles_negation=True)
 def _have_v_1_fact_check(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     def bound(x_actor, x_object):
         if rel_check(state, x_actor, "have", x_object):
@@ -3928,7 +3961,7 @@ def _have_v_1_fact_check(context, state, e_introduced_binding, x_actor_binding, 
 
     # Both arguments must be instances
     if (x_actor_binding.value is not None and is_concept(x_actor_binding)) or (x_object_binding.value is not None and is_concept(x_object_binding)):
-        context.report_error(["formNotUnderstood", "_have_v_1_request"])
+        context.report_error(["formNotUnderstood", "_have_v_1_fact_check"])
         return
 
     yield from in_style_predication_2(context, state, x_actor_binding, x_object_binding, bound, actor_from_object,
@@ -4485,7 +4518,8 @@ def _be_v_id_much_many_group(context, state_list, e_introduced_binding_list, x_s
                  "My soup is a vegetarian dish": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
              },
              properties=[{'SF': ['prop'], 'TENSE': ['pres'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                         {'SF': ['ques'], 'TENSE': ['pres'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}])
+                         {'SF': ['ques'], 'TENSE': ['pres'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}],
+             handles_negation=True)
 def _be_v_id_instance_concept(context, state, e_introduced_binding, x_subject_binding, x_object_binding):
     def criteria_bound(x_subject, x_object):
         if is_concept(x_object):
@@ -4550,7 +4584,8 @@ def _be_v_id_instance_concept_group(context, state_list, e_introduced_binding_li
                  "soup is a vegetarian dish": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
              },
              properties=[{'SF': ['prop'], 'TENSE': ['pres'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                         {'SF': ['ques'], 'TENSE': ['pres'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}])
+                         {'SF': ['ques'], 'TENSE': ['pres'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}],
+             handles_negation=True)
 def _be_v_id_concept_concept(context, state, e_introduced_binding, x_subject_binding, x_object_binding):
     def criteria_bound(x_subject, x_object):
         if x_subject.entails(context, state, x_object):

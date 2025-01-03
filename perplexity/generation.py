@@ -200,7 +200,7 @@ def refine_nlg_with_predication(tree_info, variable, predication, nlg_data):
         else:
             return
 
-    elif parsed_predication["Lemma"] == "card" and predication.args[2] == variable:
+    elif parsed_predication["Lemma"] == "card" and len(predication.args) >= 3 and predication.args[2] == variable:
         if "Modifiers" not in nlg_data:
             nlg_data["Modifiers"] = []
 

@@ -21,6 +21,10 @@ class MessageException(Exception):
         return [self.message_name] + self.message_args
 
 
+class NotUnderstoodException(Exception):
+    pass
+
+
 def clear_error_when_yield_generator(context, generator):
     for next_value in generator:
         context.clear_error()
@@ -164,17 +168,27 @@ class TreeSolver(object):
 
                 # Whenever there is a solution, this means there was not an error, by definition
                 # So: clear it before we yield
-                for solution in clear_error_when_yield_generator(self, self.call(state.set_x("tree", (tree_info,), False), tree_info["Tree"])):
-                    # Remember any disjunction lineages that had a solution
-                    tree_lineage_binding = solution.get_binding("tree_lineage")
-                    if tree_lineage_binding.value is None:
-                        self._solution_lineages.add(None)
-                    else:
-                        self._solution_lineages.add(tree_lineage_binding.value[0])
+                try:
+                    for solution in clear_error_when_yield_generator(self, self.call(state.set_x("tree", (tree_info,), False), tree_info["Tree"])):
+                        # Remember any disjunction lineages that had a solution
+                        tree_lineage_binding = solution.get_binding("tree_lineage")
+                        if tree_lineage_binding.value is None:
+                            self._solution_lineages.add(None)
+                        else:
+                            self._solution_lineages.add(tree_lineage_binding.value[0])
 
-                    # Remember which interpretation generated this solution so that we can
-                    # call the right solution group handler later
-                    yield solution.set_x("interpretation", (interpretation, ))
+                        # Remember which interpretation generated this solution so that we can
+                        # call the right solution group handler later
+                        yield solution.set_x("interpretation", (interpretation, ))
+
+                except NotUnderstoodException:
+                    # If any part of the set of functions in this interpretation raises formNotUnderstood,
+                    # Then it means that either it will continue to since it is designed for "Concept" and is getting
+                    # instances (or vice versa) OR there are simply some atoms in the world that can't be processed by
+                    # the implementation for some reason and thus we can't say anything truthful about the statement since
+                    # we didn't understand some parts.  Either way: we should abort this interpretation and look for others
+                    pipeline_logger.debug(f"Stop processing interpretation due to formNotUnderstood")
+
             else:
                 pipeline_logger.debug(f"Tree did not match interpretation properties for: {str(interpretation)}")
 
@@ -342,6 +356,9 @@ class TreeSolver(object):
 
             except MessageException as error:
                 self.report_error(error.message_object())
+
+            if self._context.has_not_understood_error():
+                raise NotUnderstoodException
 
             if not had_solution:
                 if logger.isEnabledFor(logging.DEBUG):

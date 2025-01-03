@@ -23,6 +23,10 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
     - Example34_reset: 'file1.txt' and 'file2.txt' are in a folder together
 
 # Big Changes
+    - Fix negation
+        - "I don't want soda" --> true
+            - first: because it fails "False" with "we don't have that here" and the negation of False is true, so it is true
+                - really we should notice that we have moved out of the logical domain so we can't check it
     - Fix handling of phrases that have multiple syntactic heads:
         - "I want soup, I want salad" --> two want_v_1 heads joined by impl_conj(e, e, e)
         - "Hi, I'd love to have a table for 2, please" --> greet() and have_v_1() heads joined by discourse(i, h, h)
@@ -76,9 +80,27 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
                 - I want a water and a steak for me and 2 salads for johnny
                 - I want a steak and the bill
                 - Cancel 1 steak and 2 salads
+        - The "_have_v_1_fact_check" predication uses both the _have_v_1_order_group and _have_v_1_request_order_group group handlers, although neither will work and it
+            assumes it just drops to the default handler. This isn't true for negation
+            - One problem is that there is not a way to say "Only use this handler for this predication", it is mapped from the ERG predication name
+            - Probably the solution group handlers should be tied to the actual predication *implementation* since they are *interpretation dependent*.
+            - This can probably be done later since they will always fail anyway since the fact_check predication is dealing with instances and the group handlers
+                will both fail
+        - Fix negation
+            START HERE NEXT
+            - Broke: Example25_reset: "which files are in a folder" so that it only returns one now
+                - Also: which files are 20mb. Now only returns the first set
+                - https://github.com/EricZinda/Perplexity/commit/4eab3fe573465d318f10b785f0acae3ebd57d832
+                    changed plural to be 1..inf if it is a wh question so that "which chicken items are on the menu" will work
 
-        - "salmon and steak and salad are not vegetarian" -> yes
-            - FAILS
+            - Example25_reset: all files are 10 mb
+            - "salmon and salad are not vegetarian" -> Yes, that is true.
+            - Make Non-logical Failures work properly by returning the right error when the final predication doesn't run
+            - "I don't want soda" --> true
+                - first: because it fails "False" with "we don't have that here" and the negation of False is true, so it is true
+                - second: even if we fixed that, the user doesn't actually want that in the system so it is true
+                    - This is a closed world problem. Is there a workaround?
+                - Theory: only if it gets to the verb and the verb is marked as handles negation should it work in "not"
         - order tomato soup --> sorry you can't order that here
         - How much does the soup and the salad cost? --> I don't know the way you used: cost
             - Needs to be cost_v_1() but referencing and?
