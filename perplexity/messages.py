@@ -227,13 +227,14 @@ def generate_message(state, tree_info, error_term):
         # THe error returned would be "there are less than 2 we" or similar
         # When really the answer should be "there are less than 2 people/things that (did whatever the sentence said)
         index_predication = find_index_predication(tree_info)
-        if parse_predication_name(index_predication.name)["Pos"] == "v":
+        parsed_name = parse_predication_name(index_predication.name)
+        if parsed_name["Pos"] == "v":
             variable_name, _ = convert_complex_variable(arg1)
             if index_predication.args[1] == variable_name:
                 if find_predication_from_introduced(tree_info["Tree"], variable_name).name == "pron":
-                    return s("Less than {*arg2} people did that.", tree_info)
+                    return s("Less than {*arg2} people " + parsed_name['Lemma'] + ".", tree_info)
                 else:
-                    return s("Less than {*arg2} {arg1} did that.", tree_info)
+                    return s("Less than {*arg2} {arg1} " + parsed_name['Lemma'] + ".", tree_info)
 
         return s("There are less than {*arg2} {bare arg1:sg@error_predicate_index}", tree_info)
 

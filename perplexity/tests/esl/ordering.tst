@@ -283,7 +283,7 @@
         },
         {
             "Command": "what did we order?",
-            "Expected": "Host: Nothing.\nWaiter: Can I get you anything besides a chicken and a salmon for you?",
+            "Expected": "Less than 2 people order.\nWaiter: Can I get you anything besides a chicken and a salmon for you?",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "fd743d50-17c2-4097-adef-8e252b58ebe6"
@@ -559,7 +559,8 @@
                 "menu\nsteak\n2 soup\nwater\nWaiter: Can I get you anything besides a water, a menu, a steak, and 2 soups for you and a water and a menu for Johnny?",
                 "steak\nwater\n2 soup\nmenu\nWaiter: Can I get you anything besides a water, a menu, a steak, and 2 soups for you and a water and a menu for Johnny?",
                 "menu\n2 soup\nsteak\nwater\nWaiter: Can I get you anything besides a water, a menu, a steak, and 2 soups for you and a water and a menu for Johnny?",
-                "steak\nwater\nmenu\n2 soup\nWaiter: Can I get you anything besides a water, a menu, a steak, and 2 soups for you and a water and a menu for Johnny?"
+                "steak\nwater\nmenu\n2 soup\nWaiter: Can I get you anything besides a water, a menu, a steak, and 2 soups for you and a water and a menu for Johnny?",
+                "water\nsteak\n2 soup\nmenu\nWaiter: Can I get you anything besides a water, a menu, a steak, and 2 soups for you and a water and a menu for Johnny?"
             ],
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
@@ -678,7 +679,7 @@
         },
         {
             "Command": "What did we order?",
-            "Expected": "Host: Nothing.\nWaiter: Can I get you anything besides a menu and 2 steaks for you?",
+            "Expected": "Less than 2 people order.\nWaiter: Can I get you anything besides a menu and 2 steaks for you?",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "6e8ad609-7795-4d5c-96cd-cca160cf9f4e"

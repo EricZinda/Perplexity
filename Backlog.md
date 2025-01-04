@@ -83,8 +83,6 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
             - This can probably be done later since they will always fail anyway since the fact_check predication is dealing with instances and the group handlers
                 will both fail
 
-
-
         - Broke: Example25_reset: "which files are in a folder" so that it only returns one now
             - Also: which files are 20mb. Now only returns the first set
             - https://github.com/EricZinda/Perplexity/commit/4eab3fe573465d318f10b785f0acae3ebd57d832

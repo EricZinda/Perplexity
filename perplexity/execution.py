@@ -212,10 +212,10 @@ class TreeSolver(object):
         def has_not_understood_error(self):
             return self._context.has_not_understood_error()
 
-        def report_error_for_index(self, predication_index, error, force=False, phase=0):
+        def report_error_for_index(self, predication_index, error, force=False, phase=1):
             return self._context.report_error_for_index(predication_index, error, force, phase=phase)
 
-        def report_error(self, error, force=False, phase=0):
+        def report_error(self, error, force=False, phase=1):
             self._context.report_error_for_index(self._predication_index, error, force, phase=phase)
 
         def error(self):
@@ -714,7 +714,7 @@ class ExecutionContext(object):
         if self._notUnderstood[0] is not None:
             return self._notUnderstood
 
-    def report_error(self, error, force=False, phase=0):
+    def report_error(self, error, force=False, phase=1):
         self.report_error_for_index(0, error, force, phase=phase)
 
     # Error Design: when a predication is called it either:
@@ -725,7 +725,7 @@ class ExecutionContext(object):
     #             - a forced error is always recorded, and the first error at deepest level is always recorded
     #                 - Record both the first instance of a regular error and the first instance of formNotUnderstood at the deepest point
     #     - When returning errors: if we only got formNotUnderstood, that is the error. Otherwise: the first real error is the error
-    def report_error_for_index(self, predication_index, error, force=False, phase=0):
+    def report_error_for_index(self, predication_index, error, force=False, phase=1):
         if force or self._error_predication_index < predication_index:
             if error[0] == "formNotUnderstood":
                 # If previous error was not forced
