@@ -790,9 +790,11 @@ class ExitNowException(Exception):
 # If the intuition is to succeed with a failure message like "I couldn't do that!"
 # But there might be alternatives that can work, use this. It stops the planner immediately
 # but records a high priority error so that, if nothing else works, that error will get shown
-def stop_plan_with_error(state, context, error_text, priority=None):
+# Phase defaults to 2 since this is usually called during phase 2.
+# TODO: We should be tracking if this is called in phase 1 or 2 and reporting it correctly
+def stop_plan_with_error(state, context, error_text, priority=None, phase=2):
     priority = "" if priority is None else str(priority)
-    context.report_error(["understoodFailureMessage" + priority, error_text], force=True)
+    context.report_error(["understoodFailureMessage" + priority, error_text], force=True, phase=phase)
     raise ExitNowException()
 
 

@@ -2,6 +2,7 @@ import logging
 import queue
 import sys
 import time
+from collections import namedtuple
 
 import perplexity.tree
 import perplexity.solution_groups
@@ -644,6 +645,7 @@ class TreeSolver(object):
         return value
 
 
+Error = namedtuple('Error', 'predication_index, error, phase')
 class ExecutionContext(object):
     def __init__(self, vocabulary):
         self.vocabulary = vocabulary
@@ -743,10 +745,10 @@ class ExecutionContext(object):
 
     def error(self):
         if self._error is not None:
-            return [self._error_predication_index, self._error, self._error_phase]
+            return Error(self._error_predication_index, self._error, self._error_phase)
 
         else:
-            return [self._notUnderstood[2], self._notUnderstood[0], self._notUnderstood[3]]
+            return Error(self._notUnderstood[2], self._notUnderstood[0], self._notUnderstood[3])
 
 
 logger = logging.getLogger('Execution')

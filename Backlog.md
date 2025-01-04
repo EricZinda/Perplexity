@@ -23,10 +23,6 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
     - Example34_reset: 'file1.txt' and 'file2.txt' are in a folder together
 
 # Big Changes
-    - Fix negation
-        - "I don't want soda" --> true
-            - first: because it fails "False" with "we don't have that here" and the negation of False is true, so it is true
-                - really we should notice that we have moved out of the logical domain so we can't check it
     - Fix handling of phrases that have multiple syntactic heads:
         - "I want soup, I want salad" --> two want_v_1 heads joined by impl_conj(e, e, e)
         - "Hi, I'd love to have a table for 2, please" --> greet() and have_v_1() heads joined by discourse(i, h, h)
@@ -86,14 +82,15 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
             - Probably the solution group handlers should be tied to the actual predication *implementation* since they are *interpretation dependent*.
             - This can probably be done later since they will always fail anyway since the fact_check predication is dealing with instances and the group handlers
                 will both fail
-        - Fix negation
-            START HERE NEXT
-            - Broke: Example25_reset: "which files are in a folder" so that it only returns one now
-                - Also: which files are 20mb. Now only returns the first set
-                - https://github.com/EricZinda/Perplexity/commit/4eab3fe573465d318f10b785f0acae3ebd57d832
-                    changed plural to be 1..inf if it is a wh question so that "which chicken items are on the menu" will work
 
-            - Example25_reset: all files are 10 mb
+
+
+        - Broke: Example25_reset: "which files are in a folder" so that it only returns one now
+            - Also: which files are 20mb. Now only returns the first set
+            - https://github.com/EricZinda/Perplexity/commit/4eab3fe573465d318f10b785f0acae3ebd57d832
+                changed plural to be 1..inf if it is a wh question so that "which chicken items are on the menu" will work
+
+        - Fix negation
             - "salmon and salad are not vegetarian" -> Yes, that is true.
             - Make Non-logical Failures work properly by returning the right error when the final predication doesn't run
             - "I don't want soda" --> true

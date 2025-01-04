@@ -249,6 +249,15 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
     for next_solution in solutions:
         if groups_logger.level == logging.DEBUG:
             groups_logger.debug(f"Processing solution: {next_solution}")
+
+        # If this solution fails phase 2 criteria all by itself, count its failures as phase 1
+        merge, state = check_criteria_all(execution_context, var_criteria, initial_empty_set().stats_group.copy(), next_solution, phase=1)
+        if state in [CriteriaResult.fail_one, CriteriaResult.fail_all]:
+            # Failed already, so adding more will never make it succeed
+            if groups_logger.level == logging.DEBUG:
+                groups_logger.debug(f"Solution failed phase 2 by itself: {next_solution}")
+            continue
+
         new_sets = []
         next_solution_was_merged = False
         for existing_group_set in sets + [initial_empty_set()]:
@@ -259,7 +268,7 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
                 continue
 
             new_set_stats_group = existing_group_set.stats_group.copy()
-            merge, state = check_criteria_all(execution_context, var_criteria, new_set_stats_group, next_solution)
+            merge, state = check_criteria_all(execution_context, var_criteria, new_set_stats_group, next_solution, phase=2)
             if groups_logger.level == logging.DEBUG and state in [CriteriaResult.fail_one, CriteriaResult.fail_all]:
                 nl = "\n     "
                 groups_logger.debug(f"Solution group state: {state} \n     {nl.join(str(x) for x in (existing_group_set.raw_set + [next_solution]))}")
@@ -479,7 +488,7 @@ class VariableStats(object):
     # adding this solution to the group this stats object is tracking
     # Succeeds if the group, only considering this variable, can be interpreted as any (or multiple) of
     # cumulative/collective/distributive across all variables
-    def add_solution(self, execution_context, variable_criteria, solution):
+    def add_solution(self, execution_context, variable_criteria, solution, phase):
         binding_value = solution.get_binding(self.variable_name).value
 
         # Solutions can't have different types of values in the same solution group
@@ -523,7 +532,7 @@ class VariableStats(object):
             self.whole_group_unique_values[binding_value][1].append(solution)
 
         # See if there are any required_values criteria and make sure we meet them
-        required_values_state = variable_criteria.meets_required_values_criteria(self.whole_group_unique_individuals, self.whole_group_unique_values)
+        required_values_state = variable_criteria.meets_required_values_criteria(self.whole_group_unique_individuals, self.whole_group_unique_values, phase)
         if required_values_state in [CriteriaResult.fail_one, CriteriaResult.fail_all]:
             self.current_state = required_values_state
             return new_individuals, required_values_state
@@ -536,7 +545,7 @@ class VariableStats(object):
             # Otherwise: we assume it meets the numeric criteria
             # and allow the group handler to finalize the decision
             sanity_check = variable_criteria.meets_criteria(execution_context,
-                                                                     self.whole_group_unique_individuals)
+                                                                     self.whole_group_unique_individuals, phase)
             if sanity_check in [CriteriaResult.fail_one, CriteriaResult.fail_all]:
                 self.current_state = sanity_check
             else:
@@ -557,7 +566,7 @@ class VariableStats(object):
 
                 # The *previous* variable is a concept, so we will pretend it meets the criteria for anything. Thus:
                 # If this variable's values meets its own criteria, it could possibly be collective or cuml
-                self.cumulative_state = variable_criteria.meets_criteria(execution_context, self.whole_group_unique_individuals)
+                self.cumulative_state = variable_criteria.meets_criteria(execution_context, self.whole_group_unique_individuals, phase)
                 self.collective_state = self.cumulative_state
 
                 # For distributive: Since the *previous* variable is a concept, we just need to prove there is *some number of previous values*
@@ -626,14 +635,14 @@ class VariableStats(object):
 
                     # Cumulative
                     if self.cumulative_state != CriteriaResult.fail_one:
-                        self.cumulative_state = variable_criteria.meets_criteria(execution_context, self.whole_group_unique_individuals)
+                        self.cumulative_state = variable_criteria.meets_criteria(execution_context, self.whole_group_unique_individuals, phase)
 
                     # Distributive
                     # for each prev_unique_value: len(unique_values) meets criteria
                     if self.distributive_state != CriteriaResult.fail_one:
                         self.distributive_state = CriteriaResult.meets
                         for prev_unique_value_item in self.prev_variable_stats.whole_group_unique_values.items():
-                            distributive_value_state = variable_criteria.meets_criteria(execution_context, prev_unique_value_item[1][0])
+                            distributive_value_state = variable_criteria.meets_criteria(execution_context, prev_unique_value_item[1][0], phase)
                             self.distributive_state = criteria_transitions[self.distributive_state][distributive_value_state]
                             if self.distributive_state == CriteriaResult.fail_one:
                                 break
@@ -641,7 +650,7 @@ class VariableStats(object):
                 else:
                     if self.collective_state != CriteriaResult.fail_one:
                         # Collective
-                        self.collective_state = variable_criteria.meets_criteria(execution_context, self.whole_group_unique_individuals)
+                        self.collective_state = variable_criteria.meets_criteria(execution_context, self.whole_group_unique_individuals, phase)
 
             # Now figure out what to return
             # If the previous variable is conceptual all 3 modes may be supported
@@ -731,7 +740,7 @@ class VariableStats(object):
 #       collective if len(prev_unique_values) == 1 and len(unique_values) meets criteria
 #       distributive if len(prev_unique_values) > 1 and for each prev_unique_value: len(unique_values) meets criteria
 #       cumulative if len(prev_unique_values) > 1 and len(unique_values) meets criteria
-def check_criteria_all(execution_context, var_criteria, new_set_stats_group, new_solution):
+def check_criteria_all(execution_context, var_criteria, new_set_stats_group, new_solution, phase):
     current_set_state = CriteriaResult.meets
     merge = True
     for index in range(len(var_criteria)):
@@ -752,7 +761,7 @@ def check_criteria_all(execution_context, var_criteria, new_set_stats_group, new
 
             # See what the CriteriaResult is for the whole solution group plus the new solution
             # but only for this particular variable
-            new_individuals, state = variable_stats.add_solution(execution_context, criteria, new_solution)
+            new_individuals, state = variable_stats.add_solution(execution_context, criteria, new_solution, phase)
 
         # Decide the new state of the entire solution group, so far, based on the previous variable
         # state and the new state
@@ -818,7 +827,7 @@ class VariableCriteria(object):
     def __repr__(self):
         return f"{{{self.variable_name}: min={self.min_size}, max={self.max_size}, global={self.global_criteria}, required_values={self.required_values}, pred={self.predication.name}({self.predication.args[0]})}}"
 
-    def meets_criteria(self, execution_context, value_list):
+    def meets_criteria(self, execution_context, value_list, phase):
         values_count = count_set(value_list)
 
         # Check global criteria
@@ -833,24 +842,24 @@ class VariableCriteria(object):
             # We can fail immediately if we have too many
             if len(self._unique_rstrs) > self.max_size:
                 # This is definitely the reason why something failed (since we are failing it here), so force=True
-                execution_context.report_error_for_index(self.predication_index, ["phase2MoreThanN", self._after_phrase_error_location, self.max_size], force=True, phase=2)
+                execution_context.report_error_for_index(self.predication_index, ["phase2MoreThanN", self._after_phrase_error_location, self.max_size], force=True, phase=phase)
                 return CriteriaResult.fail_all
 
         if self.global_criteria == GlobalCriteria.all_rstr_meet_criteria:
             # We can fail immediately if we have too many
             if len(self._unique_rstrs) > self.max_size:
                 # This is definitely the reason why something failed (since we are failing it here), so force=True
-                execution_context.report_error_for_index(self.predication_index, ["phase2MoreThanN", self._predication_error_location, self.max_size], force=True, phase=2)
+                execution_context.report_error_for_index(self.predication_index, ["phase2MoreThanN", self._predication_error_location, self.max_size], force=True, phase=phase)
                 return CriteriaResult.fail_all
 
         # Check numeric criteria
         if values_count > self.max_size:
             # It'll never get smaller so it fails forever
-            execution_context.report_error_for_index(self.predication_index, ["phase2MoreThan", self._after_phrase_error_location, self.max_size], force=True, phase=2)
+            execution_context.report_error_for_index(self.predication_index, ["phase2MoreThan", self._after_phrase_error_location, self.max_size], force=True, phase=phase)
             return CriteriaResult.fail_one
 
         elif values_count < self.min_size:
-            execution_context.report_error_for_index(self.predication_index, ["phase2LessThan", self._after_phrase_error_location, self.min_size], force=True, phase=2)
+            execution_context.report_error_for_index(self.predication_index, ["phase2LessThan", self._after_phrase_error_location, self.min_size], force=True, phase=phase)
             return CriteriaResult.contender
 
         else:
@@ -862,7 +871,7 @@ class VariableCriteria(object):
             else:
                 return CriteriaResult.meets
 
-    def meets_required_values_criteria(self, unique_individuals_list, unique_values_list):
+    def meets_required_values_criteria(self, unique_individuals_list, unique_values_list, phase):
         if self.required_values is not None:
             # Ensure the values are all singles or a single collective
             if len(unique_values_list) > 1:
