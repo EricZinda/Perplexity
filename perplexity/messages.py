@@ -327,7 +327,12 @@ def error_priority(error_string):
             if error_constant == "unknownWords":
                 priority -= len(error_string[1][1])
 
-            priority += error_string[2] * error_priority_dict["success"]
+            elif error_constant == "formNotUnderstood":
+                # Don't make formNotUnderstood have a different priority for phase1 or 2
+                return priority
+
+            else:
+                priority += error_string[2] * error_priority_dict["success"]
             return priority
         else:
             return None
