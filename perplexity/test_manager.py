@@ -166,13 +166,13 @@ class TestManager(object):
     def full_test_path(self, test_name):
         return os.path.join(self.test_root_folder, test_name)
 
-    def run_tests(self, test_iterator, initial_ui):
+    def run_tests(self, test_iterator, initial_ui, clear_log=True):
         if initial_ui.log_tests:
             scriptPath = os.path.dirname(os.path.realpath(__file__))
             testFile = os.path.join(scriptPath, "testresults.txt")
-            if os.path.exists(testFile):
+            if clear_log and os.path.exists(testFile):
                 os.remove(testFile)
-            testResultsFile = open(testFile, "w")
+            testResultsFile = open(testFile, "a")
             print(f"Logging test results to: {testFile}")
 
         else:

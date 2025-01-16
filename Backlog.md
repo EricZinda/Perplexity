@@ -83,26 +83,6 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
             - This can probably be done later since they will always fail anyway since the fact_check predication is dealing with instances and the group handlers
                 will both fail
 
-        - Correct but error should be fixed:
-            Both are cases where we just need a better error message
-            - (This is correct, but a bad error) Regression: Example24_reset: regression: copy "/temp/59.txt" in "/documents" -> '/temp/59.txt' in '/documents' is not in '/documents'
-                Expected:
-                There isn't a '/temp/59.txt' in '/documents' in the system
-
-            - (This is correct, but a bad error) Regression: Example23_reset:copy 'blue' in '\>documents' -> I can't copy 'blue'
-                Expected:
-                    'blue' in '/documents' is not in '/documents'
-
-        - Regression: Example23_reset: what is in this 'blue' -> There isn't a 'blue' in the system
-            Expected:
-                a thing is not in this 'blue'
-            - Analysis:
-                - fw_seq is a conjunction
-                    - first time through returns an object with the legit error "not in"
-                    - next time through returns "not exist"
-                    - only last error gets returned
-
-
         - Regression: Example26_reset:the 4 large files are 20 mb -> a 4 file that is 20 megabyte are not large
             - was: There are less than 4 large 4 file that is 20 megabyte
 

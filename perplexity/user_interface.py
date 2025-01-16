@@ -1032,13 +1032,15 @@ def command_run_parse(ui, arg):
 
 def command_run_folder(ui, arg):
     parts = arg.split(",")
+    first_folder = True
     for folder in parts:
         folder = folder.strip()
         if folder == ".":
             folder = ""
         ui.test_manager.record_session_data("LastTestFolder", folder)
         test_iterator = TestFolderIterator(ui.test_manager, folder)
-        ui.test_manager.run_tests(test_iterator, ui)
+        ui.test_manager.run_tests(test_iterator, ui, clear_log=first_folder)
+        first_folder = False
 
     return True
 
