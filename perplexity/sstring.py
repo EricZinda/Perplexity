@@ -222,7 +222,8 @@ class SStringFormat(object):
             else:
                 # Add 1 to the last predication in the conjunction since we want the meaning *after* the predication
                 # introducing it has been successfully processed. This is because we want the word representing it
-                # to have been processed by default
+                # to have been processed by default and we need the whole conjunction finished for this to be
+                # guaranteed
                 meaning_at_index_default = conjunction_for_variable[-1].index + 1
 
             sstring_logger.debug(f"sstring: default meaning_at_index is '{meaning_at_index_default}'")

@@ -409,7 +409,7 @@
         },
         {
             "Command": "copy \"\\>temp\\>59.txt\" in \"\\>documents\"",
-            "Expected": "There isn't a '/temp/59.txt' in '/documents' in the system",
+            "Expected": "'/temp/59.txt' in '/documents' is not in '/documents'",
             "Tree": "proper_q(x16,[quoted(\\>documents,i21), fw_seq(x16,i21)],pronoun_q(x3,pron(x3),proper_q(x8,[quoted(\\>temp\\>59.txt,i13), fw_seq(x8,i13), _in_p_loc(e15,x8,x16)],_copy_v_1(e2,x3,x8))))",
             "Enabled": true,
             "ID": "c7a1db52-5b8c-4b5c-b2e3-d4696a9d7193"
@@ -549,7 +549,7 @@
         },
         {
             "Command": "copy \"file4.txt\" in \"\\>documents\"",
-            "Expected": "There isn't a 'file4.txt' in '/documents' in the system",
+            "Expected": "'file4.txt' in '/documents' is not in '/documents'",
             "Tree": "proper_q(x16,[quoted(\\>documents,i21), fw_seq(x16,i21)],pronoun_q(x3,pron(x3),proper_q(x8,[quoted(file4.txt,i13), fw_seq(x8,i13), _in_p_loc(e15,x8,x16)],_copy_v_1(e2,x3,x8))))",
             "Enabled": true,
             "ID": "67a6caf5-6b4d-4ad0-bdd9-fd5054f4c71f"

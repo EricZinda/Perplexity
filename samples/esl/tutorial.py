@@ -5114,7 +5114,7 @@ if __name__ == '__main__':
     # ShowLogging("Testing")
     ShowLogging("Execution")
     # ShowLogging("Generation")
-    # ShowLogging("SString")
+    ShowLogging("SString")
     # ShowLogging("UserInterface")
     # ShowLogging("Determiners")
     ShowLogging("SolutionGroups")
