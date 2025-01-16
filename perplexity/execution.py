@@ -22,10 +22,6 @@ class MessageException(Exception):
         return [self.message_name] + self.message_args
 
 
-class NotUnderstoodException(Exception):
-    pass
-
-
 def clear_error_when_yield_generator(context, generator):
     for next_value in generator:
         context.clear_error()
@@ -169,39 +165,22 @@ class TreeSolver(object):
 
                 # Whenever there is a solution, this means there was not an error, by definition
                 # So: clear it before we yield
-                try:
-                    for solution in clear_error_when_yield_generator(self, self.call(state.set_x("tree", (tree_info,), False), tree_info["Tree"])):
-                        # Remember any disjunction lineages that had a solution
-                        tree_lineage_binding = solution.get_binding("tree_lineage")
-                        if tree_lineage_binding.value is None:
-                            self._solution_lineages.add(None)
-                        else:
-                            self._solution_lineages.add(tree_lineage_binding.value[0])
+                for solution in clear_error_when_yield_generator(self, self.call(state.set_x("tree", (tree_info,), False), tree_info["Tree"])):
+                    # Remember any disjunction lineages that succeeded so far
+                    this_lineage = perplexity.tree.get_disjunction_tree_lineage(solution)
+                    self._solution_lineages.add(this_lineage)
 
-                        # Remember which interpretation generated this solution so that we can
-                        # call the right solution group handler later
-                        yield solution.set_x("interpretation", (interpretation, ))
-
-                except NotUnderstoodException:
-                    # If any part of the set of functions in this interpretation raises formNotUnderstood,
-                    # Then it means that either it will continue to since it is designed for "Concept" and is getting
-                    # instances (or vice versa) OR there are simply some atoms in the world that can't be processed by
-                    # the implementation for some reason and thus we can't say anything truthful about the statement since
-                    # we didn't understand some parts.  Either way: we should abort this interpretation and look for others
-                    pipeline_logger.debug(f"Stop processing interpretation due to formNotUnderstood")
+                    # Remember which interpretation generated this solution so that we can
+                    # call the right solution group handler later
+                    yield solution.set_x("interpretation", (interpretation, ))
 
             else:
                 pipeline_logger.debug(f"Tree did not match interpretation properties for: {str(interpretation)}")
 
             # Fire an error for the last disjunction tree (which might be the whole tree if there were no disjunctions)
             # but only if no solutions were generated
-            if self._last_solution_lineage is None and None not in self._solution_lineages:
-                self._lineage_failure_callback(self._context.get_error_info())
-
-            else:
-                self._handle_lineage_change("")
-
-            pipeline_logger.debug(f"Error after tree evaluation: {self._context.get_error_info()}")
+            if self._last_solution_lineage not in self._solution_lineages:
+                self._lineage_failure_callback(self._last_solution_lineage, self._context.get_error_info())
 
         def new_initial_context(self):
             return self._context.new_initial_context()
@@ -229,9 +208,6 @@ class TreeSolver(object):
 
         def clear_error(self):
             return self._context.clear_error()
-
-        def set_disjunction(self):
-            self.set_predication_runtime_settings("Disjunction", True)
 
         def set_predication_runtime_settings(self, key, value):
             self._predication_runtime_settings[key] = value
@@ -321,24 +297,24 @@ class TreeSolver(object):
             # function name given a string like "folder_n_of".
             # "vocabulary.Predication" returns a two-item list,
             # where item[0] is the module and item[1] is the function
-            module_function = self._interpretation[predication.index]
+            vocabulary_entry = self._interpretation[predication.index]
 
             # sys.modules[] is a built-in Python list that allows you
             # to access actual Python Modules given a string name
-            module = sys.modules[module_function.module]
+            module = sys.modules[vocabulary_entry.module]
 
             # Functions are modeled as properties of modules in Python
             # and getattr() allows you to retrieve a property.
             # So: this is how we get the "function pointer" to the
             # predication function we wrote in Python
-            function = getattr(module, module_function.function)
+            function = getattr(module, vocabulary_entry.function)
 
             # See if the system wants us to tack any arguments to the front
-            if module_function[2] is not None:
-                function_args = module_function[2] + function_args
+            if vocabulary_entry[2] is not None:
+                function_args = vocabulary_entry[2] + function_args
 
             if logger.isEnabledFor(logging.DEBUG):
-                logger.debug(f"call {self._predication_index}: {module_function.module}.{module_function.function}, state: {str(state)}, phrase_type: [{self._phrase_type}]")
+                logger.debug(f"call {self._predication_index}: {vocabulary_entry.module}.{vocabulary_entry.function}, state: {str(state)}, phrase_type: [{self._phrase_type}]")
 
             # If a MessageException happens during execution,
             # convert it to an error
@@ -346,9 +322,14 @@ class TreeSolver(object):
             try:
                 # You call a function "pointer" and pass it arguments
                 # that are a list by using "function(*function_args)"
-                # So: this is actually calling our function (which
+                # So: function(*function_args) is actually calling our function (which
                 # returns an iterator, and thus we can iterate over it)
-                for next_state in function(*function_args):
+                for next_state in TreeSolver.ConjunctionIterator(self, function(*function_args)):
+                    # Check if the lineage changed in a way that would signal the previous lineage should get
+                    # an error triggered
+                    this_lineage = perplexity.tree.get_disjunction_tree_lineage(next_state)
+                    self._handle_lineage_change(this_lineage)
+
                     if logger.isEnabledFor(logging.DEBUG):
                         logger.debug(f"yielding {predication}, state: {str(next_state)}, phrase_type: [{self._phrase_type}]")
 
@@ -358,37 +339,79 @@ class TreeSolver(object):
             except MessageException as error:
                 self.report_error(error.message_object())
 
-            if self._context.has_not_understood_error():
-                raise NotUnderstoodException
-
-            if not had_solution:
-                if logger.isEnabledFor(logging.DEBUG):
-                    logger.debug(f"No solutions from {self._predication_index}: {module_function.module}.{module_function.function}")
-
-                if self._predication_runtime_settings.get("Disjunction", False):
-                    self._lineage_failure_callback(self._context.get_error_info())
-
+        # Each set of values that go together from a conjunction are a "conjunction variant". Each variant is a self-consistent
+        # set of values that really should viewed as coming from an interpretation, but conjunctions create each variant (aka interpretation)
+        # dynamically, so we need to look for them and handle them specially.
+        # The "tree_lineage" variable in the state stores a string of "." separated values that indicate where conjunctions have happened currently
+        # in this tree. As long as the lineage is just growing, by adding on a new conjunction variant to the end, we are still discovering the current tree of variations
+        # Once we get a lineage that isn't just a simple add-on to the last, the previous variants won't be called again and should be considered a single
+        # interpretation tree. Just like regular interpretation trees, it either yields one or more solutions or fails with an error
+        # So, if the new_lineage value means the previous tree is done, we mark it as a lineage failure *if* there were no solutions during it.
         def _handle_lineage_change(self, new_lineage):
-            if self._last_solution_lineage is not None and new_lineage != self._last_solution_lineage:
-                if not new_lineage.startswith(self._last_solution_lineage):
-                    # Fire an error for every disjunction set that didn't generate a solution
-                    last_segments = self._last_solution_lineage.split(".")[1:]
-                    new_segments = new_lineage.split(".")[1:]
-                    for index in range(len(last_segments)):
-                        if index > (len(new_segments) - 1) or last_segments[index] != new_segments[index]:
-                            # This disjunction changed, fire a failure if there were no solutions
-                            test_lineage = ".".join(last_segments[:index + 1])
-                            was_successful = False
-                            for successful_lineage in self._solution_lineages:
-                                if successful_lineage.startswith(test_lineage):
-                                    was_successful = True
-                                    break
+            if self._last_solution_lineage is not None:
+                if new_lineage is None:
+                    foo = 5
+                if (new_lineage is None and self._last_solution_lineage is not None) or not new_lineage.startswith(self._last_solution_lineage):
+                    logger.debug(f"conjunction variant changed: New lineage: {new_lineage}, last lineage: {str(self._last_solution_lineage)}")
 
-                            if not was_successful:
-                                self._lineage_failure_callback(self._context.get_error_info())
+                    if self._last_solution_lineage not in self._solution_lineages:
+                        logger.debug(f"conjunction variant changed: failing last lineage since no solutions: {str(self._last_solution_lineage)}")
+                        self._lineage_failure_callback(self._last_solution_lineage, self._context.get_error_info())
 
-            # And remember this as the last lineage
             self._last_solution_lineage = new_lineage
+
+    class ConjunctionIterator(object):
+        def __init__(self, context, predication_iterator):
+            self.context = context
+            self._initial_error_info = context.get_error_info()
+            self._predication_iterator = predication_iterator
+            self._current_lineage = None
+
+        def __iter__(self):
+            return self
+
+        def __next__(self):
+            # If any part of the set of functions in this interpretation raises formNotUnderstood,
+            # Then it means that either it will continue to since it is designed for "Concept" and is getting
+            # instances (or vice versa) OR there are simply some atoms in the world that can't be processed by
+            # the implementation for some reason and thus we can't say anything truthful about the statement since
+            # we didn't understand some parts.  Either way: we should abort this interpretation and look for others
+            #
+            # But: if this is a conjunction, we should only abort the values from the current conjunction variant because
+            # the next might work
+            if self.context.has_not_understood_error():
+                if self.is_conjunction():
+                    current_lineage = self._current_lineage
+                    while True:
+                        next_solution, next_lineage = self._get_next_interpretation_value()
+                        if next_lineage != current_lineage:
+                            self.context.set_error_info(self._initial_error_info)
+                            logger.debug(f"Continuing next conjunction variant of {self.context.current_predication()} due to formNotUnderstood")
+                            return next_solution
+
+                else:
+                    # Normal predication should just stop iterating if the tree
+                    # has encountered formNotUnderstood
+                    logger.debug(f"Stop processing non-conjuct predication {self.context.current_predication()} due to formNotUnderstood")
+                    raise StopIteration
+
+            else:
+                next_solution, _ = self._get_next_interpretation_value()
+                return next_solution
+
+        def is_conjunction(self):
+            return self._current_lineage is not None
+
+        def _get_next_interpretation_value(self):
+            next_solution = next(self._predication_iterator)
+            next_lineage = perplexity.tree.get_disjunction_tree_lineage(next_solution)
+
+            # Only remember the lineage if *this predication* actually created a conjunction so we can use this later
+            # to determine if this is a conjunction predication
+            if perplexity.tree.has_created_disjunction(self.context.current_predication().index, next_solution):
+                self._current_lineage = next_lineage
+
+            return next_solution, next_lineage
 
     # Represents a single lineage which is a particular choice of predication interpretations
     # and a selection of disjunction alternatives within any disjunction.
@@ -420,8 +443,6 @@ class TreeSolver(object):
     # solution set from the disjunction at that point in the tree.
     #
     # Assumptions:
-    #   - Disjunction predications must always indicate that they are a disjunction by calling context.set_disjunction() so that we
-    #       can determine that a failure was a disjunction failure and generate an independent record for it
     #   - If a predication is a disjunction it must *always* put an ID in that position or else the lineage might mistakenly have a
     #       different predication giving a different ID for that position (because the original one is missing).
     #   - The same disjunction values must always be together. A disjunction predication can't intermingle the different solution sets.
@@ -439,8 +460,8 @@ class TreeSolver(object):
         def __iter__(self):
             return self
 
-        def lineage_failed(self, error_info):
-            pipeline_logger.debug(f"Lineage failed with error: {error_info}")
+        def lineage_failed(self, lineage, error_info):
+            pipeline_logger.debug(f"Lineage {lineage} failed with error: {error_info}")
             self.lineage_failure_fifo.put(error_info)
 
         def retrieve_lineage_failure(self):
@@ -501,8 +522,7 @@ class TreeSolver(object):
         current_interpretation = -1
         for interpretation_dict in interpretation_list:
             current_interpretation += 1
-            if pipeline_logger.level == logging.DEBUG:
-                func_list = ", ".join([f"{x.module}.{x.function}" for x in interpretation_dict.values()])
+            func_list = ", ".join([f"{x.module}.{x.function}" for x in interpretation_dict.values()]) if pipeline_logger.level == logging.DEBUG else None
 
             if target_interpretation_index is not None:
                 if current_interpretation < target_interpretation_index:
@@ -602,7 +622,7 @@ class TreeSolver(object):
     def _mrs_tree_interpretations(self, tree_info, normalize=False):
         # Gather together all the interpretations for the predications
         def gather(predication):
-            alternatives = [(predication.index, x) for x in self._context.vocabulary.predications(predication.name,
+            alternatives = [(predication.index, vocabulary_entry) for vocabulary_entry in self._context.vocabulary.predications(predication.name,
                                                                                                  predication.arg_types,
                                                                                                  phrase_type)]
             predications.append(alternatives)
@@ -646,6 +666,8 @@ class TreeSolver(object):
 
 
 Error = namedtuple('Error', 'predication_index, error, phase')
+
+
 class ExecutionContext(object):
     def __init__(self, vocabulary):
         self.vocabulary = vocabulary

@@ -1,3 +1,4 @@
+import perplexity
 from samples.file_system_example.objects import File, Folder, Megabyte, Actor, QuotedText
 from samples.file_system_example.state import DeleteOperation, ChangeDirectoryOperation, CopyOperation
 # from perplexity.OpenAI import StartOpenAIBooleanRequest, CompleteOpenAIRequest
@@ -7,7 +8,7 @@ from perplexity.predications import combinatorial_predication_1, lift_style_pred
 from perplexity.response import RespondOperation
 from perplexity.set_utilities import Measurement
 from perplexity.system_vocabulary import system_vocabulary
-from perplexity.tree import used_predicatively, is_this_last_fw_seq, find_predication
+from perplexity.tree import used_predicatively, is_this_last_fw_seq, find_predication, set_disjunction_lineage
 from perplexity.utilities import sentence_force
 from perplexity.variable_binding import VariableBinding
 from perplexity.virtual_arguments import scopal_argument
@@ -825,9 +826,6 @@ def yield_from_fw_seq(context, state, x_phrase_binding, non_set_value):
     if x_phrase_binding.value is None:
         # x is not bound
         if is_this_last_fw_seq(context, state) and hasattr(non_set_value, "all_interpretations"):
-            # Records that predication index X is a disjunction
-            context.set_disjunction()
-
             # Get all the interpretations of the quoted text
             # and bind them iteratively
             # Since these are *alternative* interpretations, they need to be in different lineages
@@ -835,9 +833,9 @@ def yield_from_fw_seq(context, state, x_phrase_binding, non_set_value):
             interpretation_id = 0
             for interpretation in non_set_value.all_interpretations(state):
                 interpretation_id += 1
-                tree_lineage_binding = state.get_binding("tree_lineage")
-                tree_lineage = "" if tree_lineage_binding.value is None else tree_lineage_binding.value[0]
-                yield state.set_x(x_phrase_binding.variable.name, (interpretation, ), False).set_x("tree_lineage", (f"{tree_lineage}.{interpretation_id}",))
+                new_state = state.set_x(x_phrase_binding.variable.name, (interpretation, ), False)
+                # Records that predication index X is a disjunction
+                yield set_disjunction_lineage(new_state, context, interpretation_id)
 
         else:
             yield state.set_x(x_phrase_binding.variable.name, (non_set_value,), False)

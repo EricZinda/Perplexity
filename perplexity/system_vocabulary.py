@@ -3,7 +3,7 @@ import itertools
 import logging
 import numbers
 import perplexity.predications
-from perplexity.execution import TreeSolver, NotUnderstoodException
+from perplexity.execution import TreeSolver
 from perplexity.plurals import VariableCriteria, GlobalCriteria, NegatedPredication
 from perplexity.predications import combinatorial_predication_1
 from perplexity.tree import TreePredication, gather_scoped_variables_from_tree_at_index, \
@@ -430,7 +430,8 @@ def neg(context, state, e_introduced_binding, h_scopal):
 
     elif not had_negative_success and not had_negative_failure:
         pipeline_logger.debug(f"Neg: formNotUnderstood was all we got under negation, thus false")
-        raise NotUnderstoodException
+        if not context.has_not_understood_error():
+            context.report_error(["formNotUnderstood"])
 
     else:
         pipeline_logger.debug(f"Neg: was neg(true) thus false")

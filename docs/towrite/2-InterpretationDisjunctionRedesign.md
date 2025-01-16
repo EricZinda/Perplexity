@@ -20,9 +20,64 @@ That scope-resolved MRS tree can generate, statically (i.e. before resolution), 
 
 Each `interpretation` may further generate one or more `disjunction trees` because the `interpretation` has predications within it that are `disjunction predications`. They generate further *alternatives*, but, crucially, they cannot be known beforehand as they depend on the values of the arguments passed in. A `disjunction predication`, therefore, generates further interpretations, but they are only known at runtime. Just like statically known `interpretations`, all combinations of disjunction alternatives must be tried to fully search the tree for meaning. But, because the alternatives can only be known at runtime, they can't just be put together and tried in all combinations by the engine. They have to be discovered by evaluating the tree and allowing the depth first algorithm to explore them.
 
+### Creating a disjunction
+Because these must be created at runtime, there are two ways to create them
+
+1. yield the `DisjunctionValue(lineage, object)` class from predicate helper functions
+2. call 
+
+conj_a
+
+No solns| solns
+<end>   | 1
+        | 2
+        | <end>
+        | 3
+        | 4
+        | <end>
+
+If there are no solutions from conj_a() we expect it to fail, and for there to be a reported error. 
+- There is one tree_record indicating failure. One conjunction alternative
+- There are two tree_records with solutions for the first conjunction alternative, and two for the second
+
+
+a -> conj_b
+Looks just like the first, but now there are N * 2 conjunction alternatives
+
+a -> conj_b -> c
+
+
+a -> b -> conj_c
+
 Why can't we take the same approach, then, even for static ones? We could, but breaking them out statically allows us to fully search a given interpretation quickly, without having to exhaustively try all combinations of trees until the very end before we have the answer to one interpretation.  We'd do this for conjunctions too, if we could, but we can't since they need to be determined at runtime.
 
+- context has a current lineage
+    - Since disjunction variants must be in sequence, if it sees a new one that isn't current + more, then we have switched to a new lineage
+      and the previous one will never appear again since conjunctions are monotonically increasing
+          - If there were no successes in the last lineage, fire a lineage failure
+          - We are, in effect, *discovering* the conjunction variants as we go
+            - Anytime a new lineage is seen, it invalidates anything that doesn't start with it
+            - This needs to be checked after every call to a predication that *succeeds* since those are the only ones that can change lineages
+              - (We assume the error from the previous failure will still be there ...)
+            - We only need to fire errors for the *longest* prefix given a set of prefixes because that is the "interpretation tree" we discovered.
+              - Interpretations don't fire errors for every predication that fails, just the longest one
+Question: do we need to fire a lineage error for every conjunction variant that failed? 
+          - If conjunction variants were real interpretations, we would only fire an error after the whole search tree for that set of interpretations failed
+          - In this design, only the last failure before the next conjunction variant (or the end of them all) will get fired
+            - If we instead marked predications as conjunctions, when we call them and the fail we can create a lineage failure for that
 
+Design:
+    - Any lineage that is unique should get a failure generated if it didn't have a success because that's how an interpretation would be treated
+    - 
+
+Sequence:
+a@1                 a.1 
+a@1                 a.1 -> b.1
+                    a.1 -> b.1 -> c.1
+a@1                 a.1 
+a@1                 a.1 -> b.1
+                    a.1 -> b.1 -> c.1
+    
 ## Phase 1: Resolving Scopal Arguments
 Predications like `neg()` can operate logically on a whole fragment of a tree (i.e. a branch), and require that both phase 1 and 2 be resolved in order to determine their logical outcome. Take this example:
 

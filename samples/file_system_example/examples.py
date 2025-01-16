@@ -586,8 +586,8 @@ if __name__ == '__main__':
     # Example20()
     # Example21()
     # Example22()
-    Example23()
-    # Example24()
+    # Example23()
+    Example24()
 
     # Example25()
     # Example26()

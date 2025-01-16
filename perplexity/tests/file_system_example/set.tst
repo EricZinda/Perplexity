@@ -431,7 +431,7 @@
         },
         {
             "Command": "4 files are in a folder",
-            "Expected": "There is more than a folder",
+            "Expected": "There are less than 4 4 file in a folder",
             "Tree": "_a_q(x11,_folder_n_of(x11,i16),udef_q(x3,[_file_n_of(x3,i10), card(4,e9,x3)],_in_p_loc(e2,x3,x11)))",
             "Enabled": true,
             "ID": "526a5445-c826-40cc-8fbc-33a574b36461"
@@ -606,7 +606,7 @@
         },
         {
             "Command": "'file1.txt' and 'file2.txt' are in a folder together",
-            "Expected": "Yes, that is true.",
+            "Expected": "Yes, that is true.\n(there are more)",
             "Tree": "proper_q(x15,[quoted(file2.txt,i20), fw_seq(x15,i20)],_a_q(x22,_folder_n_of(x22,i27),udef_q(x3,proper_q(x8,[quoted(file1.txt,i12), fw_seq(x8,i12)],_and_c(x3,x8,x15)),[_together_p(e28,x3), _in_p_loc(e2,x3,x22)])))",
             "Enabled": true,
             "ID": "4032f59f-5453-40ec-aea5-a6a04ea7edae"

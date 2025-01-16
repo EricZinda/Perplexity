@@ -30,7 +30,7 @@ If we assume that, "if there is not a fact that says it is true, then it is fals
 
 Continuing the example from above, if there is not a fact that says "User has cash" in the system, the subtree will not have a Solution Group, which the engine interprets as False, meaning "we have proven this fact to be false".
 
-I'm calling this a "Logical Failure" for reasons that should become clear later.
+I'm calling this a "Logical Failure".
 
 *** Not Understood Failures
 
@@ -71,6 +71,8 @@ Unfortunately, if since we are operating under an closed-world assumption, this 
     - Pencils are not fond of chocolate.
 
 
+What about "Is a dish vegetarian?" The failure happens at the verb, so it also isn't a logical failure. The verb could fail with "notUnderstood"
+
 *** Vagueness Failures
 
 From: https://www.cs.utexas.edu/~dnp/frege/subsec-englishvslogic.html
@@ -81,6 +83,7 @@ From: https://www.cs.utexas.edu/~dnp/frege/subsec-englishvslogic.html
 
 *** Presupposition Failures
 From: https://www.cs.utexas.edu/~dnp/frege/subsec-englishvslogic.html
+
 
 ~~~ 
 "The king of France is bald."

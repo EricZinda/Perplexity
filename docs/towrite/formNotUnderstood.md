@@ -2,6 +2,15 @@
 Start with an MRS
 
 formNotUnderstood means "N/A" or "not implemented" or "don't understand" as opposed to False or True
+It should only be used for *structural* failures. Things like: 
+- This function only works for concepts
+- This function only works for future tense
+
+Failures about the meanings of words like:
+- It doesn't make sense for "on" to be used with colors should return a normal error
+- 
+What about disjunctions? A disjunction is treated just like an alternative interpretation so returning formNotUnderstood from one part of the disjunction shouldn't fail others.
+
     For each interpretation (i.e. choice of particular predication implementations or disjunction options)
         There is an error hierarchy (from lowest to highest):
         - Phase 1: Errors that happen trying to generate a single solution 

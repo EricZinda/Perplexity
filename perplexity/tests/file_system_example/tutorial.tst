@@ -24,7 +24,7 @@
         },
         {
             "Command": "which files are small?",
-            "Expected": "There are less than 2 small file",
+            "Expected": "(File(name=/documents/file1.txt, size=1000000),)",
             "Tree": "_which_q(x3,_file_n_of(x3,i8),_small_a_1(e2,x3))",
             "Enabled": true,
             "ID": "ff2e71f2-ee1b-48eb-94f7-01272a7af8fa"
@@ -409,7 +409,7 @@
         },
         {
             "Command": "copy \"\\>temp\\>59.txt\" in \"\\>documents\"",
-            "Expected": "'/temp/59.txt' in '/documents' is not in '/documents'",
+            "Expected": "There isn't a '/temp/59.txt' in '/documents' in the system",
             "Tree": "proper_q(x16,[quoted(\\>documents,i21), fw_seq(x16,i21)],pronoun_q(x3,pron(x3),proper_q(x8,[quoted(\\>temp\\>59.txt,i13), fw_seq(x8,i13), _in_p_loc(e15,x8,x16)],_copy_v_1(e2,x3,x8))))",
             "Enabled": true,
             "ID": "c7a1db52-5b8c-4b5c-b2e3-d4696a9d7193"
@@ -549,7 +549,7 @@
         },
         {
             "Command": "copy \"file4.txt\" in \"\\>documents\"",
-            "Expected": "'file4.txt' in '/documents' is not in '/documents'",
+            "Expected": "There isn't a 'file4.txt' in '/documents' in the system",
             "Tree": "proper_q(x16,[quoted(\\>documents,i21), fw_seq(x16,i21)],pronoun_q(x3,pron(x3),proper_q(x8,[quoted(file4.txt,i13), fw_seq(x8,i13), _in_p_loc(e15,x8,x16)],_copy_v_1(e2,x3,x8))))",
             "Enabled": true,
             "ID": "67a6caf5-6b4d-4ad0-bdd9-fd5054f4c71f"

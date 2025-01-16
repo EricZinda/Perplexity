@@ -1127,6 +1127,48 @@ def split_predications_consuming_event(term, target_event):
     return found_predications, remaining_predications
 
 
+# Called to mark the current state as part of a disjunction variant.
+# which variant is indicated by new_lineage_id
+def set_disjunction_lineage(state, context, new_lineage_id):
+    tree_lineage_binding = state.get_binding("tree_lineage")
+    tree_lineage = "" if tree_lineage_binding.value is None else tree_lineage_binding.value[0]
+    new_lineage = perplexity.tree.create_disjunction_tree_lineage(tree_lineage,
+                                                                  context.current_predication().index,
+                                                                  new_lineage_id)
+
+    return state.set_x("tree_lineage", (new_lineage,))
+
+
+def has_created_disjunction(interpretation_index, solution):
+    tree_lineage_binding = solution.get_binding("tree_lineage")
+    if tree_lineage_binding is None or tree_lineage_binding.value is None:
+        return None
+    else:
+        return f"{interpretation_index}@" in tree_lineage_binding.value[0]
+
+
+def create_disjunction_tree_lineage_from_solution(solution, interpretation_index, lineage):
+    tree_lineage_binding = solution.get_binding("tree_lineage")
+    if tree_lineage_binding is None:
+        return None
+    else:
+        tree_lineage_value = solution.get_binding("tree_lineage").value[0]
+
+    return create_disjunction_tree_lineage(tree_lineage_value, str(interpretation_index), lineage)
+
+
+def create_disjunction_tree_lineage(existing_lineage, interpretation_index, new_lineage):
+    return f"{existing_lineage}.{interpretation_index}@{new_lineage}"
+
+
+def get_disjunction_tree_lineage(solution):
+    tree_lineage_binding = solution.get_binding("tree_lineage")
+    if tree_lineage_binding.value is None:
+        return None
+    else:
+        return tree_lineage_binding.value[0]
+
+
 pipeline_logger = logging.getLogger('Pipeline')
 
 

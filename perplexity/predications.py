@@ -328,7 +328,8 @@ def combinatorial_predication_1(context, state, binding, bound_function, unbound
                 if lineage == "":
                     yield state.set_x(binding.variable.name, tuple(value))
                 else:
-                    yield state.set_x(binding.variable.name, tuple(value)).set_x("tree_lineage", (f"{tree_lineage}.{lineage}",))
+                    new_lineage = perplexity.tree.create_disjunction_tree_lineage(tree_lineage, context.current_predication().index, lineage)
+                    yield state.set_x(binding.variable.name, tuple(value)).set_x("tree_lineage", (new_lineage,))
 
     else:
         # This is a single set that needs to be kept intact
@@ -492,7 +493,8 @@ def predication_2(context, state, binding1, binding2,
                     if lineage_item[0] == "":
                         lineage_state = state
                     else:
-                        lineage_state = state.set_x("tree_lineage", (f"{tree_lineage}.{lineage}",))
+                        new_lineage = perplexity.tree.create_disjunction_tree_lineage(tree_lineage, context.current_predication().index, lineage)
+                        lineage_state = state.set_x("tree_lineage", (new_lineage,))
 
                     if unbound_binding_descriptor.group == VariableStyle.semantic:
                         # Each of the items in intersection_last is a set for which all bound values is true, return them one by one

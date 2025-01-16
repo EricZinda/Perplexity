@@ -47,13 +47,15 @@ class SingleMaximalGroupGenerator(object):
 
     def __next__(self):
         if groups_logger.level == logging.DEBUG:
-            groups_logger.debug(f"SingleGroupGenerator: Next solution requested for {self.group_id}, self.last_yielded_index={self.last_yielded_index}, len(self.group_list) - 1 = {len(self.group_list) - 1}")
+            groups_logger.debug(f"SingleGroupGenerator: Next solution requested for {self.group_id}, maximal_group={self.generate_maximal_group}, self.last_yielded_index={self.last_yielded_index}, len(self.group_list) - 1 = {len(self.group_list) - 1}")
 
         if self.last_yielded_index >= len(self.group_list) - 1:
             if self.generate_maximal_group:
                 if self.solution_group_generator is None or not self.solution_group_generator.next_solution_in_group(self.group_id):
+                    groups_logger.debug(f"SingleGroupGenerator: No more solutions for  {self.group_id}, maximal_group={self.generate_maximal_group}")
                     raise StopIteration
             else:
+                groups_logger.debug(f"SingleGroupGenerator: No more solutions for  {self.group_id}, maximal_group={self.generate_maximal_group}")
                 raise StopIteration
 
         self.last_yielded_index += 1
