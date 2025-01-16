@@ -83,10 +83,16 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
             - This can probably be done later since they will always fail anyway since the fact_check predication is dealing with instances and the group handlers
                 will both fail
 
-        - Regression:are any dishes vegetarian?->Yes.(there are more)
+        - (fixed) Regression:are any dishes vegetarian?->Yes.(there are more)
             Expected:
             Yes.
             Waiter: What can I get you?
+
+        - (fixed) Regression: Example34: 'file1.txt' and 'file2.txt' are in a folder together -> Yes, that is true.
+            Expected:
+            Yes, that is true.
+            (there are more)
+
 
         - Regression: Example24_reset: regression: copy "\>temp\>59.txt" in "\>documents\ -> '/temp/59.txt' in '/documents' is not in '/documents'
             Expected:
@@ -96,11 +102,6 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
         - (This is correct, but a bad error) Regression: Example23_reset:copy 'blue' in '\>documents' -> I can't copy 'blue'
             Expected:
                 'blue' in '/documents' is not in '/documents'
-
-        - Regression: Example34: 'file1.txt' and 'file2.txt' are in a folder together -> Yes, that is true.
-            Expected:
-            Yes, that is true.
-            (there are more)
 
         - Regression: Example23_reset: what is in this 'blue' -> There isn't a 'blue' in the system
             Expected:

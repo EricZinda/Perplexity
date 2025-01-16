@@ -717,6 +717,8 @@ class ExecutionContext(object):
             self._error_predication_index = error_info[2]
             self._error_phase = error_info[3]
 
+            self.clear_not_understood_error()
+
     def clear_error(self):
         blank = self.blank_error_info()
         self._error = blank[0]

@@ -5112,7 +5112,7 @@ if __name__ == '__main__':
     ShowLogging("Pipeline")
     # ShowLogging("ChatGPT")
     # ShowLogging("Testing")
-    # ShowLogging("Execution")
+    ShowLogging("Execution")
     # ShowLogging("Generation")
     # ShowLogging("SString")
     # ShowLogging("UserInterface")
