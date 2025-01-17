@@ -332,7 +332,10 @@ def error_priority(error_string):
                 return priority
 
             else:
-                priority += error_string[2] * error_priority_dict["success"]
+                # Increase the error priority into a "phase 2" range if it is a phase 2 error
+                assert error_string[2] in [1,2]
+                priority += (error_string[2] - 1) * error_priority_dict["success"]
+
             return priority
         else:
             return None

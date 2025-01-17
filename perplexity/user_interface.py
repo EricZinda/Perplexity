@@ -30,6 +30,7 @@ from perplexity.utilities import sentence_force, module_name, import_function_fr
 from perplexity.world_registry import world_information, LoadWorldOperation, ui_from_world_name
 import perplexity.plurals
 
+
 def default_error_priority(error):
     system_priority = perplexity.messages.error_priority(error)
     if system_priority is not None:

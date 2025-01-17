@@ -1,4 +1,5 @@
 import samples.file_system_example.objects
+from perplexity.utilities import ShowLogging
 from samples.file_system_example.objects import File, Folder, Actor, FileSystemMock, RichConcept
 from samples.file_system_example.state import DeleteOperation, FileSystemState, ChangeDirectoryOperation, CreateOperation
 from perplexity.predications import combinatorial_predication_1, lift_style_predication_2, \
@@ -653,11 +654,11 @@ def generate_custom_message(state, tree_info, error_term):
             # No custom message, just return the raw error for debugging
             return str(error_term)
 
-
+1000000
 def reset():
     return FileSystemState(FileSystemMock([(True, "/documents/file1.txt", {"size": 1000}),
                                            (False, "/Desktop", {"size": 10000000}),
-                                           (True, "/Desktop/file2.txt", {"size": 10000000}),
+                                           (True, "/Desktop/file2.txt", {"size": 1000000}),
                                            (True, "/Desktop/file3.txt", {"size": 1000})],
                                            "/Desktop"))
     # return FileSystemState(FileSystemMock([(True, "/documents/file1.txt", {"size": 1000}),
@@ -687,7 +688,7 @@ def ui():
 
 
 if __name__ == '__main__':
-    # ShowLogging("Pipeline")
+    ShowLogging("Pipeline")
     # ShowLogging("ChatGPT")
     # ShowLogging("Testing")
     # ShowLogging("Execution")

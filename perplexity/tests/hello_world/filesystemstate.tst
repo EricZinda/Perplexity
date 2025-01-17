@@ -34,7 +34,7 @@
         },
         {
             "Command": "which file is large?",
-            "Expected": "(File(name=/Desktop/file2.txt, size=10000000),)",
+            "Expected": "(File(name=/Desktop/file2.txt, size=1000000),)",
             "Tree": "_which_q(x3,_file_n_of(x3,i8),_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "78adc7c0-eeec-4640-b935-8cbe63056747"
@@ -69,7 +69,7 @@
         },
         {
             "Command": "what file is large?",
-            "Expected": "(File(name=/Desktop/file2.txt, size=10000000),)",
+            "Expected": "(File(name=/Desktop/file2.txt, size=1000000),)",
             "Tree": "_which_q(x3,_file_n_of(x3,i8),_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "782e71fa-a995-4539-b02a-a5eafdd17358"

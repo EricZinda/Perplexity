@@ -68,7 +68,7 @@ def error_priority(error_string):
     else:
         error_constant = error_string[1][0]
         priority = error_priority_dict.get(error_constant, error_priority_dict["defaultPriority"])
-        priority += error_string[2] * error_priority_dict["success"]
+        priority += (error_string[2] - 1) * error_priority_dict["success"]
         return priority
 
 
