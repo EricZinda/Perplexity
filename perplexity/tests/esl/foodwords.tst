@@ -80,7 +80,7 @@
         },
         {
             "Command": "I want a tablecloth",
-            "Expected": "I don't know the words: tablecloth\nHost: How can I help you today?",
+            "Expected": "Host: There isn't such a tablecloth here\nHost: How can I help you today?",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_tablecloth_n_1(x8),_want_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "79268d62-547f-4085-8263-639aee0b52fd"

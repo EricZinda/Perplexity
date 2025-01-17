@@ -686,7 +686,7 @@ class ExecutionContext(object):
         return error, was_forced, predication_index, phase
 
     @staticmethod
-    def blank_error(error=None, predication_index=-1, phase=0):
+    def blank_error(error=None, predication_index=-1, phase=1):
         return predication_index, error, phase
 
     def reset_scope(self, state):
