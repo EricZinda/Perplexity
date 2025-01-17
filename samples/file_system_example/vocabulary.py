@@ -460,6 +460,7 @@ def in_p_loc(context, state, e_introduced_binding, x_actor_binding, x_location_b
 def loc_nonsp(context, state, e_introduced_binding, x_actor_binding, x_location_binding):
     # Don't use this version if we are dealing with a size
     if x_location_binding.value is not None and value_is_measure(x_location_binding.value):
+        context.report_error(["formNotUnderstood", "value is size"])
         return
 
     def item_at_item(item1, item2):
@@ -499,7 +500,8 @@ def loc_nonsp(context, state, e_introduced_binding, x_actor_binding, x_location_
 # we treat megabytes as a group, all added up, which is different than separately (a megabyte as a time) so ditto
 @Predication(vocabulary, names=["loc_nonsp"], arguments=[("e",), ("x", ValueSize.all), ("x", ValueSize.all)], handles=[("DeterminerSetLimiter", EventOption.optional)])
 def loc_nonsp_size(context, state, e_introduced_binding, x_actor_binding, x_size_binding):
-    if x_size_binding.value is None:
+    if x_size_binding.value is None or not (value_is_measure(x_actor_binding.value) or value_is_measure(x_size_binding.value)):
+        context.report_error(["formNotUnderstood", "must have size"])
         return
 
     def both_bound_criteria(actor_set, size_set):

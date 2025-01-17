@@ -333,7 +333,6 @@ class TreeSolver(object):
                     if logger.isEnabledFor(logging.DEBUG):
                         logger.debug(f"yielding {predication}, state: {str(next_state)}, phrase_type: [{self._phrase_type}]")
 
-                    had_solution = True
                     yield next_state
 
             except MessageException as error:
