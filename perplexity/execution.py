@@ -704,19 +704,14 @@ class ExecutionContext(object):
             return True
 
     def get_error_info(self):
-        if self._error is not None:
-            return self._error, self._error_was_forced, self._error_predication_index, self._error_phase
-        else:
-            return self._notUnderstood
+        return self._error, self._error_was_forced, self._error_predication_index, self._error_phase
 
     def set_error_info(self, error_info):
-        if error_info is not None:
-            self._error = error_info[0]
-            self._error_was_forced = error_info[1]
-            self._error_predication_index = error_info[2]
-            self._error_phase = error_info[3]
-
-            self.clear_not_understood_error()
+        assert error_info is not None
+        self._error = error_info[0]
+        self._error_was_forced = error_info[1]
+        self._error_predication_index = error_info[2]
+        self._error_phase = error_info[3]
 
     def clear_error(self):
         blank = self.blank_error_info()
@@ -725,17 +720,11 @@ class ExecutionContext(object):
         self._error_predication_index = blank[2]
         self._error_phase = blank[3]
 
-        self.clear_not_understood_error()
-
-    def clear_not_understood_error(self):
-        self._notUnderstood = self.blank_error_info()
-
     def has_not_understood_error(self):
         # System errors that indicate the phrase can't be understood can't be replaced
         # since they aren't indicating a logical failure, they are indicating that the system didn't understand
         # predications like neg() need to know if a branch failed due to a real logical failure or not
-        if self._notUnderstood[0] is not None:
-            return self._notUnderstood
+        return self._error is not None and self._error[0] == "formNotUnderstood"
 
     def report_error(self, error, force=False, phase=1):
         self.report_error_for_index(0, error, force, phase=phase)
@@ -750,28 +739,15 @@ class ExecutionContext(object):
     #     - When returning errors: if we only got formNotUnderstood, that is the error. Otherwise: the first real error is the error
     def report_error_for_index(self, predication_index, error, force=False, phase=1):
         if force or self._error_predication_index < predication_index:
-            if error[0] == "formNotUnderstood":
-                # If previous error was not forced
-                if not self._notUnderstood[1]:
-                    self._notUnderstood = [error, force, predication_index, phase]
-
-            else:
-                if not self._error_was_forced:
-                    self._error = error
-                    self._error_predication_index = predication_index
-                    self._error_phase = phase
-                    if force:
-                        self._error_was_forced = True
-
-                    # Since we have a real error, clear out
-                    self.clear_not_understood_error()
+            assert not self.has_not_understood_error()
+            self._error = error
+            self._error_predication_index = predication_index
+            self._error_phase = phase
+            if force:
+                self._error_was_forced = True
 
     def error(self):
-        if self._error is not None:
-            return Error(self._error_predication_index, self._error, self._error_phase)
-
-        else:
-            return Error(self._notUnderstood[2], self._notUnderstood[0], self._notUnderstood[3])
+        return Error(self._error_predication_index, self._error, self._error_phase)
 
 
 logger = logging.getLogger('Execution')

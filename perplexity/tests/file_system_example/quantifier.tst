@@ -17,7 +17,7 @@
         },
         {
             "Command": "all files are 10 mb",
-            "Expected": "There are less than 2 file that is 10 megabyte",
+            "Expected": "That isn't true for all all file",
             "Tree": "udef_q(x9,[_megabyte_n_1(x9,u16), card(10,e15,x9)],_all_q(x3,_file_n_of(x3,i8),loc_nonsp(e2,x3,x9)))",
             "Enabled": true,
             "ID": "97776178-2182-4413-95ab-aabc6d735cc7"
@@ -58,5 +58,5 @@
             "ID": "a080a2e9-b84d-4492-840b-56a8e33a89e1"
         }
     ],
-    "ElapsedTime": 7.24221
+    "ElapsedTime": 8.48955
 }

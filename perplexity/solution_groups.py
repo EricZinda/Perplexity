@@ -302,7 +302,6 @@ def solution_groups(execution_context,
                                             phase=last_error_info[3])
 
         # Set the error to the best failure we recorded
-        next_best_error_info = temp_context.get_error_info()
         execution_context.set_error_info(temp_context.get_error_info())
         groups_logger.debug(f"solution_groups recorded error: {execution_context.get_error_info()}")
     else:

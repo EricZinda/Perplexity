@@ -225,7 +225,14 @@ class GroupSet(object):
         self.final_set = final_set
 
 
-# Run solution_group code within all_plural_groups_stream2() so that failed solution groups cause the right alternative sets to be created
+def report_last_error(temp_context, context):
+    last_error_info = context.get_error_info()
+    temp_context.report_error_for_index(predication_index=last_error_info[2],
+                                        error=last_error_info[0], force=last_error_info[1],
+                                        phase=last_error_info[3])
+
+
+# Run solution_group constraints (not code checks) within all_plural_groups_stream2() so that failed solution groups cause the right alternative sets to be created
 # Problems:
 #     - SingleGroupGenerator assumes that, if it gets a new group with the same lineage, that there will be *more* records in it
 #         - and furthermore that the records that we already returned are still there
@@ -246,6 +253,7 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
 
     # When we know we have failed early (early_fail_quit)
     early_fail_quit = False
+    temp_context = execution_context.new_initial_context()
     for next_solution in solutions:
         if groups_logger.level == logging.DEBUG:
             groups_logger.debug(f"Processing solution: {next_solution}")
@@ -256,6 +264,7 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
             # Failed already, so adding more will never make it succeed
             if groups_logger.level == logging.DEBUG:
                 groups_logger.debug(f"Solution failed phase 2 by itself: {next_solution}")
+            report_last_error(temp_context, execution_context)
             continue
 
         new_sets = []
@@ -271,7 +280,7 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
             merge, state = check_criteria_all(execution_context, var_criteria, new_set_stats_group, next_solution, phase=2)
             if groups_logger.level == logging.DEBUG and state in [CriteriaResult.fail_one, CriteriaResult.fail_all]:
                 nl = "\n     "
-                groups_logger.debug(f"Solution group state: {state} \n     {nl.join(str(x) for x in (existing_group_set.raw_set + [next_solution]))}")
+                groups_logger.debug(f"Solution group state: {state}: (values next) \n     {nl.join(str(x) for x in (existing_group_set.raw_set + [next_solution]))}")
 
             if state == CriteriaResult.fail_one:
                 # Fail (doesn't meet criteria): don't add, don't yield
@@ -284,15 +293,14 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
                 break
 
             else:
-                # Didn't fail, now check against any code criteria to make sure it really did succeed
+                # Didn't fail
                 raw_set = existing_group_set.raw_set + [next_solution]
-                code_criteria_failed = False
                 final_set = None
                 if state == CriteriaResult.meets:
                     if groups_logger.level == logging.DEBUG:
                         nl = "\n     "
                         groups_logger.debug(
-                            f"Pre-code criteria Solution group raw (merged = {merge}): {state} \n     {nl.join(str(x) for x in raw_set)}")
+                            f"Pre-code criteria Solution group raw (merged = {merge}): {state} values next \n     {nl.join(str(x) for x in raw_set)}")
 
                     final_set = raw_set
 
@@ -311,7 +319,7 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
                 #   don't miss any cases
                 # Also, don't ever "merge" into the intial set because it means that all other solutions will be tracked
                 # as a lineage since the initial set is the base for everything
-                if merge and not code_criteria_failed and not testing_initial_set:
+                if merge and not testing_initial_set:
                     next_solution_was_merged = True
                     new_group_set = existing_group_set
                     if len(existing_group_set.raw_set) == 0:
@@ -328,7 +336,7 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
 
                 if groups_logger.level == logging.DEBUG:
                     nl = "\n     "
-                    groups_logger.debug(f"Solution group raw (merged: {next_solution_was_merged}): {state} \n     {nl.join(str(x) for x in new_group_set.raw_set)}")
+                    groups_logger.debug(f"Solution group raw (merged: {next_solution_was_merged}): {state}: (values next) \n     {nl.join(str(x) for x in new_group_set.raw_set)}")
 
                 if state == CriteriaResult.meets:
                     # Clear any errors that occurred trying to generate solution groups that didn't work
@@ -344,10 +352,15 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
                     # Not yet a solution, don't track it as one
                     pass
 
+        # Remember the "best" phase 2 error than happened across all the solution groups that failed
+        report_last_error(temp_context, execution_context)
         sets += new_sets
 
         if early_fail_quit:
             break
+
+    # Set the error context to be the best error we got before we process global context
+    execution_context.set_error_info(temp_context.get_error_info())
 
     # If early_fail_quit is True, the error should already be set
     if not early_fail_quit and has_global_constraint and len(pending_global_criteria) > 0:
@@ -357,10 +370,6 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
                     nl = "\n     "
                     groups_logger.debug(f"Didn't meet global criteria: {criteria}")
                 return
-
-        # Clear any errors that occurred trying to generate solution groups that didn't work
-        # so that the error that gets returned is whatever happens while *processing* the solution group
-        execution_context.clear_error()
 
         for pending in pending_global_criteria:
             final_group = pending[0]

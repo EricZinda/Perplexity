@@ -498,7 +498,10 @@ def loc_nonsp(context, state, e_introduced_binding, x_actor_binding, x_location_
 # handles size only
 # loc_nonsp will add up the size of files if a collective set of actors comes in, so declare that as handling them differently
 # we treat megabytes as a group, all added up, which is different than separately (a megabyte as a time) so ditto
-@Predication(vocabulary, names=["loc_nonsp"], arguments=[("e",), ("x", ValueSize.all), ("x", ValueSize.all)], handles=[("DeterminerSetLimiter", EventOption.optional)])
+@Predication(vocabulary,
+             names=["loc_nonsp"],
+             arguments=[("e",), ("x", ValueSize.all), ("x", ValueSize.all)],
+             handles=[("DeterminerSetLimiter", EventOption.optional)])
 def loc_nonsp_size(context, state, e_introduced_binding, x_actor_binding, x_size_binding):
     if x_size_binding.value is None or not (value_is_measure(x_actor_binding.value) or value_is_measure(x_size_binding.value)):
         context.report_error(["formNotUnderstood", "must have size"])

@@ -83,15 +83,38 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
             - This can probably be done later since they will always fail anyway since the fact_check predication is dealing with instances and the group handlers
                 will both fail
 
+        - Regression: **** Test ID: 4aee1a8f-7e50-461a-9448-c7e055b142de
+            soup, salad and steak are vegetarian
+            There is more than soup
+            Waiter: What can I get you?
 
-        - Regression: Example26_reset:the 4 large files are 20 mb -> a 4 file that is 20 megabyte are not large
-            - was: There are less than 4 large 4 file that is 20 megabyte
-            - The problem is that formNotUnderstood and "real" errors are both tracked.
-                - when we report a lineage error we will get the best non-formNotUnderstood error instead of "formNotUnderstood"
-                - Thus we get a nice "not large" error even though really nothing was understood
-        - It seems like all the logic about returning true error if there is a formNotUnderstood can now go away since it is confusing
-            - because: we now simply stop processing if formNotUnderstood is encountered
-            - we can put assertions in there to make sure nobody is trying a real error after formNotUnderstood
+            Expected:
+            soup, salad, and steak are not vegetarian
+            Waiter: What can I get you?
+
+        - Regression: **** Test ID: 960b07fe-942d-4654-93f2-5c065888ab0a
+            My order is one steak
+            order is not 1 steak
+            Waiter: Can I get you anything besides 2 steaks for you?
+
+            Expected:
+            There is more than 1 steak
+            Waiter: Can I get you anything besides 2 steaks for you?
+
+        - Regression: I want one menu for me and two menus for johnny
+            Waiter: Sorry, I'm not sure what to do about that.
+            Waiter: Can I get you anything besides a menu for you and a menu for Johnny?
+
+            Expected:
+            Waiter: Our policy is to give one menu to every customer ...
+            Waiter: Can I get you anything besides a menu for you and a menu for Johnny?
+
+        - Regression: Example 34: 'file1.txt' and 'file2.txt' are in a folder together
+            Yes, that is true.
+
+            Expected:
+            Yes, that is true.
+            (there are more)
 
         - Broke: Example25_reset: "which files are in a folder" so that it only returns one now
             - Also: which files are 20mb. Now only returns the first set
