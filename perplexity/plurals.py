@@ -359,7 +359,8 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
         if early_fail_quit:
             break
 
-    # Set the error context to be the best error we got before we process global context
+    # Record the last failure and set the error context to be the best error we got before we process global context
+    report_last_error(temp_context, execution_context)
     execution_context.set_error_info(temp_context.get_error_info())
 
     # If early_fail_quit is True, the error should already be set

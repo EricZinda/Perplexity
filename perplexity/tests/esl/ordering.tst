@@ -157,7 +157,7 @@
         },
         {
             "Command": "My order is one steak",
-            "Expected": "There is more than 1 steak\nWaiter: Can I get you anything besides 2 steaks for you?",
+            "Expected": "order is not 1 steak\nWaiter: Can I get you anything besides 2 steaks for you?",
             "Tree": "pronoun_q(x9,pron(x9),udef_q(x14,[_steak_n_1(x14), card(1,e20,x14)],def_explicit_q(x3,[_order_n_of(x3), poss(e8,x3,x9)],_be_v_id(e2,x3,x14))))",
             "Enabled": true,
             "ID": "960b07fe-942d-4654-93f2-5c065888ab0a"

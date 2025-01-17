@@ -91,15 +91,7 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
             Expected:
             soup, salad, and steak are not vegetarian
             Waiter: What can I get you?
-
-        - Regression: **** Test ID: 960b07fe-942d-4654-93f2-5c065888ab0a
-            My order is one steak
-            order is not 1 steak
-            Waiter: Can I get you anything besides 2 steaks for you?
-
-            Expected:
-            There is more than 1 steak
-            Waiter: Can I get you anything besides 2 steaks for you?
+            - same happens with "soup and steak are vegetarian"
 
         - Regression: I want one menu for me and two menus for johnny
             Waiter: Sorry, I'm not sure what to do about that.
