@@ -225,9 +225,9 @@ class GroupSet(object):
         self.final_set = final_set
 
 
-def report_last_error(temp_context, context):
+def report_last_error(target_context, context):
     last_error_info = context.get_error_info()
-    temp_context.report_error_for_index(predication_index=last_error_info[2],
+    target_context.report_error_for_index(predication_index=last_error_info[2],
                                         error=last_error_info[0], force=last_error_info[1],
                                         phase=last_error_info[3])
 
@@ -253,7 +253,7 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
 
     # When we know we have failed early (early_fail_quit)
     early_fail_quit = False
-    temp_context = execution_context.new_initial_context()
+    context_for_best_error = execution_context.new_initial_context()
     for next_solution in solutions:
         if groups_logger.level == logging.DEBUG:
             groups_logger.debug(f"Processing solution: {next_solution}")
@@ -264,7 +264,7 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
             # Failed already, so adding more will never make it succeed
             if groups_logger.level == logging.DEBUG:
                 groups_logger.debug(f"Solution failed phase 2 by itself: {next_solution}")
-            report_last_error(temp_context, execution_context)
+            report_last_error(context_for_best_error, execution_context)
             continue
 
         new_sets = []
@@ -353,15 +353,15 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
                     pass
 
         # Remember the "best" phase 2 error than happened across all the solution groups that failed
-        report_last_error(temp_context, execution_context)
+        report_last_error(context_for_best_error, execution_context)
         sets += new_sets
 
         if early_fail_quit:
             break
 
     # Record the last failure and set the error context to be the best error we got before we process global context
-    report_last_error(temp_context, execution_context)
-    execution_context.set_error_info(temp_context.get_error_info())
+    report_last_error(context_for_best_error, execution_context)
+    execution_context.set_error_info(context_for_best_error.get_error_info())
 
     # If early_fail_quit is True, the error should already be set
     if not early_fail_quit and has_global_constraint and len(pending_global_criteria) > 0:

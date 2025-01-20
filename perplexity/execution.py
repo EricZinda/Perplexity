@@ -738,7 +738,7 @@ class ExecutionContext(object):
     #                 - Record both the first instance of a regular error and the first instance of formNotUnderstood at the deepest point
     #     - When returning errors: if we only got formNotUnderstood, that is the error. Otherwise: the first real error is the error
     def report_error_for_index(self, predication_index, error, force=False, phase=1):
-        if force or self._error_predication_index < predication_index:
+        if force or self._error_phase <= phase and self._error_predication_index < predication_index:
             assert not self.has_not_understood_error()
             self._error = error
             self._error_predication_index = predication_index
