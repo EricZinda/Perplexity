@@ -6,7 +6,7 @@ from perplexity.response import RespondOperation
 from perplexity.sstring import s, convert_complex_variable
 from perplexity.tree import predication_from_index, find_predication_from_introduced, find_predication, \
     find_index_predication
-from perplexity.utilities import parse_predication_name, sentence_force, get_function, TimeoutException
+from perplexity.utilities import parse_predication_name, sentence_force, get_function, TimeoutException, oxford_comma
 
 
 # Implements the response for a given tree
@@ -14,7 +14,7 @@ from perplexity.utilities import parse_predication_name, sentence_force, get_fun
 # BUT: It will only ever be called once
 # yields: response, solution_group that generated the response if it called next(solution_groups) to get one
 # May also call next(solution_groups) to see if there is more than one solution group
-def respond_to_mrs_tree(state, vocabulary, message_function, tree, solution_groups, error):
+def respond_to_mrs_tree(state, vocabulary, error_priority_function, message_function, tree, solution_groups, error):
     # Tree can be None if we didn't have one of the
     # words in the vocabulary
     if tree is None:
@@ -76,7 +76,7 @@ def respond_to_mrs_tree(state, vocabulary, message_function, tree, solution_grou
                 # Run the wh_handlers to give the developer a chance to handle lists of things
                 wh_variable = wh_predication.introduced_variable()
                 wh_handlers = find_wh_group_handlers(vocabulary, sentence_force_type)
-                solution_group_list = run_wh_group_handlers(vocabulary, wh_handlers, wh_variable, original_solution_group_list, timed_out)
+                solution_group_list = run_wh_group_handlers(vocabulary, error_priority_function, wh_handlers, wh_variable, original_solution_group_list, timed_out)
 
                 # If any solution in the group has a RespondOperation in it, assume that the response
                 # has been handled by that and just return an empty string
@@ -116,7 +116,7 @@ def find_wh_group_handlers(vocabulary, this_sentence_force):
 
 # Called only if we have a successful solution group
 # Same semantic as solution group handlers: First wh_group handler that yields, wins
-def run_wh_group_handlers(vocabulary, wh_handlers, wh_question_variable, group, timed_out):
+def run_wh_group_handlers(vocabulary, error_priority_function, wh_handlers, wh_question_variable, group, timed_out):
     # If there are responses in the group, don't run the handlers
     for solution in group:
         for operation in solution.get_operations():
@@ -128,7 +128,7 @@ def run_wh_group_handlers(vocabulary, wh_handlers, wh_question_variable, group, 
         for function_module_functionname in wh_handlers:
             pipeline_logger.debug(f"Running {function_module_functionname[1]}.{function_module_functionname[2]} wh-solution group handler")
 
-            for resulting_group in function_module_functionname[0](ExecutionContext(vocabulary), group, value_binding_list, timed_out):
+            for resulting_group in function_module_functionname[0](ExecutionContext(vocabulary, error_priority_function), group, value_binding_list, timed_out):
                 if resulting_group is not None and len(resulting_group) > 0:
                     return resulting_group
 
@@ -222,9 +222,22 @@ def generate_message(state, tree_info, error_term):
 
         return f"I don't understand the way you are using: {parsed_predicate['Lemma']}"
 
+    elif error_constant == "phase2NotAllRequiredValues":
+        # Happens when the failure of a solution group is because all the conjunction values
+        # aren't included
+        values = []
+        for item in arg1:
+            if hasattr(item, "render_english"):
+                values.append(item.render_english())
+            else:
+                values.append(item)
+
+        values = oxford_comma(values)
+        return s("That isn't true for {*values}", tree_info)
+
     elif error_constant == "phase2LessThan":
         # if arg2 is a variable that represents that actor for the index verb,
-        # THe error returned would be "there are less than 2 we" or similar
+        # The error returned would be "there are less than 2 we" or similar
         # When really the answer should be "there are less than 2 people/things that (did whatever the sentence said)
         index_predication = find_index_predication(tree_info)
         parsed_name = parse_predication_name(index_predication.name)

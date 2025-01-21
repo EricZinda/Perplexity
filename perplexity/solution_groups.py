@@ -237,6 +237,7 @@ class SolutionMaximalGroupGenerator(object):
 # TODO: Intelligently choosing the initial cardinal could greatly reduce the combinations processed...
 def solution_groups(execution_context,
                     solutions_orig,
+                    error_priority_function,
                     this_sentence_force,
                     wh_question_variable,
                     tree_info,
@@ -275,7 +276,8 @@ def solution_groups(execution_context,
                                                                                              tree_info,
                                                                                              "solution_group")
         # create a context that will track errors across solution groups
-        temp_context = execution_context.new_initial_context()
+        best_error = perplexity.execution.ExecutionContext.blank_error()
+        best_error_info = perplexity.execution.ExecutionContext.blank_error_info()
         for solution_group in group_generator:
             # The context is cleared every time so we need to remember the "best" error
             # Since the trees are the same for every solution group, we can use the normal logic
@@ -285,25 +287,29 @@ def solution_groups(execution_context,
                 optimized_criteria_list,
                 index_predication,
                 solution_group)
+
+            last_error = perplexity.execution.ExecutionContext.error_info_to_error(last_error_info)
             if created_solution_group:
                 # Clear any errors that occurred trying to generate solution groups that didn't work
                 # so that the error that gets returned is whatever happens while *processing* the solution group
                 execution_context.clear_error()
                 yield created_solution_group
+
             else:
-                temp_context.report_error_for_index(predication_index=last_error_info[2],
-                                                    error=last_error_info[0], force=last_error_info[1],
-                                                    phase=last_error_info[3])
+                if error_priority_function(last_error) > error_priority_function(best_error):
+                    best_error = last_error
+                    best_error_info = last_error_info
 
         # Make sure to record the last error (of the final solution or solution group that didn't work)
-        last_error_info = execution_context.get_error_info()
-        temp_context.report_error_for_index(predication_index=last_error_info[2],
-                                            error=last_error_info[0], force=last_error_info[1],
-                                            phase=last_error_info[3])
+        last_error = execution_context.error()
+        if error_priority_function(last_error) > error_priority_function(best_error):
+            best_error = last_error
+            best_error_info = execution_context.get_error_info()
 
         # Set the error to the best failure we recorded
-        execution_context.set_error_info(temp_context.get_error_info())
-        groups_logger.debug(f"solution_groups recorded error: {execution_context.get_error_info()}")
+        execution_context.set_error_info(best_error_info)
+        groups_logger.debug(f"solution_groups recorded error: {best_error_info}")
+
     else:
         execution_context.set_error_info(solutions_orig.error_info)
         groups_logger.debug(f"solution_groups recorded error: {execution_context.get_error_info()}")

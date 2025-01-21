@@ -1007,7 +1007,11 @@ def count(context, state, e_binding, x_total_count_binding, x_item_to_count_bind
 
     # Don't try all alternative interpretations, just the one being used now
     wh_phrase_variable = perplexity.tree.get_wh_question_variable(state.get_binding("tree").value[0])
-    for tree_record in tree_solver.tree_solutions(subtree_state, new_tree_info, interpretation=context._interpretation, wh_phrase_variable=wh_phrase_variable):
+    for tree_record in tree_solver.tree_solutions(subtree_state,
+                                                  new_tree_info,
+                                                  context.error_priority(),
+                                                  interpretation=context._interpretation,
+                                                  wh_phrase_variable=wh_phrase_variable):
         if tree_record["SolutionGroupGenerator"] is not None:
             # There were solutions, so this is true
             unique_values = set()

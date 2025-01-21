@@ -1,4 +1,6 @@
 import numbers
+
+from perplexity.utilities import oxford_comma
 from samples.esl.worldstate import instance_of_what, rel_check, location_of_type, \
     has_item_of_type, is_type, is_instance, rel_objects, all_specializations, \
     instance_of_or_entails, ESLConcept
@@ -170,19 +172,6 @@ def describe_item(state, context, what):
 
 
 task_methods.append(['describe_item', describe_item_list, describe_item])
-
-
-def oxford_comma(words):
-    if isinstance(words, str):
-        return words
-    if len(words) == 0:
-        return ""
-    elif len(words) == 1:
-        return words[0]
-    elif len(words) == 2:
-        return '{} and {}'.format(words[0], words[1])
-    else:
-        return '{}, and {}'.format(', '.join(words[:-1]), words[-1])
 
 
 def convert_to_english(state, what):

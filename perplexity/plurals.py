@@ -542,7 +542,7 @@ class VariableStats(object):
             self.whole_group_unique_values[binding_value][1].append(solution)
 
         # See if there are any required_values criteria and make sure we meet them
-        required_values_state = variable_criteria.meets_required_values_criteria(self.whole_group_unique_individuals, self.whole_group_unique_values, phase)
+        required_values_state = variable_criteria.meets_required_values_criteria(execution_context, self.whole_group_unique_individuals, self.whole_group_unique_values, phase)
         if required_values_state in [CriteriaResult.fail_one, CriteriaResult.fail_all]:
             self.current_state = required_values_state
             return new_individuals, required_values_state
@@ -881,7 +881,7 @@ class VariableCriteria(object):
             else:
                 return CriteriaResult.meets
 
-    def meets_required_values_criteria(self, unique_individuals_list, unique_values_list, phase):
+    def meets_required_values_criteria(self, execution_context, unique_individuals_list, unique_values_list, phase):
         if self.required_values is not None:
             # Ensure the values are all singles or a single collective
             if len(unique_values_list) > 1:
@@ -889,9 +889,10 @@ class VariableCriteria(object):
                     return CriteriaResult.fail_one
 
             # See if we have the right individuals
-            for value in unique_individuals_list:
-                if (value, ) not in self.required_values:
-                    return CriteriaResult.fail_one
+            unique_individuals_tuples_list = [(x, ) for x in unique_individuals_list]
+            individuals_tuples_not_required = list(set(unique_individuals_tuples_list) - set(self.required_values))
+            if len(individuals_tuples_not_required) > 0:
+                return CriteriaResult.fail_one
 
             if len(unique_individuals_list) == len(self.required_values):
                 # This constraint was met, whatever the count said is the answer
@@ -899,6 +900,14 @@ class VariableCriteria(object):
 
             else:
                 # It is a contender for this constraint
+                individuals_tuples_not_yet_included = list(set(self.required_values) - set(unique_individuals_tuples_list))
+                individuals_not_yet_included = [x[0] for x in individuals_tuples_not_yet_included]
+
+                # register a high priority (because of "force") error when and is a contender
+                # so that is the error that gets used if it is a failure
+                execution_context.report_error_for_index(self.predication_index,
+                                                         ["phase2NotAllRequiredValues",
+                                                          individuals_not_yet_included], force=True, phase=phase)
                 return CriteriaResult.contender
         else:
             return CriteriaResult.meets

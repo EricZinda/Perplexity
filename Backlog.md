@@ -83,24 +83,6 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
             - This can probably be done later since they will always fail anyway since the fact_check predication is dealing with instances and the group handlers
                 will both fail
 
-        - Regression: **** Test ID: 4aee1a8f-7e50-461a-9448-c7e055b142de
-            soup, salad and steak are vegetarian
-            There is more than soup
-            Waiter: What can I get you?
-
-            Expected:
-            soup, salad, and steak are not vegetarian
-            Waiter: What can I get you?
-            - same happens with "soup and steak are vegetarian"
-
-        - Regression: I want one menu for me and two menus for johnny
-            Waiter: Sorry, I'm not sure what to do about that.
-            Waiter: Can I get you anything besides a menu for you and a menu for Johnny?
-
-            Expected:
-            Waiter: Our policy is to give one menu to every customer ...
-            Waiter: Can I get you anything besides a menu for you and a menu for Johnny?
-
         - Regression: Example 34: 'file1.txt' and 'file2.txt' are in a folder together
             Yes, that is true.
 

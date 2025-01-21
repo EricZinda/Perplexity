@@ -39,8 +39,8 @@ class TreeSolver(object):
         self._start_time = None
 
     @classmethod
-    def create_top_level_solver(cls, vocabulary, scope_function, scope_init_function):
-        context = ExecutionContext(vocabulary)
+    def create_top_level_solver(cls, vocabulary, error_priority_function, scope_function, scope_init_function):
+        context = ExecutionContext(vocabulary, error_priority_function)
         context.set_in_scope_function(scope_function, scope_init_function)
         return cls(context)
 
@@ -190,6 +190,9 @@ class TreeSolver(object):
 
         def has_not_understood_error(self):
             return self._context.has_not_understood_error()
+
+        def error_priority(self):
+            return self._context.error_priority()
 
         def report_error_for_index(self, predication_index, error, force=False, phase=1):
             return self._context.report_error_for_index(predication_index, error, force, phase=phase)
@@ -563,6 +566,7 @@ class TreeSolver(object):
     # that was attempted (including records if they were skipped for debugging purposes)
     def tree_solutions(self, state,
                        tree_info,
+                       error_priority_function,
                        response_function=None,
                        message_function=None,
                        current_tree_index=None,
@@ -597,6 +601,7 @@ class TreeSolver(object):
                 tree_record["SolutionGroupGenerator"] = at_least_one_generator(
                     perplexity.solution_groups.solution_groups(context,
                                                                solutions,
+                                                               error_priority_function,
                                                                this_sentence_force,
                                                                wh_phrase_variable,
                                                                tree_info,
@@ -668,15 +673,16 @@ Error = namedtuple('Error', 'predication_index, error, phase')
 
 
 class ExecutionContext(object):
-    def __init__(self, vocabulary):
+    def __init__(self, vocabulary, error_priority_function):
         self.vocabulary = vocabulary
+        self.error_priority_function = error_priority_function
         self._in_scope_initialize_function = None
         self._in_scope_initialize_data = None
         self._in_scope_function = None
         self.clear_error()
 
     def new_initial_context(self):
-        context = ExecutionContext(self.vocabulary)
+        context = ExecutionContext(self.vocabulary, self.error_priority_function)
         context.set_in_scope_function(self._in_scope_function, self._in_scope_initialize_function)
         return context
 
@@ -692,6 +698,9 @@ class ExecutionContext(object):
         if self._in_scope_initialize_function is not None:
             self._in_scope_initialize_data = self._in_scope_initialize_function(state)
 
+    def error_priority(self):
+        return self.error_priority_function
+
     def set_in_scope_function(self, func, initialize_func=None):
         self._in_scope_function = func
         self._in_scope_initialize_function = initialize_func
@@ -705,6 +714,13 @@ class ExecutionContext(object):
 
     def get_error_info(self):
         return self._error, self._error_was_forced, self._error_predication_index, self._error_phase
+
+    def error(self):
+        return Error(self._error_predication_index, self._error, self._error_phase)
+
+    @staticmethod
+    def error_info_to_error(error_info):
+        return Error(error_info[2], error_info[0], error_info[3])
 
     def set_error_info(self, error_info):
         assert error_info is not None
@@ -734,20 +750,16 @@ class ExecutionContext(object):
     #         - A success clears the error
     #     - doesn't yield a value, which stops the generator (failure)
     #         - If it fails, it can report: nothing, a normal error, or a formNotUnderstood error
-    #             - a forced error is always recorded, and the first error at deepest level is always recorded
-    #                 - Record both the first instance of a regular error and the first instance of formNotUnderstood at the deepest point
+    #             - a forced error is always recorded as long as it is in the same phase or greater, and the first error at deepest level is always recorded
     #     - When returning errors: if we only got formNotUnderstood, that is the error. Otherwise: the first real error is the error
     def report_error_for_index(self, predication_index, error, force=False, phase=1):
-        if force or self._error_phase <= phase and self._error_predication_index < predication_index:
+        if self._error_phase <= phase and (force or self._error_predication_index < predication_index):
             assert not self.has_not_understood_error()
             self._error = error
             self._error_predication_index = predication_index
             self._error_phase = phase
             if force:
                 self._error_was_forced = True
-
-    def error(self):
-        return Error(self._error_predication_index, self._error, self._error_phase)
 
 
 logger = logging.getLogger('Execution')

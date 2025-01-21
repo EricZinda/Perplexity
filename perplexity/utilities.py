@@ -14,6 +14,19 @@ system_added_arg_count = 2
 system_added_group_arg_count = 2
 
 
+def oxford_comma(words):
+    if isinstance(words, str):
+        return words
+    if len(words) == 0:
+        return ""
+    elif len(words) == 1:
+        return words[0]
+    elif len(words) == 2:
+        return '{} and {}'.format(words[0], words[1])
+    else:
+        return '{}, and {}'.format(', '.join(words[:-1]), words[-1])
+
+
 class TimeoutException(Exception):
     def __init__(self):
         pass
