@@ -31,7 +31,7 @@
         },
         {
             "Command": "soup, salad and steak are vegetarian",
-            "Expected": "soup, salad, and steak are not vegetarian\nWaiter: What can I get you?",
+            "Expected": "That isn't true for steak\nWaiter: What can I get you?",
             "Tree": "udef_q(x13,udef_q(x18,_salad_n_1(x18),udef_q(x23,_steak_n_1(x23),_and_c(x13,x18,x23))),udef_q(x3,udef_q(x8,_soup_n_1(x8),implicit_conj(x3,x8,x13)),_vegetarian_a_1(e2,x3)))",
             "Enabled": true,
             "ID": "4aee1a8f-7e50-461a-9448-c7e055b142de"
