@@ -89,6 +89,18 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
             Expected:
             Yes, that is true.
             (there are more)
+                - There is a failure before a solution, and for some reason this stops the iteration to find another solution group
+                - things might be retrying on a non-disjunction predication so you get a pattern like:
+                    .2@1.8@1
+                    .2@1
+                    .2@1.8@1
+                    .2@1.8@2
+                    .2@1
+                    .2@1.8@1
+                    .2@1.8@2
+                - and this breaks our assumption that, "if it doesn't grow, it is a different disjunction"
+                    - It is really only when the base prefix changes that it guarantees the lineage is done
+                    - Also note that this means solutions for different lineages with be intermixed
 
         - Broke: Example25_reset: "which files are in a folder" so that it only returns one now
             - Also: which files are 20mb. Now only returns the first set

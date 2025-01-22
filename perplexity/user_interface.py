@@ -663,6 +663,7 @@ class UserInterface(object):
             chosen_record["ResponseMessage"] += response
 
     def generate_more_message(self, tree, solution_groups):
+        pipeline_logger.debug(f"Checking for another solution group for a '(there are more)' message")
         if solution_groups is None:
             return
 

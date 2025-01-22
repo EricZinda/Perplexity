@@ -52,6 +52,7 @@ def apply_solutions_to_state(state, has_more_func, solutions, record_operations=
             if operation.show_if_has_more and has_more is None:
                 # Only call the has_more_func if we will use it since it requires finding
                 # a second solution which could be expensive
+                pipeline_logger.debug(f"Checking for another solution group for a '(there are more)' message")
                 has_more = has_more_func()
             response_string = operation.response_string(state=new_state, has_more=has_more)
             if response_string not in last_phrase_responses:

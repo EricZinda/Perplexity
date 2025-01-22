@@ -63,12 +63,12 @@ def check_group_against_code_criteria(execution_context, handlers, optimized_cri
                                                                             group,
                                                                             index_predication)
 
+    # Solution groups can return formNotUnderstood to indicate they are not appropriate, the solution group handler
+    # is not included as part of the interpretation.
+    # Any errors are returned by next_best_error_info
+    execution_context.clear_error()
+
     if created_solution_group is None:
-        # if index_predication is not None and perplexity.tree.is_introduced_variable_scoped_by_negation(group_list[0], index_predication.introduced_variable()):
-        #     pipeline_logger.debug(f"Index verb is scoped by negation so don't run the default handler since it is unclear how to manage the logical not. Best error: {next_best_error_info}")
-        #     return None, next_best_error_info
-        #
-        # else:
         pipeline_logger.debug(f"No solution group handlers, or none handled it: just do the default behavior")
         # if it contains Concepts and there wasn't a solution group handler, then the constraints did not get
         # validated, and we can't, so fail

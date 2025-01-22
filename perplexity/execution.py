@@ -351,8 +351,6 @@ class TreeSolver(object):
         # So, if the new_lineage value means the previous tree is done, we mark it as a lineage failure *if* there were no solutions during it.
         def _handle_lineage_change(self, new_lineage):
             if self._last_solution_lineage is not None:
-                if new_lineage is None:
-                    foo = 5
                 if (new_lineage is None and self._last_solution_lineage is not None) or not new_lineage.startswith(self._last_solution_lineage):
                     logger.debug(f"conjunction variant changed: New lineage: {new_lineage}, last lineage: {str(self._last_solution_lineage)}")
 
@@ -432,6 +430,7 @@ class TreeSolver(object):
 
             except StopIteration:
                 self.error_info = self.lineage_generator.retrieve_lineage_failure()
+                pipeline_logger.debug(f"MrsTreeLineage: Lineage {self.lineage_generator.last_lineage} is complete")
                 raise
 
     # Generator that returns every MrsTreeLineage alternative for a particular interpretation of a scope-resolved MRS.
@@ -477,6 +476,7 @@ class TreeSolver(object):
                 self.first = False
                 return TreeSolver.MrsTreeLineage(self)
             else:
+                pipeline_logger.debug(f"MrsTreeLineageGenerator could not generate more lineages")
                 raise StopIteration
 
         def _next_solution(self):
@@ -494,7 +494,7 @@ class TreeSolver(object):
             solution = next(self.solution_generator)
             tree_lineage_binding = solution.get_binding("tree_lineage")
             tree_lineage = "" if tree_lineage_binding.value is None else tree_lineage_binding.value[0]
-            logger.debug(f"MrsTreeLineageGenerator got solution for lineage {tree_lineage}: {str(solution)}")
+            logger.debug(f"MrsTreeLineageGenerator got solution. Last Lineage = {self.last_lineage}, This lineage {tree_lineage}: {str(solution)}. ")
 
             if not self.lineage_failure_fifo.empty():
                 # There was at least one lineage failure during execution of next()
