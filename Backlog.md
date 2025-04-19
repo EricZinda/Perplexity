@@ -70,6 +70,9 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
         - Handling groups of things that can be "anded" goes beyond "want", look for other code with this problem
         - Write up how "and" works for solution group handlers
 
+        - At the start My son's order is steak: Host: I'm sorry, you can't order that here. Take a look at the menu to see what is available.
+            - because it gets doesntExist error for "order" and tries to build a nice error message
+            - This will return a bad error for a lot of stuff
         - Make sure other constructions like "I ordered one steak" also work
             - Literally go through each solution group handler from top to bottom and see if we are handling combination variables properly
             - Need to add tests to every kind of thing you can ask for to make sure we are handling criteria right
@@ -82,7 +85,8 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
             - Probably the solution group handlers should be tied to the actual predication *implementation* since they are *interpretation dependent*.
             - This can probably be done later since they will always fail anyway since the fact_check predication is dealing with instances and the group handlers
                 will both fail
-
+        - fix so you can see all solutions while debugging for collective/cumulative case
+            Test with Example25: "which files are in a folder?"
         - Regression: Example 34: 'file1.txt' and 'file2.txt' are in a folder together
             Yes, that is true.
 
@@ -101,6 +105,101 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
                 - and this breaks our assumption that, "if it doesn't grow, it is a different disjunction"
                     - It is really only when the base prefix changes that it guarantees the lineage is done
                     - Also note that this means solutions for different lineages with be intermixed
+                - TODO
+                    - The error context should be scoped against a particular lineage since it is the error for that lineage only.
+                        - But lineages are captured
+                    - solution group generation gets the error info for the currently executing solution group BUT
+                      - there cannot be a state to look for if there is no solution so we can't call the error functions
+                      and
+                      - there is no final state since there are no active lineages left
+                      therefore
+                      - we need to *return* the error info from all_plural_groups_stream()
+                    - phase1 should never get called directly. Figure out why and why "norm" is involved
+                        - If we can't clear it out, we need it to respect the conjunction behavior somehow
+                - Design
+                    - START HERE NEXT: Run /runfolder ESL, hello world, internals, solvertests until it succeeds
+                    - what is not soup (includes soup)
+                        not depends on formNotUnderstood being the error from the solution group so it knows if it wasn't handled
+
+                    - (fixed) Which two dishes are specials?
+                        - now hangs
+                            '_which_q(x5,[_dish_n_of(x5,i11), card(2,e10,x5)],udef_q(x3,_special_n_1(x3),_be_v_id(e2,x3,x5)))'
+                            Tree #0, interpretation #19: 'perplexity.system_vocabulary.which_q, samples.esl.tutorial.match_all_n_i_instances, perplexity.system_vocabulary.card_cex, perplexity.system_vocabulary.generic_q, samples.esl.tutorial.match_all_n_concepts, samples.esl.tutorial._be_v_id_order_2'
+                            suspect it is because all are formnotunderstood
+                            because there are more than two specials
+                            and it takes forever to exhaustively list the specials
+                        - (fixed) assert not self.has_not_understood_error()
+                        - Because the error that is current for the disjunction, even though it has a solution, is formNotUnderstood
+                            - So, something failed with formNotUnderstood
+                    - (done) Could i have a table for two please: Exception in test run: 'NoneType' object is not subscriptable
+
+                    - (done) How much is the green salad? --> fails: 'CallContext' object has no attribute 'create_child_solver'
+                        - Need to solve the scopal argument and if it fails use that error
+                    - (done) ESL: do you have vegetarian food?
+                        - second interpretation gts assertion because notunderstood already there
+                        - Problem is that we are applying the error to all the children and some have formnotUnderstood
+                    - (done) Turns out that variable execution data is just like error information in that it is tracked per interpretation
+                        and so we need to actually track entire disjunction state in the tracker
+                        - (done) Update the DisjunctionInterpretation to contain it
+                        - (done) change the tracker to track interpretation state
+                        - (done) change all the helper functions to deal with that
+                        - (done) Also, when a new lineage is created, it needs to start with the state from its parent lineage
+                    - (fixed) We don't get (there are more) because formNotUnderstood is registered in the group handler for the second solution group but doesn't get recorded because it is
+                        tracked by the tracker
+                        - Errors for lineages are tracked in two places:
+                            - in the DisjunctionInterpretationGenerator (which tracks them all) and again in the DisjunctionInterpretationTracker
+                            - Problem: phase 2 requires recording errors against lineages that are already marked as complete and we don't know how to find them
+                                - it should be easy to find them if they are complete and have solutions and phase 2 will only group solutions from a single lineage
+                                    that has solutions by definition
+                                    - the problem is that we assumed the lineage tracker would work, but that doesn't work when complete (because they are gone)
+                                        - and the generator only works when there are solutions, and it doesn't track anything until there is a solution
+                                    - Solution: phase 2 will only report errors against interpretations with solutions so
+                                            pass it a generator for error reporting?
+                                        - anything that is reporting errors against the interpretationsolver should only be active when the tree
+                                            is being solved
+                                            - But we still have to coordinate the error object between the solver and the solution and they both
+                                                might be working at the same time
+                                                - If they share an errorinfo pointer the phase 2 errors will always win
+                                                - So, the generator should ask the tracker for the errorinfo when it sees a solution and starts tracking that lineage,
+                                                  (it must be there at this point) and the generator then uses that as its error object.
+                                                  The tracker should use the errorinfo in the tracker for as long as it is processing the tree
+                                                  solution generation should report errors against the generator since it will be guaranteed to have a lineage
+                                                  And calling the tracker won't work anyway since it is no longer tracking errors
+
+                    - Because solution groups also use formNotUnderstood, and this value stops processing, solution groups that just want to be ignored can
+                        cause the tree to stop being processed
+                    - Looks like get_variable_execution_data should be scoped to lineage too...
+                    - (done) fix tree_solutions and solution_groups, all_plural_groups_stream
+                    - (done) clear_error_when_yield_generator()
+                        - This should no longer be needed since we are tracking errors by lineage and a lineage that has successes won't return an error
+                    - PredicationIndex gets set in call() but also is set up front as part of the predication object itself
+                        these can get out of sync. They should probably be named different things so it is clear which you are using
+                        because predications call call other predications and create a dynamic tree which is different from the original
+                        MRS
+                    - contexts need to be teased apart:
+                        - There is a CallContext which is called by the code in the interpretation function
+                        - There is an InterpretationContext which tracks things that are used across the interpretation
+                            like variable execution data
+                            - this should probably be just the InterpretationSolverClass
+                        - There is an execution context that gets used across interpretations
+                            - this should probably be ExecutionContext
+                    - Seems like the in_scope() functions should not be on ExecutionContext they should be scoped to an individual
+                        interpretation
+                    - report_error() now requires state to be passed in.
+                        - It can't be state passed from the user function because they could have messed with the state object and destroy the logic
+
+                        - The context passed into predication functions should automatically pass the state to the error function
+                    - Why: DisjunctionInterpretation() requires a disjunction_variant_generator
+                    - Next: Create an ErrorInfo object that consolidates all the real error tracking
+                        - Context should simply be a way to create the glue that maps lineages to their errors
+                        - Then get rid of the Error object altogether
+                    - DisjunctionLineageTracker() is kept in the ExecutionContext and called by functions that figure out lineages
+                        - This allows errors to be recorded against the proper lineage
+                    - Make solution groups work properly where errors are captured against a particular lineage?
+                        - When all_plural_groups_stream() *fails* (i.e. doesn't yield anymore), it should *return* a value which is the
+                            last best error that occurred
+                            - This is so that the solution_group logic can properly capture the final error
+                        - Then, the solution group generator should use that value as the last error
 
         - Broke: Example25_reset: "which files are in a folder" so that it only returns one now
             - Also: which files are 20mb. Now only returns the first set

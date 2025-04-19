@@ -3,7 +3,7 @@
     "TestItems": [
         {
             "Command": "/new samples.file_system_example.examples.Example25_reset",
-            "Expected": "",
+            "Expected": "State reset using samples.file_system_example.examples.Example25_reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "dd1ab5e6-431a-4098-b4a8-268586b7b9ee"
@@ -58,5 +58,5 @@
             "ID": "a080a2e9-b84d-4492-840b-56a8e33a89e1"
         }
     ],
-    "ElapsedTime": 8.49968
+    "ElapsedTime": 9.40527
 }

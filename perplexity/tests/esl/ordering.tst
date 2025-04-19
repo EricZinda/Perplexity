@@ -3,7 +3,7 @@
     "TestItems": [
         {
             "Command": "/new samples.esl.tutorial.reset",
-            "Expected": "",
+            "Expected": "State reset using samples.esl.tutorial.reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "91a85b2d-3b81-4954-85d0-9786ac6cb8d0"
@@ -31,7 +31,7 @@
         },
         {
             "Command": "/new samples.esl.tutorial.reset",
-            "Expected": "",
+            "Expected": "State reset using samples.esl.tutorial.reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "c1681d6a-53da-4ae5-8b4e-2f1e29313a11"
@@ -129,7 +129,7 @@
         },
         {
             "Command": "/new samples.esl.tutorial.reset",
-            "Expected": "",
+            "Expected": "State reset using samples.esl.tutorial.reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "6a3cc4d3-60e5-48e4-a624-f63883ff0403"
@@ -206,7 +206,7 @@
         },
         {
             "Command": "/new samples.esl.tutorial.reset",
-            "Expected": "",
+            "Expected": "State reset using samples.esl.tutorial.reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "a21cd75d-2110-475e-b315-5ca0cbf00d37"
@@ -290,7 +290,7 @@
         },
         {
             "Command": "/new samples.esl.tutorial.reset",
-            "Expected": "",
+            "Expected": "State reset using samples.esl.tutorial.reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "087c0bc7-9003-4d1d-9bca-c78a42c415ff"
@@ -328,7 +328,7 @@
         },
         {
             "Command": "/new samples.esl.tutorial.reset",
-            "Expected": "",
+            "Expected": "State reset using samples.esl.tutorial.reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "bf37523f-b62e-4a53-8da7-a2ac5462a9e3"
@@ -362,11 +362,25 @@
             "ID": "a267e43b-17ce-4e94-a258-96cdf2e20b7a"
         },
         {
+            "Command": "/timeout",
+            "Expected": "",
+            "Tree": "",
+            "Enabled": true,
+            "ID": "02b1c558-1064-4bd4-9fa3-afb3828ff5f7"
+        },
+        {
             "Command": "My son's order is steak",
             "Expected": "Yes, that is true.\nWaiter: Can I get you anything besides a chicken for you and a steak for Johnny?",
             "Tree": "pronoun_q(x10,pron(x10),def_explicit_q(x3,def_explicit_q(x5,[_son_n_of(x5,i15), poss(e9,x5,x10)],[_order_n_of(x3), poss(e20,x3,x5)]),udef_q(x21,_steak_n_1(x21),_be_v_id(e2,x3,x21))))",
             "Enabled": true,
             "ID": "9f85cd3c-3ef6-4776-a0eb-eea2c3704c39"
+        },
+        {
+            "Command": "/timeout 15",
+            "Expected": "",
+            "Tree": "",
+            "Enabled": true,
+            "ID": "c2877f26-4c57-48b8-8e5f-f7809e671537"
         },
         {
             "Command": "What did we order?",
@@ -380,7 +394,7 @@
         },
         {
             "Command": "/new samples.esl.tutorial.reset",
-            "Expected": "",
+            "Expected": "State reset using samples.esl.tutorial.reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "c1694eb4-37db-44c1-828a-bfa8d9a60e42"
@@ -415,7 +429,7 @@
         },
         {
             "Command": "/new samples.esl.tutorial.reset",
-            "Expected": "",
+            "Expected": "State reset using samples.esl.tutorial.reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "6a0783c0-04b9-4990-8653-98e906ba16b0"
@@ -450,7 +464,7 @@
         },
         {
             "Command": "/new samples.esl.tutorial.reset",
-            "Expected": "",
+            "Expected": "State reset using samples.esl.tutorial.reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "b406e76b-f802-4423-a953-fc8b9931a8e3"
@@ -493,7 +507,7 @@
         },
         {
             "Command": "/new samples.esl.tutorial.reset",
-            "Expected": "",
+            "Expected": "State reset using samples.esl.tutorial.reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "2beacbb1-7cfc-40dd-9c08-cbfd6d3a1e32"
@@ -580,7 +594,7 @@
         },
         {
             "Command": "/new samples.esl.tutorial.reset",
-            "Expected": "",
+            "Expected": "State reset using samples.esl.tutorial.reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "a5589109-1dc0-4fb4-b4ee-eda0ab9ce3d9"
@@ -765,7 +779,7 @@
         },
         {
             "Command": "/new samples.esl.tutorial.reset",
-            "Expected": "",
+            "Expected": "State reset using samples.esl.tutorial.reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "849d662d-f1dc-4ea8-9666-69b9f8e522aa"
@@ -863,7 +877,7 @@
         },
         {
             "Command": "/new samples.esl.tutorial.reset",
-            "Expected": "",
+            "Expected": "State reset using samples.esl.tutorial.reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "4919a6c6-a36d-4c96-83fc-199d289eeb11"
@@ -904,13 +918,6 @@
             "ID": "a8713a17-5c05-4028-8c03-1602d9c014f0"
         },
         {
-            "Command": "/timeout",
-            "Expected": "",
-            "Tree": "",
-            "Enabled": true,
-            "ID": "02b1c558-1064-4bd4-9fa3-afb3828ff5f7"
-        },
-        {
             "Command": "Which two dishes are specials?",
             "Expected": "Waiter: You already ordered a menu for you\nWaiter: Can I get you anything besides a menu for you?",
             "Tree": "_which_q(x5,[_dish_n_of(x5,i11), card(2,e10,x5)],udef_q(x3,_special_n_1(x3),_be_v_id(e2,x3,x5)))",
@@ -918,15 +925,8 @@
             "ID": "e8e03861-59c8-4f05-b5db-c88d3646a572"
         },
         {
-            "Command": "/timeout 15",
-            "Expected": "",
-            "Tree": "",
-            "Enabled": true,
-            "ID": "c2877f26-4c57-48b8-8e5f-f7809e671537"
-        },
-        {
             "Command": "/new samples.esl.tutorial.reset",
-            "Expected": "",
+            "Expected": "State reset using samples.esl.tutorial.reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "3683bdd4-f7e4-419c-bc16-f5df21f5cc41"
@@ -982,7 +982,7 @@
         },
         {
             "Command": "/new samples.esl.tutorial.reset",
-            "Expected": "",
+            "Expected": "State reset using samples.esl.tutorial.reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "db0eb32b-5205-40e8-a821-35975d4668b5"
@@ -1003,7 +1003,7 @@
         },
         {
             "Command": "/new samples.esl.tutorial.reset",
-            "Expected": "",
+            "Expected": "State reset using samples.esl.tutorial.reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "97832479-2a91-409f-a087-01583cf1e068"
@@ -1031,7 +1031,7 @@
         },
         {
             "Command": "/new samples.esl.tutorial.reset",
-            "Expected": "",
+            "Expected": "State reset using samples.esl.tutorial.reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "2ba0af2c-9d36-4c23-abc3-9112283310d7"
@@ -1153,7 +1153,7 @@
         },
         {
             "Command": "/new samples.esl.tutorial.reset",
-            "Expected": "",
+            "Expected": "State reset using samples.esl.tutorial.reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "2724f690-0b1e-47ab-823a-d712c996622c"
@@ -1195,7 +1195,7 @@
         },
         {
             "Command": "/new samples.esl.tutorial.reset",
-            "Expected": "",
+            "Expected": "State reset using samples.esl.tutorial.reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "24b825d2-634c-43c8-97f9-038a5fbb2829"

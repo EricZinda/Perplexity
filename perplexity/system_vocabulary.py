@@ -383,7 +383,7 @@ def neg(context, state, e_introduced_binding, h_scopal):
     # Conversely, we need to return the neg() success states too. neg() succeeds when h_scopal fails
     # Use tree_solutions to run numeric criteria on the "not" clause. So that a phrase like
     # "which files not in this folder are not large?" would work (and properly count the plural "files")
-    new_tree_info = copy.deepcopy(context.tree_info)
+    new_tree_info = copy.deepcopy(context.tree_info())
     new_tree_info["Tree"] = h_scopal
     new_tree_info["NegatedSubtree"] = True
 
@@ -401,8 +401,7 @@ def neg(context, state, e_introduced_binding, h_scopal):
     # use the same interpretation for the subtree that the main tree used
     for tree_record in tree_solver.tree_solutions(subtree_state,
                                                   new_tree_info,
-                                                  context.error_priority(),
-                                                  interpretation=context._interpretation,
+                                                  interpretation=context.interpretation(),
                                                   wh_phrase_variable=wh_phrase_variable):
         if tree_record["SolutionGroupGenerator"] is not None:
             # There were solutions, so this is true,
@@ -411,7 +410,7 @@ def neg(context, state, e_introduced_binding, h_scopal):
             had_negative_success = True
             break
 
-        elif tree_record["Error"] is not None and tree_record["Error"][1] is not None and tree_record["Error"][1][0] == "formNotUnderstood":
+        elif tree_record["Error"] is not None and tree_record["Error"].has_not_understood_error():
             # this was not a logical failure, we simply didn't understand
             continue
 

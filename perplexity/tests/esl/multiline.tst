@@ -3,7 +3,7 @@
     "TestItems": [
         {
             "Command": "/new samples.esl.tutorial.reset",
-            "Expected": "",
+            "Expected": "State reset using samples.esl.tutorial.reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "05cf91e2-b1d4-4dc6-82b2-8614bd04382b"
@@ -44,5 +44,5 @@
             "ID": "dbc9df4c-0f8b-461b-8414-ab9c8c9210a7"
         }
     ],
-    "ElapsedTime": 10.29078
+    "ElapsedTime": 11.09396
 }

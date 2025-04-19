@@ -3,7 +3,7 @@
     "TestItems": [
         {
             "Command": "/reset",
-            "Expected": "",
+            "Expected": "State reset using samples.esl.tutorial.reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "ca458224-ee3b-4026-abd1-162fdccae031"
@@ -17,7 +17,7 @@
         },
         {
             "Command": "/reset",
-            "Expected": "",
+            "Expected": "State reset using samples.esl.tutorial.reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "8115a330-d89e-4a01-8905-e127a115e58a"
@@ -89,5 +89,5 @@
             "ID": "0331458f-c733-4545-a0aa-fc8510f068df"
         }
     ],
-    "ElapsedTime": 30.92708
+    "ElapsedTime": 27.20798
 }

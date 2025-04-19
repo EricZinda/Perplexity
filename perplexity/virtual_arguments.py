@@ -22,7 +22,7 @@ def scopal_argument(scopal_index, event_for_arg_index, event_value_pattern):
             # Determine which events in the scopal argument we need
             scopal_events = scopal_events_modifying_individual(x_what_binding.variable.name, h_scopal_arg)
             if len(scopal_events) > 0:
-                new_tree_info = copy.deepcopy(context.tree_info)
+                new_tree_info = copy.deepcopy(context.tree_info())
                 new_tree_info["Tree"] = h_scopal_arg
                 subtree_state = state.set_x("tree", (new_tree_info,))
                 tree_solver = context.create_child_solver()

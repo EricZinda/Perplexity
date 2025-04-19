@@ -4,6 +4,7 @@ import perplexity.tree
 import perplexity.execution
 from math import inf
 import perplexity.plurals
+from perplexity.set_utilities import CachedIterable
 from perplexity.utilities import at_least_one_generator, get_function, sentence_force, timeout_check
 
 
@@ -111,6 +112,7 @@ class SolutionMaximalGroupGenerator(object):
         # Use a dict so that we retain the order things got added in
         # but also have a fast way to find ids
         self.unyielded_solution_groups = dict()
+        self.final_stream_return_value = None
         self.complete = False
 
     def __iter__(self):
@@ -118,9 +120,9 @@ class SolutionMaximalGroupGenerator(object):
 
     def __next__(self):
         if len(self.unyielded_solution_groups) == 0:
-            # The caller is asking for the next group, and we don't have one yet
+            # The caller is asking for the next group,
+            # will raise StopIteration if there are no more
             if not self.next_solution_in_group(""):
-                self.complete = True
                 raise StopIteration
 
         # Find the next unyielded item and remove it from the unyielded list
@@ -140,8 +142,9 @@ class SolutionMaximalGroupGenerator(object):
             try:
                 next_group, next_id, stats_group, raw_group = next(self.all_plural_groups_stream)
 
-            except StopIteration:
+            except StopIteration as stop_exception:
                 self.complete = True
+                self.final_stream_return_value = stop_exception.value
                 return False
 
             # The ID reflects the lineage, so we can get the
@@ -197,7 +200,7 @@ class SolutionMaximalGroupGenerator(object):
                     self.unyielded_solution_groups.pop(existing_solution_group_id)
                     self.unyielded_solution_groups[next_id] = None
 
-            if existing_solution_group_id == current_id :
+            if existing_solution_group_id == current_id:
                 # Only return True if there is new data for current_id.
                 # or if current_id == "" and we created a new group
                 #
@@ -225,7 +228,160 @@ class SolutionMaximalGroupGenerator(object):
             return self.next_solution_in_group("", "Has more solution group:")
 
 
-# Group the unquantified solutions into "solution groups" that meet the criteria on each variable.
+# This is the class that gets passed to predications as "context"
+# It contains information scoped to the single interpretation function
+# It also has helper functions for the developer to use within their function
+# that call out to other wider contexts
+class SolutionGroupCallContext(object):
+    def __init__(self, execution_context, disjunction_interpretation, group_handler_index):
+        self._execution_context = execution_context
+        self._disjunction_interpretation = disjunction_interpretation
+        self._group_handler_index = group_handler_index
+
+    ##################################################################
+    ### Helpers that delegate to ExecutionContext scope
+    ##################################################################
+
+    def in_scope(self, state, thing):
+        return self._execution_context.in_scope(state, thing)
+
+    def error_priority(self):
+        return self._execution_context.error_priority()
+
+    ##################################################################
+    ### Helpers that delegate to InterpretationSolver scope
+    ##################################################################
+
+    def has_not_understood_error(self):
+        return self._disjunction_interpretation.state.error_info.has_not_understood_error()
+
+    def report_error_for_index(self, predication_index, error, force=False, phase=None):
+        phase = phase if phase is not None else 2
+        self._disjunction_interpretation.state.error_info.report_error_for_index(predication_index, error, force, phase=phase)
+
+    def report_error(self, error, force=False, phase=None):
+        phase = phase if phase is not None else 2
+        self._disjunction_interpretation.state.error_info.report_error_for_index(self._group_handler_index, error, force, phase=phase)
+
+    def get_error_info(self):
+        return copy.deepcopy(self._disjunction_interpretation.state.error_info)
+
+    def set_error_info(self, error_info):
+        return self._disjunction_interpretation.state.error_info.set_error_info(error_info)
+
+    def clear_error(self):
+        return self._disjunction_interpretation.state.error_info.clear_error()
+
+    def set_variable_execution_data(self, variable_name, key, value):
+        self._disjunction_interpretation.state.set_variable_execution_data(variable_name, key, value)
+
+    def get_variable_execution_data(self, variable_name):
+        return self._disjunction_interpretation.state.get_variable_execution_data(variable_name)
+
+    def get_variable_metadata(self, variable_name):
+        # TODO: This is a hack to enable metadata for eval(). Need to fix it
+        return self._interpretation_solver.get_variable_metadata(variable_name)
+
+
+# If a handler:
+# 1. yields len([...]) > 0 -> Says the group is a solution, provides a (potentially different) solution group, stop further processing
+# 2. doesn't yield and:
+#   - report_error("formNotUnderstood") then it means the group handler was N/A, ignore the handler and continue trying others
+#   - report_error(any other error): it means fail this solution and stop further processing. We understood and failure with this error is the right answer
+#
+# Why is this different from a predication which simply yields a value for success or returns without yielding for failure?
+#   The solution group has already passed phase 1 and has been checked to meet phase 2 criteria.  The group
+#   handler is designed for actually "doing whatever we should do" with the solution group
+#
+# Errors:
+# - Handlers will be run against one solution group, and they are all operating off of the same tree
+#   so, since the tree is the same, we can use the same "deepest error logic" to return the best error
+def run_handlers(execution_context, disjunction_interpretation, group_handler_index, handlers, variable_constraints, group, index_predication):
+    group_handler_context = SolutionGroupCallContext(execution_context, disjunction_interpretation, group_handler_index)
+
+    # Remember the initial error information because we may need to reset it if we run multiple handlers
+    # And the early ones say they are formNotUnderstood
+    initial_error_info = group_handler_context.get_error_info()
+    state_list = CachedIterable(group)
+    if len(handlers) > 0:
+        pipeline_logger.debug(f"Running {len(handlers)} solution group handlers")
+        for state in state_list:
+            print(state)
+        created_solution_group = None
+        for is_predication_handler_name in handlers:
+            group_handler_context.set_error_info(initial_error_info)
+            handler_function = is_predication_handler_name[1]
+            if is_predication_handler_name[0]:
+                # This is a predication-style solution group handler
+                # Build up an arg structure to call the predication with that
+                # has the same arguments as the normal predication but has a list for each argument that represents the solution group
+                handler_args = []
+                for arg_index in range(len(index_predication.args)):
+                    arg = index_predication.args[arg_index]
+                    found_constraint = None
+                    for constraint in variable_constraints:
+                        if constraint.variable_name == arg:
+                            found_constraint = constraint
+                            break
+
+                    if found_constraint is None:
+                        found_constraint = perplexity.plurals.VariableCriteria(index_predication, arg)
+
+                    handler_args.append(
+                        perplexity.plurals.GroupVariableValues(found_constraint, state_list, index_predication.argument_types()[arg_index], arg))
+
+                handler_args = [group_handler_context, state_list] + handler_args
+
+            else:
+                handler_args = (group_handler_context, state_list) + (variable_constraints,)
+
+            debug_name = is_predication_handler_name[2][0] + "." + is_predication_handler_name[2][1]
+            pipeline_logger.debug(f"Running {debug_name} solution group handler")
+            created_solution_group = None
+
+            for next_solution_group in handler_function(*handler_args):
+                assert not (isinstance(next_solution_group, (tuple, list)) and len(next_solution_group) == 0), \
+                    f"yielded value from solution group {debug_name} must be a tuple or list where len() > 0. Was: {str(next_solution_group)}"
+                created_solution_group = next_solution_group
+                pipeline_logger.debug(f"{debug_name} succeeded")
+                break
+
+            # First solution_group handler that yields, wins
+            if created_solution_group:
+                pipeline_logger.debug(f"{debug_name} succeeded. No more solution group handlers will be run.")
+                break
+
+            else:
+                if disjunction_interpretation.state.error_info.has_not_understood_error():
+                    # That handler was N/A for this solution group, keep trying
+                    pipeline_logger.debug(f"{debug_name} reported formNotUnderstood, trying alternative solution group handlers...")
+                    # Reset the error since this really means N/a. Whatever the error was before is the true error still
+                    disjunction_interpretation.state.error_info.set_error_info(initial_error_info)
+
+                else:
+                    # Return an empty solution group to indicate failure
+                    # The error context will contain any error generated by the handler
+                    pipeline_logger.debug(f"{debug_name} failed. No more solution group handlers will be run.")
+                    created_solution_group = []
+                    break
+
+        if created_solution_group is None:
+            pipeline_logger.debug(f"No solution group handlers, or none handled it: just do the default behavior")
+            # TODO: if it contains Concepts and there wasn't a solution group handler, then the constraints did not get
+            # validated, and we can't, so fail
+            return state_list
+
+        pipeline_logger.debug(f"Done trying solution group handlers, best error: {disjunction_interpretation.state.error_info}")
+        return created_solution_group
+
+    else:
+        return state_list
+
+
+# At this point we are locked on a particular disjunction_interpretation so we don't need to worry about applying changes
+# to children, just this interpretation
+#
+# Group the raw solutions for a single interpretation into "solution groups" that meet the criteria on each variable.
 # Designed to return the minimal solution that meets the criteria as quickly as possible.
 #
 # If the criteria has any between(N, inf) criteria, it will keep streaming answers until the end
@@ -233,22 +389,19 @@ class SolutionMaximalGroupGenerator(object):
 #
 # Allows the developer to choose which solution group to return
 #   if they return [], it means "skip this solution group" and we'll try the next one
+#
 # yields an iterator that returns solution groups
 # TODO: Intelligently choosing the initial cardinal could greatly reduce the combinations processed...
 def solution_groups(execution_context,
-                    solutions_orig,
-                    error_priority_function,
+                    interpretation_solver,
+                    disjunction_interpretation,
                     this_sentence_force,
                     wh_question_variable,
                     tree_info,
-                    all_groups=False,
-                    all_solution_groups=None,
-                    criteria_list=None,
                     start_time=None,
                     timeout=None):
-    pipeline_logger.debug(f"Finding solution groups for {tree_info['Tree']}")
-    solutions = at_least_one_generator(solutions_orig)
-
+    pipeline_logger.debug(f"Finding solution groups for {disjunction_interpretation.lineage} {tree_info['Tree']}")
+    solutions = at_least_one_generator(disjunction_interpretation)
     if solutions is not None:
         timeout_check("solution_groups", timeout, start_time)
         declared_criteria_list = [data for data in declared_determiner_infos(solutions.first_item.get_binding("tree").value[0], solutions.first_item)]
@@ -256,63 +409,46 @@ def solution_groups(execution_context,
 
         # variable_has_inf_max means at least one variable has (N, inf) which means we need to go all the way to the end to get the maximal
         # solution. Otherwise, we can just stop when we have a solution and return a minimal solution
-        variable_metadata, initial_stats_group, has_global_constraint, variable_has_inf_max = perplexity.plurals.plural_groups_stream_initial_stats(execution_context, optimized_criteria_list)
+        variable_metadata, initial_stats_group, has_global_constraint, variable_has_inf_max = \
+            perplexity.plurals.plural_groups_stream_initial_stats(interpretation_solver, optimized_criteria_list)
 
-        # We also set this if the user asks a wh_question so we ensure we get all of the values
+        # We also set this if the user asks a wh_question so we ensure we get all the values
         variable_has_inf_max = variable_has_inf_max if wh_question_variable is None else True
-        handlers, index_predication = perplexity.tree.find_solution_group_handlers_with_name(execution_context.vocabulary, this_sentence_force, tree_info, "solution_group")
-        groups_stream = perplexity.plurals.all_plural_groups_stream(execution_context, solutions, optimized_criteria_list, variable_metadata,
-                                                 initial_stats_group, has_global_constraint,
-                                                 handlers, optimized_criteria_list, index_predication)
+        groups_stream = perplexity.plurals.all_plural_groups_stream(disjunction_interpretation, solutions, optimized_criteria_list,
+                                                                    initial_stats_group, has_global_constraint)
 
         # yes/no questions and propositions only need the minimal solution, so don't return a SolutionMaximalGroupGenerator
-        get_maximal_solution_group = not (this_sentence_force == "prop" or
-            (this_sentence_force in ["prop-or-ques", "ques"] and wh_question_variable is None))
-
+        get_maximal_solution_group = not (this_sentence_force == "prop" or (this_sentence_force in ["prop-or-ques", "ques"] and wh_question_variable is None))
         group_generator = SolutionMaximalGroupGenerator(groups_stream, variable_has_inf_max, generate_maximal_group=get_maximal_solution_group)
-
-        handlers, index_predication = perplexity.tree.find_solution_group_handlers_with_name(execution_context.vocabulary,
+        handlers, index_predication = perplexity.tree.find_solution_group_handlers_with_name(interpretation_solver.vocabulary,
                                                                                              this_sentence_force,
                                                                                              tree_info,
                                                                                              "solution_group")
-        # create a context that will track errors across solution groups
-        best_error = perplexity.execution.ExecutionContext.blank_error()
-        best_error_info = perplexity.execution.ExecutionContext.blank_error_info()
+        # Use an index larger than any of the predications as the index for error reporting
+        group_handler_index = perplexity.tree.find_last_predication(tree_info["Tree"]).index + 1
+        best_error_info = disjunction_interpretation.state.error_info
+        best_error_info_priority = execution_context.error_priority_function(best_error_info)
         for solution_group in group_generator:
-            # The context is cleared every time so we need to remember the "best" error
-            # Since the trees are the same for every solution group, we can use the normal logic
-            created_solution_group, last_error_info = perplexity.plurals.check_group_against_code_criteria(
+            created_solution_group = run_handlers(
                 execution_context,
+                disjunction_interpretation,
+                group_handler_index,
                 handlers,
                 optimized_criteria_list,
-                index_predication,
-                solution_group)
+                solution_group,
+                index_predication)
 
-            last_error = perplexity.execution.ExecutionContext.error_info_to_error(last_error_info)
             if created_solution_group:
-                # Clear any errors that occurred trying to generate solution groups that didn't work
-                # so that the error that gets returned is whatever happens while *processing* the solution group
-                execution_context.clear_error()
                 yield created_solution_group
 
             else:
-                if error_priority_function(last_error) > error_priority_function(best_error):
-                    best_error = last_error
-                    best_error_info = last_error_info
+                error_info = disjunction_interpretation.state.error_info
+                error_info_priority = execution_context.error_priority_function(error_info)
+                if error_info_priority > best_error_info_priority:
+                    best_error_info = error_info
+                    best_error_info_priority = error_info_priority
 
-        # Make sure to record the last error (of the final solution or solution group that didn't work)
-        last_error = execution_context.error()
-        if error_priority_function(last_error) > error_priority_function(best_error):
-            best_error = last_error
-            best_error_info = execution_context.get_error_info()
-
-        # Set the error to the best failure we recorded
-        execution_context.set_error_info(best_error_info)
-        groups_logger.debug(f"solution_groups recorded error: {best_error_info}")
-
-    else:
-        execution_context.set_error_info(solutions_orig.error_info)
-        groups_logger.debug(f"solution_groups recorded error: {execution_context.get_error_info()}")
+        disjunction_interpretation.state.error_info.set_error_info(best_error_info)
 
 
 # Return the infos in the order they will be executed in

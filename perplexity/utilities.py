@@ -241,6 +241,32 @@ def at_least_one_generator(generator):
     return AtLeastOneIterator(first_item, generator)
 
 
+# Allows a generator to return a final value (like an error)
+# when there is nothing else to yield
+def at_least_one_generator_with_value(generator):
+    if isinstance(generator, (list, tuple)):
+        generator = iter(generator)
+
+    try:
+        first_item = next(generator)
+
+    except StopIteration as stop_exception:
+        return None, stop_exception.value
+
+    return AtLeastOneIterator(first_item, generator), None
+
+
+# Allows retrieval of the return value of a generator after it is finished
+# From: https://stackoverflow.com/questions/34073370/best-way-to-receive-the-return-value-from-a-python-generator
+class ReturnValueGenerator:
+    def __init__(self, gen):
+        self.gen = gen
+
+    def __iter__(self):
+        self.value = yield from self.gen
+        return self.value
+
+
 class AtLeastOneIterator(object):
     def __init__(self, first_item, generator):
         assert first_item is not None

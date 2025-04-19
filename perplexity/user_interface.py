@@ -12,7 +12,7 @@ import uuid
 import perplexity.messages
 from delphin.codecs import simplemrs
 from perplexity.autocorrect import autocorrect, get_autocorrect
-from perplexity.execution import MessageException, TreeSolver, ExecutionContext
+from perplexity.execution import MessageException, TreeSolver, ExecutionContext, ErrorInfo
 from perplexity.print_tree import create_draw_tree, TreeRenderer
 from perplexity.response import ResetOperation, ResponseLocation
 from perplexity.set_utilities import CachedIterable
@@ -211,11 +211,10 @@ class UserInterface(object):
             # If not None it was a system command
             mrs_record = self.new_mrs_record()
             self.interaction_record["Mrss"].append(mrs_record)
-            tree_record = TreeSolver.new_error_tree_record(response_generator=[command_result])
+            tree_record = TreeSolver.new_error_tree_record(response_message=command_result)
             mrs_record["Interpretations"].append(tree_record)
             self.interaction_record["ChosenMrsIndex"] = 0
             self.interaction_record["ChosenInterpretationIndex"] = 0
-            self.user_output(command_result)
 
         last_phrase_response = ""
         record = None
@@ -396,7 +395,9 @@ class UserInterface(object):
                 break
 
             if len(mrs_record["UnknownWords"]) > 0:
-                unknown_words_error = ExecutionContext.blank_error(predication_index=0, error=["unknownWords", mrs_record["UnknownWords"]])
+                unknown_words_error = ErrorInfo(predication_index=0,
+                                                error=["unknownWords", mrs_record["UnknownWords"]],
+                                                phase=1)
                 tree_record = TreeSolver.new_error_tree_record(error=unknown_words_error,
                                                                response_generator=self.response_function(self.state, self.vocabulary, self.error_priority_function, self.message_function, None, [], unknown_words_error),
                                                                tree_index=0)
@@ -465,11 +466,7 @@ class UserInterface(object):
                                 tree_solver = TreeSolver.create_top_level_solver(self.vocabulary, self.error_priority_function, self.scope_function, self.scope_init_function)
                                 for tree_record in tree_solver.tree_solutions(frame_state,
                                                                               tree_info,
-                                                                              self.error_priority_function,
-                                                                              self.response_function,
-                                                                              self.message_function,
                                                                               current_tree_index=tree_index,
-                                                                              target_tree_index=conjunct_tree_index if conjunct_tree_index is not None else self.run_tree_index,
                                                                               find_all_solution_groups=self.show_all_answers,
                                                                               wh_phrase_variable=wh_phrase_variable,
                                                                               start_time=self.interaction_record["StartTime"],
@@ -612,7 +609,7 @@ class UserInterface(object):
 
                         alternate_tree_generated = tree_index > -1
                         if len(contingent) > 0 and not alternate_tree_generated:
-                            unknown_words_error = ExecutionContext.blank_error(predication_index=0, error=["unknownWords", contingent])
+                            unknown_words_error = ErrorInfo(predication_index=0, error=["unknownWords", contingent], phase=1)
                             tree_record = TreeSolver.new_error_tree_record(error=unknown_words_error,
                                                                            response_generator=self.response_function(self.state, self.vocabulary, self.error_priority_function, self.message_function, None, [], unknown_words_error),
                                                                            tree_index=tree_index)
@@ -620,7 +617,7 @@ class UserInterface(object):
                             self.evaluate_best_response(has_solution_group=False)
 
                 except TooComplicatedError:
-                    too_complicated_error = ExecutionContext.blank_error(predication_index=0, error=["tooComplicated"])
+                    too_complicated_error = ErrorInfo(predication_index=0, error=["tooComplicated"], phase=1)
                     tree_record = TreeSolver.new_error_tree_record(error=too_complicated_error,
                                                                    response_generator=self.response_function(self.state, self.vocabulary,
                                                                                                              self.error_priority_function,
@@ -634,7 +631,7 @@ class UserInterface(object):
         chosen_record = self.chosen_interpretation_record()
         if chosen_record is None:
             error = ["tooComplicatedTimeout"] if self.has_timed_out("_interact_once too complicated") else ["noParse"]
-            no_chosen_record_error = ExecutionContext.blank_error(predication_index=0, error=error)
+            no_chosen_record_error = ErrorInfo(predication_index=0, error=error, phase=1)
             tree_record = TreeSolver.new_error_tree_record(error=no_chosen_record_error,
                                                            response_generator=self.response_function(self.state, self.vocabulary,
                                                                                                      self.error_priority_function,
@@ -1320,8 +1317,8 @@ command_data = {
                    "Description": "Appends the interactions recorded by /record to an existing test",
                    "Example": "/appendtest Foo"},
     "runfunction": {"Function": command_run_code_test, "Category": "Testing",
-                "Description": "Runs a specified function and prints the results. Useful for a test that needs to run arbitrary code",
-                "Example": "/runFunction module1.submodule1, foo"},
+                    "Description": "Runs a specified function and prints the results. Useful for a test that needs to run arbitrary code",
+                    "Example": "/runfunction module1.submodule1, foo"},
     "runtest": {"Function": command_run_test, "Category": "Testing",
                 "Description": "Runs a test",
                 "Example": "/runtest subdirectory/foo"},

@@ -1,7 +1,7 @@
 import logging
 import sys
 
-from perplexity.execution import ExecutionContext
+from perplexity.execution import ExecutionContext, ErrorInfo
 from perplexity.response import RespondOperation
 from perplexity.sstring import s, convert_complex_variable
 from perplexity.tree import predication_from_index, find_predication_from_introduced, find_predication, \
@@ -88,7 +88,7 @@ def respond_to_mrs_tree(state, vocabulary, error_priority_function, message_func
                             return
 
                 index_predication = find_predication_from_introduced(tree["Tree"], tree["Index"])
-                yield message_function(state, tree, [-1, ["answerWithList", index_predication, wh_variable, solution_group_list, solution_group_list[0], timed_out]]), solution_group_list
+                yield message_function(state, tree, ErrorInfo(error=["answerWithList", index_predication, wh_variable, solution_group_list, solution_group_list[0], timed_out])), solution_group_list
 
             else:
                 message = message_function(state, tree, error)
@@ -139,9 +139,9 @@ def run_wh_group_handlers(vocabulary, error_priority_function, wh_handlers, wh_q
         return group
 
 
-def generate_message(state, tree_info, error_term):
-    error_predicate_index = error_term[0]
-    error_arguments = error_term[1]
+def generate_message(state, tree_info, error_info):
+    error_predicate_index = error_info.error_predication_index
+    error_arguments = error_info.error
     error_constant = error_arguments[0] if error_arguments is not None else "no error set"
     arg_length = len(error_arguments) if error_arguments is not None else 0
     arg1 = error_arguments[1] if arg_length > 1 else None
@@ -325,20 +325,20 @@ def generate_message(state, tree_info, error_term):
         return None
 
 
-def error_priority(error_string):
+def error_priority(error_info):
     global error_priority_dict
-    if error_string is None:
+    if error_info is None:
         return 0
 
     else:
-        if error_string[1] is None:
+        if error_info.error is None:
             return error_priority_dict["lowestPriority"]
 
-        error_constant = error_string[1][0]
+        error_constant = error_info.error[0]
         priority = error_priority_dict.get(error_constant, None)
         if priority is not None:
             if error_constant == "unknownWords":
-                priority -= len(error_string[1][1])
+                priority -= len(error_info.error[1])
 
             elif error_constant == "formNotUnderstood":
                 # Don't make formNotUnderstood have a different priority for phase1 or 2
@@ -346,10 +346,11 @@ def error_priority(error_string):
 
             else:
                 # Increase the error priority into a "phase 2" range if it is a phase 2 error
-                assert error_string[2] in [1,2]
-                priority += (error_string[2] - 1) * error_priority_dict["success"]
+                assert error_info.error_phase in [1, 2]
+                priority += (error_info.error_phase - 1) * error_priority_dict["success"]
 
             return priority
+
         else:
             return None
 

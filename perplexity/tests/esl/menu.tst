@@ -3,7 +3,7 @@
     "TestItems": [
         {
             "Command": "/new samples.esl.tutorial.reset",
-            "Expected": "",
+            "Expected": "State reset using samples.esl.tutorial.reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "05cf91e2-b1d4-4dc6-82b2-8614bd04382b"
@@ -171,7 +171,7 @@
         },
         {
             "Command": "/reset",
-            "Expected": "",
+            "Expected": "State reset using samples.esl.tutorial.reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "d32088e1-b1c1-406e-a849-c6b13efef46d"
@@ -220,7 +220,7 @@
         },
         {
             "Command": "/reset",
-            "Expected": "",
+            "Expected": "State reset using samples.esl.tutorial.reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "43819cbc-f246-4e69-ba81-87f2f743e348"
@@ -261,11 +261,25 @@
             "ID": "ed01aa0e-79b0-4c3d-8443-f9bac852a7d4"
         },
         {
+            "Command": "/timeout",
+            "Expected": "",
+            "Tree": "",
+            "Enabled": true,
+            "ID": "1fca3d70-25aa-47ee-9bee-c8966287c24f"
+        },
+        {
             "Command": "which chicken menu items do you have?",
             "Expected": "Waiter: You already ordered a menu for you\nWaiter: Can I get you anything besides a menu and 2 steaks for you?",
             "Tree": "_which_q(x5,udef_q(x10,udef_q(x16,_chicken_n_1(x16),[_menu_n_1(x10), compound(e15,x10,x16)]),[_thing_n_of-about(x5,i21), compound(e9,x5,x10)]),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": false,
             "ID": "3abc1ec5-890e-4d20-83fd-58479d75bf6a"
+        },
+        {
+            "Command": "/timeout 15",
+            "Expected": "",
+            "Tree": "",
+            "Enabled": true,
+            "ID": "bc36dda9-1bdd-4f4b-b605-47272d423849"
         },
         {
             "Command": "show me the menu",
@@ -303,11 +317,25 @@
             "ID": "4e977eb7-06e3-42e4-9c00-a7ad22602325"
         },
         {
+            "Command": "/timeout",
+            "Expected": "",
+            "Tree": "",
+            "Enabled": true,
+            "ID": "949aed08-cf02-453c-9e42-b46bad945f67"
+        },
+        {
             "Command": "which chicken menu item do you have?",
             "Expected": "Waiter: chicken is an excellent choice!\nWaiter: Can I get you anything besides a chicken for you?",
             "Tree": "_which_q(x5,udef_q(x10,_chicken_n_1(x10),udef_q(x16,_menu_n_1(x16),[_thing_n_of-about(x5,i21), compound(e15,x5,x16), compound(e9,x5,x10)])),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "d13bf1c4-5a27-467c-85c1-e6eb7219b82d"
+        },
+        {
+            "Command": "/timeout 15",
+            "Expected": "",
+            "Tree": "",
+            "Enabled": true,
+            "ID": "1e2f469f-841f-4dd4-8253-e405b5028dd7"
         },
         {
             "Command": "cancel my chicken order",
@@ -374,7 +402,7 @@
         },
         {
             "Command": "/new samples.esl.tutorial.reset",
-            "Expected": "",
+            "Expected": "State reset using samples.esl.tutorial.reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "b7f0482d-eba1-4031-82c3-5692d580660d"

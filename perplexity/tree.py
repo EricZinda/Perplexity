@@ -11,6 +11,7 @@ from delphin.lnk import LnkMixin
 from delphin.predicate import split
 
 from perplexity.erg import erg_file
+import perplexity.execution
 from perplexity.tree_algorithm_zinda2020 import valid_hole_assignments
 from perplexity.utilities import parse_predication_name, sentence_force, get_function
 import perplexity.vocabulary
@@ -815,7 +816,7 @@ def find_last_predication(tree):
         if predication.index > last_predication.index:
             last_predication = predication
 
-    last_predication = tree
+    last_predication = tree if isinstance(tree, TreePredication) else tree[0]
     walk_tree_predications_until(tree, process)
     return last_predication
 
@@ -1148,12 +1149,7 @@ def has_created_disjunction(interpretation_index, solution):
 
 
 def create_disjunction_tree_lineage_from_solution(solution, interpretation_index, lineage):
-    tree_lineage_binding = solution.get_binding("tree_lineage")
-    if tree_lineage_binding is None:
-        return None
-    else:
-        tree_lineage_value = solution.get_binding("tree_lineage").value[0]
-
+    tree_lineage_value = solution.get_binding("tree_lineage").value[0]
     return create_disjunction_tree_lineage(tree_lineage_value, str(interpretation_index), lineage)
 
 
@@ -1169,7 +1165,131 @@ def get_disjunction_tree_lineage(solution):
         return tree_lineage_binding.value[0]
 
 
+# Everything that needs to be tracked about a particular disjunction
+# interpretation.
+class DisjunctionInterpretation:
+    def __init__(self, disjunction_variant_generator, lineage, initial_solution_list, state=None):
+        self._disjunction_interpretation_generator = disjunction_variant_generator
+        self._last_yielded_index = -1
+        self.lineage = lineage
+        self.solution_list = initial_solution_list
+        if state is None:
+            self.state = perplexity.execution.DisjunctionInterpretationState()
+        else:
+            self.state = state
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self._last_yielded_index >= len(self.solution_list) - 1:
+            if self._disjunction_interpretation_generator is None or not self._disjunction_interpretation_generator._next_solution_in_lineage(self.lineage):
+                logger.debug(f"DisjunctionInterpretation: No more solutions for {self.lineage}")
+                raise StopIteration
+
+        self._last_yielded_index += 1
+        return self.solution_list[self._last_yielded_index]
+
+
+# Takes an iterator of interpretation solutions that ignore disjunctions
+# and breaks them up into groups of solutions that are only for a given disjunction
+class DisjunctionInterpretationGenerator:
+    def __init__(self, interpretation_solver, iterator):
+        self.interpretation_solver = interpretation_solver
+        self.iterator = iterator
+        # Use a dict so that we retain the order things got added in
+        # but also have a fast way to find ids
+        self._unyielded_lineages = dict()
+        self._disjunction_lineages = dict()
+        self.complete = False
+
+    def __iter__(self):
+        return self
+
+    # Returns the next DisjunctionInterpretation
+    # which is itself an iterator of solutions
+    def __next__(self):
+        assert not self.complete
+
+        if len(self._unyielded_lineages) == 0:
+            # The caller is asking for the next unyielded lineage, and we don't have one yet
+            if not self._next_solution_in_lineage(""):
+                if len(self._unyielded_lineages) == 0:
+                    # We didn't find more lineages after searching more
+                    # so we are done
+                    self.complete = True
+                    raise StopIteration
+
+        next_unyielded_lineage = next(iter(self._unyielded_lineages))
+        self._unyielded_lineages.pop(next_unyielded_lineage)
+
+        value = self._disjunction_lineages[next_unyielded_lineage]
+        if logger.level == logging.DEBUG:
+            logger.debug(f"DisjunctionVariantGenerator: Next lineage requested, returning {next_unyielded_lineage}: {value}")
+
+        return value
+
+    # Returns True if a new solution in this lineage was found
+    # Setting lineage = "" requires that a new lineage is created
+    def _next_solution_in_lineage(self, lineage):
+        while True:
+            try:
+                next_solution = next(self.iterator)
+
+            except StopIteration:
+                # There are no more solutions in any lineage, complete all the active lineages
+                # so that final errors get reported as new lineages
+                completed_lineages = self.interpretation_solver.lineage_tracker.complete_active_lineages()
+                self.lineages_complete(completed_lineages)
+                return False
+
+            # Will be None or an actual lineage
+            next_lineage = get_disjunction_tree_lineage(next_solution)
+
+            create_lineage = next_lineage not in self._disjunction_lineages
+            if create_lineage:
+                # Get the pointer to the error_info currently held. The lineage_tracker and
+                # DisjunctionInterpretationGenerator will both references it while the tree is still
+                # being processed
+                current_state = self.interpretation_solver.lineage_tracker.active_lineages[next_lineage]
+                self._disjunction_lineages[next_lineage] = \
+                    DisjunctionInterpretation(self, next_lineage, [], state=current_state)
+                self._unyielded_lineages[next_lineage] = next_lineage
+
+            self._disjunction_lineages[next_lineage].solution_list.append(next_solution)
+
+            if lineage == "":
+                if create_lineage:
+                    return True
+                else:
+                    continue
+
+            elif lineage != next_lineage:
+                continue
+
+            else:
+                return True
+
+    # This class naturally iterates *solutions* from the iterator and creates
+    # DisjunctionInterpretations when it sees a solution. This means that it could have skipped
+    # over other, failed, interpretations which it will never see. The caller wants to see the failed ones, though.
+    # So, it allows outside code to call lineages_complete() when they know a lineage can't be called anymore
+    # and thus produce more solutions.
+    # - If a lineage has produced a solution already, we know it will be returned
+    #   naturally, so we ignore it.
+    # - If it has not, then it won't ever, so a new interpretation should be created ... but where does the error come from??
+    def lineages_complete(self, lineage_error_dict):
+        for lineage_state in lineage_error_dict.items():
+            if lineage_state[0] not in self._disjunction_lineages:
+                self._unyielded_lineages[lineage_state[0]] = lineage_state[0]
+                self._disjunction_lineages[lineage_state[0]] = DisjunctionInterpretation(self, lineage_state[0], [], state=lineage_state[1])
+
+    def interpretation_for_lineage(self, lineage):
+        return self._disjunction_lineages.get(lineage, None)
+
+
 pipeline_logger = logging.getLogger('Pipeline')
+logger = logging.getLogger('Execution')
 
 
 if __name__ == '__main__':

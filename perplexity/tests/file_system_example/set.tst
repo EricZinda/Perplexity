@@ -3,7 +3,7 @@
     "TestItems": [
         {
             "Command": "/new samples.file_system_example.examples.Example24_reset",
-            "Expected": "",
+            "Expected": "State reset using samples.file_system_example.examples.Example24_reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "265a5921-b404-4896-9d8f-59305081820d"
@@ -24,7 +24,7 @@
         },
         {
             "Command": "/new samples.file_system_example.examples.Example25_reset",
-            "Expected": "",
+            "Expected": "State reset using samples.file_system_example.examples.Example25_reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "c362a5d4-7616-4f5e-a327-aea5ff140c85"
@@ -45,7 +45,7 @@
         },
         {
             "Command": "/new samples.file_system_example.examples.Example25_reset",
-            "Expected": "",
+            "Expected": "State reset using samples.file_system_example.examples.Example25_reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "586671ad-5fd6-45e5-8236-64d521eb3faa"
@@ -59,7 +59,7 @@
         },
         {
             "Command": "/new samples.file_system_example.examples.Example20_reset",
-            "Expected": "",
+            "Expected": "State reset using samples.file_system_example.examples.Example20_reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "5ab6cda0-d667-498e-84fe-6fbd59be14ab"
@@ -73,7 +73,7 @@
         },
         {
             "Command": "/new samples.file_system_example.examples.Example25_reset",
-            "Expected": "",
+            "Expected": "State reset using samples.file_system_example.examples.Example25_reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "51c1f3fc-2555-407d-bb5b-29778adb2b22"
@@ -108,7 +108,7 @@
         },
         {
             "Command": "/new samples.file_system_example.examples.Example25_reset",
-            "Expected": "",
+            "Expected": "State reset using samples.file_system_example.examples.Example25_reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "f20bff30-b68d-4781-8f04-3ad518a29ac5"
@@ -129,7 +129,7 @@
         },
         {
             "Command": "/new samples.file_system_example.examples.Example26_reset",
-            "Expected": "",
+            "Expected": "State reset using samples.file_system_example.examples.Example26_reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "15382971-96f6-4a6e-ab2f-5db8672642d4"
@@ -158,7 +158,7 @@
         },
         {
             "Command": "/new samples.file_system_example.examples.Example25_reset",
-            "Expected": "",
+            "Expected": "State reset using samples.file_system_example.examples.Example25_reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "2cb61ffe-acb3-47ad-8cf5-1d3936c188ad"
@@ -172,7 +172,7 @@
         },
         {
             "Command": "/new samples.file_system_example.examples.Example26_reset",
-            "Expected": "",
+            "Expected": "State reset using samples.file_system_example.examples.Example26_reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "2de5cbb2-de44-4857-bb0a-c1ece19cd4fc"
@@ -186,7 +186,7 @@
         },
         {
             "Command": "/new samples.file_system_example.examples.Example27_reset",
-            "Expected": "",
+            "Expected": "State reset using samples.file_system_example.examples.Example27_reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "b3665d6c-d098-4bce-86c3-031a9c04d67a"
@@ -200,7 +200,7 @@
         },
         {
             "Command": "/new samples.file_system_example.examples.Example25_reset",
-            "Expected": "",
+            "Expected": "State reset using samples.file_system_example.examples.Example25_reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "110a3b3d-6725-448b-aed5-2b4ef2b6c0eb"
@@ -242,7 +242,7 @@
         },
         {
             "Command": "/new samples.file_system_example.examples.Example28_reset",
-            "Expected": "",
+            "Expected": "State reset using samples.file_system_example.examples.Example28_reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "dc9cc1ac-40cd-4ea5-8cff-d620cd99f7a7"
@@ -263,7 +263,7 @@
         },
         {
             "Command": "/new samples.file_system_example.examples.Example25_reset",
-            "Expected": "",
+            "Expected": "State reset using samples.file_system_example.examples.Example25_reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "64f3b027-5ae2-43cb-aaee-98b2fff80a4e"
@@ -284,7 +284,7 @@
         },
         {
             "Command": "/new samples.file_system_example.examples.Example26_reset",
-            "Expected": "",
+            "Expected": "State reset using samples.file_system_example.examples.Example26_reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "d6f55030-75f1-43a5-a8fc-7a913b503490"
@@ -298,7 +298,7 @@
         },
         {
             "Command": "/new samples.file_system_example.examples.Example26_reset",
-            "Expected": "",
+            "Expected": "State reset using samples.file_system_example.examples.Example26_reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "df3dd43d-a0cf-4063-bf05-803d768a5e56"
@@ -333,7 +333,7 @@
         },
         {
             "Command": "/new samples.file_system_example.examples.Example25_reset",
-            "Expected": "",
+            "Expected": "State reset using samples.file_system_example.examples.Example25_reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "540d92f2-9561-43f9-9756-6e17f12d9bee"
@@ -347,7 +347,7 @@
         },
         {
             "Command": "/new samples.file_system_example.examples.Example31_reset",
-            "Expected": "",
+            "Expected": "State reset using samples.file_system_example.examples.Example31_reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "e022e4fc-2b86-4f4f-ac51-8a800414672f"
@@ -368,7 +368,7 @@
         },
         {
             "Command": "/new samples.file_system_example.examples.Example26_reset",
-            "Expected": "",
+            "Expected": "State reset using samples.file_system_example.examples.Example26_reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "20df35cc-f31e-45d7-8380-4c65ae1c3a2a"
@@ -403,7 +403,7 @@
         },
         {
             "Command": "/new samples.file_system_example.examples.Example30_reset",
-            "Expected": "",
+            "Expected": "State reset using samples.file_system_example.examples.Example30_reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "021c1bd5-fb80-45fb-9782-9faabb8aaae0"
@@ -417,7 +417,7 @@
         },
         {
             "Command": "/new samples.file_system_example.examples.Example31_reset",
-            "Expected": "",
+            "Expected": "State reset using samples.file_system_example.examples.Example31_reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "9ea1e81f-8dae-483e-b78a-787301ef6866"
@@ -438,7 +438,7 @@
         },
         {
             "Command": "/new samples.file_system_example.examples.Example33_reset",
-            "Expected": "",
+            "Expected": "State reset using samples.file_system_example.examples.Example33_reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "c7d38990-0372-4a5f-b1a5-20f8002e032c"
@@ -480,7 +480,7 @@
         },
         {
             "Command": "/new samples.file_system_example.examples.Example26_reset",
-            "Expected": "",
+            "Expected": "State reset using samples.file_system_example.examples.Example26_reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "3bf6bd45-a9a1-44e9-be7d-336ac320952b"
@@ -501,7 +501,7 @@
         },
         {
             "Command": "/new samples.file_system_example.examples.Example21_reset",
-            "Expected": "",
+            "Expected": "State reset using samples.file_system_example.examples.Example21_reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "44ceda3b-5d3d-437e-9efb-e53caeb06e44"
@@ -522,7 +522,7 @@
         },
         {
             "Command": "/new samples.file_system_example.examples.Example34_reset",
-            "Expected": "",
+            "Expected": "State reset using samples.file_system_example.examples.Example34_reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "3882d41b-15c8-44c3-9d65-78b1067338a5"
@@ -536,7 +536,7 @@
         },
         {
             "Command": "/new samples.file_system_example.examples.Example36_reset",
-            "Expected": "",
+            "Expected": "State reset using samples.file_system_example.examples.Example36_reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "f2db86bb-5c2e-4288-8902-79956ae8eaea"
@@ -550,7 +550,7 @@
         },
         {
             "Command": "/new samples.file_system_example.examples.Example34_reset",
-            "Expected": "",
+            "Expected": "State reset using samples.file_system_example.examples.Example34_reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "8063e05b-15e7-4a1b-a284-b2df13c1c2f9"

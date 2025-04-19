@@ -1,0 +1,11 @@
+{
+    "large": {},
+    "fail_with_error": {},
+    "zero_disjunction_success": {},
+    "one_disjunction_success": {},
+    "two_disjunctions_success": {},
+    "two_disjunctions_success_fail": {},
+    "predication1": {},
+    "predication2": {},
+    "predication3": {}
+}

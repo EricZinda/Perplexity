@@ -43,8 +43,8 @@ def count_of_instances_and_concepts(context, state, variable, concepts_original,
                 # If we can render this concept as a real word (not just "something"), ask
                 # chatgpt if it is food
                 request_info = perplexity.OpenAI.StartOpenAIBooleanRequest("test",
-                                                         "is_food_or_drink_predication",
-                                                         f"Is {concept_english} either a food or a drink?")
+                                                                           "is_food_or_drink_predication",
+                                                                           f"Is {concept_english} either a food or a drink?")
                 result = perplexity.OpenAI.CompleteOpenAIRequest(request_info, wait=5)
                 if result == "true":
                     # It is, so report a nicer error than "I don't know that word"
@@ -205,7 +205,7 @@ def check_concept_solution_group_constraints(context, state_list, x_what_variabl
                                                check_concepts,
                                                variable=variable)
             if not success:
-                pipeline_logger.debug(f"check_concept_solution_group_constraints failed: {context.error()}")
+                pipeline_logger.debug(f"check_concept_solution_group_constraints (concepts={concept_count}, instances={instance_count}) failed: {context.get_error_info()}")
                 return False
 
     return True
@@ -994,23 +994,23 @@ def _thankyou_v_1(context, state, e_binding, x_target):
 #         yield state.record_operations([RespondOperation(f"You are welcome!"),
 #                                        esl.esl_planner.get_reprompt_operation(state)])
 
+
 @Predication(vocabulary, names=["count"])
 def count(context, state, e_binding, x_total_count_binding, x_item_to_count_binding, h_scopal_binding):
     scoped_variables, unscoped_variables = gather_scoped_variables_from_tree_at_index(state.get_binding("tree").value[0]["Tree"], context.current_predication_index())
     negated_predication_info = NegatedPredication(context.current_predication(), scoped_variables)
 
     # Solve the scopal binding, which could be quite complicated
-    new_tree_info = copy.deepcopy(context.tree_info)
+    new_tree_info = copy.deepcopy(context.tree_info())
     new_tree_info["Tree"] = h_scopal_binding
-    tree_solver = context.create_child_solver()
+    tree_solver = context.new_solver()
     subtree_state = state.set_x("tree", (new_tree_info,))
 
     # Don't try all alternative interpretations, just the one being used now
     wh_phrase_variable = perplexity.tree.get_wh_question_variable(state.get_binding("tree").value[0])
     for tree_record in tree_solver.tree_solutions(subtree_state,
                                                   new_tree_info,
-                                                  context.error_priority(),
-                                                  interpretation=context._interpretation,
+                                                  interpretation=context.interpretation(),
                                                   wh_phrase_variable=wh_phrase_variable):
         if tree_record["SolutionGroupGenerator"] is not None:
             # There were solutions, so this is true
@@ -1072,6 +1072,10 @@ def count(context, state, e_binding, x_total_count_binding, x_item_to_count_bind
                                                                                                     context.current_predication_index(),
                                                                                                     negated_predication_info)
                     return
+
+        else:
+            # Record the error from the failure solver in this solver
+            context.set_error_info(tree_record["Error"])
 
 
 @Predication(vocabulary, names=["pron"])
@@ -3221,10 +3225,6 @@ def _eat_v_1_command_group(context, state_list, e_list, x_actor_variable_group, 
     if final_state:
         yield [final_state]
 
-    else:
-        context.report_error(["formNotUnderstood"])
-        return
-
 
 @Predication(vocabulary,
              names=["_eat_v_1_request"],
@@ -4767,12 +4767,12 @@ def wh_question(context, state_list, binding_list, timed_out):
 
 # Generates all the responses that predications can
 # return when an error occurs
-def generate_custom_message(state, tree_info, error_term):
+def generate_custom_message(state, tree_info, error_info):
     # error_term is of the form: [index, error] where "error" is another
     # list like: ["name", arg1, arg2, ...]. The first item is the error
     # constant (i.e. its name). What the args mean depends on the error
-    error_predicate_index = error_term[0]
-    error_arguments = error_term[1]
+    error_predicate_index = error_info.error_predication_index
+    error_arguments = error_info.error
     error_constant = error_arguments[0] if error_arguments is not None else "no error set"
     arg_length = len(error_arguments) if error_arguments is not None else 0
     arg1 = error_arguments[1] if arg_length > 1 else None
@@ -4805,7 +4805,7 @@ def generate_custom_message(state, tree_info, error_term):
             return s("Host: There isn't such {a *english_word} here", tree_info)
 
     else:
-        system_message = perplexity.messages.generate_message(state, tree_info, error_term)
+        system_message = perplexity.messages.generate_message(state, tree_info, error_info)
         if system_message is not None:
             return system_message
 
@@ -4846,7 +4846,7 @@ def generate_custom_message(state, tree_info, error_term):
         return f"{arg1} does not {arg2} {arg3}"
     else:
         # No custom message, just return the raw error for debugging
-        return str(error_term)
+        return str(error_info)
 
 
 def reset():
@@ -5022,15 +5022,15 @@ def reset():
     return initial_state
 
 
-def error_priority(error_string):
-    system_priority = perplexity.messages.error_priority(error_string)
+def error_priority(error_info):
+    system_priority = perplexity.messages.error_priority(error_info)
     if system_priority is not None:
         return system_priority
     else:
         # Must be a message from our code
-        error_constant = error_string[1][0]
+        error_constant = error_info.error[0]
         priority = error_priority_dict.get(error_constant, error_priority_dict["defaultPriority"])
-        priority += (error_string[2] - 1) * error_priority_dict["success"]
+        priority += (error_info.error_phase - 1) * error_priority_dict["success"]
         return priority
 
 
@@ -5074,6 +5074,7 @@ def ui(loading_info=None, file=None, user_output=None, debug_output=None):
         "_speciality_n_1": "_dish_n_of",
         "_option_n_1": "_dish_n_of"
     }
+
     ui = UserInterface("esl",
                         reset,
                         vocabulary,

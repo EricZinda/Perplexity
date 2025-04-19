@@ -140,5 +140,9 @@
 "BooleanCompletionApproach(is_food_or_drink_predication): Is sandwich for dish either a food or a drink": "true",
 "BooleanCompletionApproach(is_food_or_drink_predication): Is beet either a food or a drink": "true",
 "BooleanCompletionApproach(is_food_or_drink_predication): Is restaurant either a food or a drink": "false",
-"BooleanCompletionApproach(is_food_or_drink_predication): Is i want tea either a food or a drink": "true"
+"BooleanCompletionApproach(is_food_or_drink_predication): Is i want tea either a food or a drink": "true",
+"BooleanCompletionApproach(is_food_or_drink_predication): Is timeout either a food or a drink": "false",
+"BooleanCompletionApproach(is_food_or_drink_predication): Is 1 menu for I, 2 menu for Johnny (all together) either a food or a drink": "false",
+"BooleanCompletionApproach(is_food_or_drink_predication): Is w, menu (all together) either a food or a drink": "false",
+"BooleanCompletionApproach(is_food_or_drink_predication): Is salad, steak (all together) either a food or a drink": "true"
 }

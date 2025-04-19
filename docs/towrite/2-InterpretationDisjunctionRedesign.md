@@ -5,119 +5,139 @@ That MRS can generate at least one scope-resolved MRS.
 
 Each predication in that scope-resolved MRS might have multiple, alternative, interpretations (represented by actual Python functions). All combinations of all the interpretations of the predications in the MRS must be tried to investigate all possible solutions.
 
-A given interpretation of a predication might, itself, generate independent assignments (i.e. disjunctions) based on the values of the arguments.  These also need to be tried in all combinations.
+A given interpretation of a predication might, itself, generate independent assignments that make sense together, but not interleaved with other sets of assignments (i.e. disjunctions) based on the values of the arguments.  These also need to be tried in all combinations.
 
-Finally, a set of solutions that have chosen a particular set of assignment sets for every predication interpretation AND for every disjunction alternative from a predication, constitute a self-consistent set of solutions. This can go through phase 2 as a unit.
+Finally, a set of solutions that have chosen a particular set of assignment sets for every predication interpretation AND for every disjunction alternative from a predication, constitute a self-consistent set of solutions. This can go through phase 2 as a unit, but, again, cannot be interleaved with solutions from other interpretations.
 
-Errors: Errors need to be tracked for each full interpretation of the tree. I.e. a view of a tree that has chosen interpretations for all predications AND chosen disjunction alternatives constitutes and interpretation, if it fails, it needs to be identified as an interpretation that failed and be able to return a unique error for the failure.
+Errors: Errors need to be tracked for each complete interpretation of the tree. Complete meaning: a view of a tree that has chosen interpretations for all predications AND chosen disjunction alternatives. If it fails, it needs to be identified as an interpretation that failed and be able to return a unique error for the failure.
 
 If they all fail, each interpretation record that was generated can be inspected to return the best error.
 
 ## Phase 1
-Phase 1 generates a set of local (i.e. true for only the MRS local constraints) solutions that contain variable assignments from only one "interpretation" of each predication. This is called a `solution set` and is the output of Phase 1. Here's how these are found:
+Phase 1 generates a set of local (i.e. true for only the MRS local constraints) solutions that contain variable assignments from only one complete interpretation of each predication. This is called a `solution set` and is the output of Phase 1. Here's how these are found:
 
-That scope-resolved MRS tree can generate, statically (i.e. before resolution), at least one `interpretation` which is a selection of alternative interpretations of the predications within it. The predication interpretations are defined by actual Python method implementations of the predication.  Each implementation represents an *alternative* interpretation. This means that the variable assignments it generates should not be combined with the results of other interpretations.  They are *alternatives*. All combinations of `interpretations` for the predications which have them must be tried exhaustively to fully search for all possible meanings.
+That scope-resolved MRS tree can generate, statically (i.e. before execution), at least one `static interpretation` which is a selection of alternative interpretations of the predications within it. The predication interpretations are defined by actual Python function implementations of the predication.  Each concrete function represents an *alternative* interpretation. All combinations of `static interpretations` for each predication must be built into trees and then solved *on their own*, for every possible tree, to fully search for all possible meanings.
 
-Each `interpretation` may further generate one or more `disjunction trees` because the `interpretation` has predications within it that are `disjunction predications`. They generate further *alternatives*, but, crucially, they cannot be known beforehand as they depend on the values of the arguments passed in. A `disjunction predication`, therefore, generates further interpretations, but they are only known at runtime. Just like statically known `interpretations`, all combinations of disjunction alternatives must be tried to fully search the tree for meaning. But, because the alternatives can only be known at runtime, they can't just be put together and tried in all combinations by the engine. They have to be discovered by evaluating the tree and allowing the depth first algorithm to explore them.
+Each `static interpretation tree` may further generate one or more `disjunction trees` if the `static interpretation tree` has interpretations within it that are `disjunction predications`. A `disjunction predication` is a predication that can itself generate sets of values that belong together, but cannot be interleaved. They are different interpretations. They thus generate further *alternatives*, but, crucially, they cannot be known beforehand as they depend on the values of the arguments passed in, and the set of these values is not known beforehand. Just like `static interpretations`, all combinations of `disjunction interpretations` must be tried to fully search the tree for meaning. But, because the alternatives can only be known at runtime, they can't just be put together and tried in all combinations by the engine. They have to be discovered by evaluating the tree and allowing the depth first algorithm to explore them.
 
 ### Creating a disjunction
-Because these must be created at runtime, there are two ways to create them
+Because these must be created at runtime, by yielding the `DisjunctionValue(lineage, object)` class when using predicate helper functions like `combinatorial_predication_1`
 
-1. yield the `DisjunctionValue(lineage, object)` class from predicate helper functions
-2. call 
+### Evaluating the tree
+It is the job of the disjunction predication to record the fact that it is in fact yielding disjunction alternatives. There are a few rules:
+- If it *ever* is going to yield a disjunction, it must always do so
+  - TODO: Is this really necessary?
+- It has to give a unique identifier (called a `lineage`) to every different set of disjunction values that it produces.  Values that share the same lineage are treated as part of the same `disjunction interpretation`
 
-conj_a
+To indicate that a predication has created a disjunction variant, it modifies the "tree_lineage" variable in the state object by adding a new `.predication_id@variant_id` at the end. This forms a long string that indicates, at any point in the tree execution, which dynamically created variant is being evaluated. This is done automatically by the system when a `DisjunctionValue` object is yielded to a helper function like `combinatorial_predication_1`.
 
-No solns| solns
-<end>   | 1
-        | 2
-        | <end>
-        | 3
-        | 4
-        | <end>
+Let's imagine we are evaluating a (fake) tree for "small boy is strong" `noun1_conj("boy", x1), adj1("small", x1), adj2_conj("strong", x1)`.
+- `noun1_conj` and `adj2_conj` create disjunction variants, `adj1` does not.
+- `adj1` is evaluated between the two disjunction variant functions
 
-If there are no solutions from conj_a() we expect it to fail, and for there to be a reported error. 
-- There is one tree_record indicating failure. One conjunction alternative
-- There are two tree_records with solutions for the first conjunction alternative, and two for the second
+This could produce the following lineage on the state at the end at either successful or failed evaluation:
 
+0: .1@1         (failed at `adj1` because `x1` contained a large boy)
+1: .1@1.3@1     (succeeded)
+2: .1@1         (failed at `adj1` because `x1` contained a different large boy)
+3: .1@1.3@1     (succeeded)
+4: .1@1.3@2     (succeeded)
+5: .1@2         (failed at `adj1` because `x1` contained a different large boy)
+6: .1@2.3@1     (succeeded) 
+7: .1@2.3@2     (succeeded)
 
-a -> conj_b
-Looks just like the first, but now there are N * 2 conjunction alternatives
+If we could evaluate these statically, they would be run as separate trees where only one sequence of lineages that starts with some value and then picks only one next value (and so on) would be seen:
 
-a -> conj_b -> c
+Tree 1:
+0: .1@1         (failed at `adj1` because `x1` contained a large boy)
+1: .1@1.3@1     (succeeded)
+2: .1@1         (failed at `adj1` because `x1` contained a different large boy)
+3: .1@1.3@1     (succeeded)
 
+Tree 2:
+0: .1@1         (failed at `adj1` because `x1` contained a large boy)
+2: .1@1         (failed at `adj1` because `x1` contained a different large boy)
+4: .1@1.3@2     (succeeded)
 
-a -> b -> conj_c
+Tree 3:
+5: .1@2         (failed at `adj1` because `x1` contained a different large boy)
+6: .1@2.3@1     (succeeded) 
 
-Why can't we take the same approach, then, even for static ones? We could, but breaking them out statically allows us to fully search a given interpretation quickly, without having to exhaustively try all combinations of trees until the very end before we have the answer to one interpretation.  We'd do this for conjunctions too, if we could, but we can't since they need to be determined at runtime.
+Tree 4:
+5: .1@2         (failed at `adj1` because `x1` contained a different large boy)
+7: .1@2.3@2     (succeeded)
 
-- context has a current lineage
-    - Since disjunction variants must be in sequence, if it sees a new one that isn't current + more, then we have switched to a new lineage
-      and the previous one will never appear again since conjunctions are monotonically increasing
-          - If there were no successes in the last lineage, fire a lineage failure
-          - We are, in effect, *discovering* the conjunction variants as we go
-            - Anytime a new lineage is seen, it invalidates anything that doesn't start with it
-            - This needs to be checked after every call to a predication that *succeeds* since those are the only ones that can change lineages
-              - (We assume the error from the previous failure will still be there ...)
-            - We only need to fire errors for the *longest* prefix given a set of prefixes because that is the "interpretation tree" we discovered.
-              - Interpretations don't fire errors for every predication that fails, just the longest one
-Question: do we need to fire a lineage error for every conjunction variant that failed? 
-          - If conjunction variants were real interpretations, we would only fire an error after the whole search tree for that set of interpretations failed
-          - In this design, only the last failure before the next conjunction variant (or the end of them all) will get fired
-            - If we instead marked predications as conjunctions, when we call them and the fail we can create a lineage failure for that
+Note that:
+- there are more results here since some of the nodes (like `.1@1` would happen for any lineage that starts with `1@1` and so would run again. Running them dynamically as in the first example doesn't require this
+- The same lineage can be repeated after backtracking (as in 0 and 2 in the first listing) because either:
+  - some predications don't produce disjunction alternatives (e.g. `adj1`), and things aren't backtracking all the way to a disjunction alternate to try a new disjunction
+  OR
+  - a disjunction interpretation may have multiple values, so when it backtracks it uses the same number
 
-Design:
-    - Any lineage that is unique should get a failure generated if it didn't have a success because that's how an interpretation would be treated
-    - 
+So, the goal is to be able to evaluate the tree like the first example, but interpret it like the second example so that we can follow the basic model we are trying to perform, even in the face of dynamically adding new predications at runtime.
 
-Sequence:
-a@1                 a.1 
-a@1                 a.1 -> b.1
-                    a.1 -> b.1 -> c.1
-a@1                 a.1 
-a@1                 a.1 -> b.1
-                    a.1 -> b.1 -> c.1
-    
-## Phase 1: Resolving Scopal Arguments
-Predications like `neg()` can operate logically on a whole fragment of a tree (i.e. a branch), and require that both phase 1 and 2 be resolved in order to determine their logical outcome. Take this example:
+### Solutions
+Let's start with some facts we know to be true:
 
-> "which files are not in two folders": which_q(x3,_file_n_of(x3,i8),neg(e9,udef_q(x12,[_folder_n_of(x12,i19), card(2,e18,x12)],_in_p_loc(e2,x3,x12))))
+1. Solutions with identical lineages are all from the same `disjunction tree` and those are the only solutions from that tree
+  - Because: all predications must have run (since this is a *solution*) and any predication that ever produces a disjunction must mark all values as a disjunction thus marking the lineage
+2. A partial lineage is finished and will not be generated again when we see a new lineage where the prefix length that matches this prefix is different
+  - Because: we are traversing a tree and the disjunction values are monotonically increasing
 
-In this case, `neg()` needs to know the results of the phase 2 evaluation of its scopal argument to determine if there are "2 folders" that each file is not in.
-
-## Phase 2
-Phase 2 groups a single solution set into solution groups that are now true for global constraints as well.
-
-## Error handling
-Each interpretation of a tree (including disjunctive interpretations), either fails in Phase 1 by not generating any solutions, or generates at least one solution. If it fails, it should return the "best" error it found in its tree_record. If it succeeds, it returns the solutions that got generated.
-
-If it generates solutions, it can still fail in Phase 2 by not generating any solution groups or succeed by generating at least one. If it fails phase 2, it should return the global constraint error that failed, not any errors from phase 1.
-
-If a scopal argument fails during phase 1, the error it generates should be the one returned from phase 1.
+So, it is trivial just iterate through all the solutions from a tree and group each solution by its lineage.
 
 
-## Design
-A tree_record object holds a bunch of generators that generate results for the tree *when requested*. These generators record errors in the execution context they were given. There can be subtrees that get executed (e.g. by neg()) in the course of evaluating a tree that should *share* the error context with the outer tree.  
+### Failed Trees
+But we also need to gather all the `disjunction interpretations` that had no solutions. For example, between these two solutions there could be `n` different failures for trees that never succeeded, and thus don't show up as solutions:
 
-There is no reason to share a context across different trees.  The context itself is a TreeSolver, and each TreeSolver has an ExecutionContext with it. When a subtree gets resolved (as in neg()), a new TreeSolver is created to do it, but uses the same ExecutionContext so errors are recorded for the whole tree.
+> solution0: .1@1         (failed at `adj1` because `x1` contained a large boy)
+>   (always failed) .1@1.3@-1 
+>   (always failed) .1@1.3@0
+> solution1: .1@1.3@1     (succeeded)
 
-[TODO: Describe how neg() works, and why it is different than virtual arguments...]
+We don't get the failure trees naturally because the solution iterator only returns *solutions*.
 
-The same thing happens with scopal arguments such as "copy "file5.txt" in "documents"":
-    pronoun_q(x3,pron(x3),udef_q(x18,_document_n_1(x18),proper_q(x8,[quoted(file5.txt,i14), fw_seq(x8,i14)],_copy_v_1(e2,x3,x8,_in_p_loc(e17,x8,x18)))))
-    the predications under the scopal generator could generate multiple *alternative solution sets*, i.e. disjunctions, in which case they need to be treated as other disjunctions
-    
+We need to decide when these trees are completed and won't be called again so we can return the failed trees. 
 
-## Scopal arguments
-- Difference between the way: quantifier(), neg(), copy() evaluate their scopal args
-  - quantifier() can just use call because it is operating against the interpretation that it was given
-  - copy(..., scopal) needs the "normalized" form of its scopal arg, which is a *different* interpretation, so it needs to call phase1() to ask for that interpretation
-  - neg() is an operation on the truth of its entire scopal arg, which means that it needs to evaluate phase 1 and phase 2 
-    of its scopal arg in order to know if that arg was "true", it isn't enough to know if a particular solution is true
+1. We do this by continuously updating a list of unique lineages we've seen to represent our best picture of the `disjunction interpretations` that occur from the base tree. The farther down the base tree we get and the more failures that get explored, the better our picture gets. Once the base tree has been completely run we know exactly what disjunction trees were created at this point in the world state, which is all we care about.
+2. Furthermore, if we notice a new lineage that indicates a bunch of lineages are now finished (see fact 2 above), we know *they* won't get any additional processing, and we can return the ones that never fully succeeded as failed `disjunction interpretations`.
+3. We can ignore any lineages that are prefixes of a longer lineage since that longer lineage represents a more complete exploration of the dynamic `disjunction interpretation` tree
 
-Scopal arguments have already had an interpretation of their predicates selected because the whole tree's interpretations have been selected. So that won't generate new tree_records.
+We can do this by running code after every *successful* predication (since any and only successful predication can create a new lineage) which:
+- Registers the lineage as "active"
+- Deletes any active lineages which are prefixes of it (since the new one represents a truer, more complete exploration of the `disjunction interpretation`)
+- Reports any lineages which this isn't a prefix of as "complete" if they had no solutions
 
-However, they may have conjunctions in them which do generate alternatives.
+At the very end we also need to complete any lineages that are still active since there will be no "next" lineage to complete them.
 
-NOTE: When scopal arguments are generated and thrown away (as in neg() or count()), any operations generated in that part of the tree are also thrown away
-ISSUE: Should we ever be trying all the alternative interpretations in a subtree (like neg() does)? or is it really just the current interpretation 
+### Finding the Error for a Failed tree
+When we report a failed tree (i.e. a tree that won't be run again and had no solutions) we need to record what error caused the failure. We need the error to be the "best" (deepest, etc) error that happened while conceptually executing *only the tree with this disjunction lineage in it*. The current way the tree is executed has two problems that prevent us from just looking at the context at its final failure point:
+
+1. It conflates the errors from different trees since there is a single error context and different disjunction tree variants can be interleaved but still use that one context.
+2.It clears the error when there is any solution, thus losing even the (potentially inaccurate) data we had
+
+An example of the first problem is below. The error code for the first solution will be recorded in the context and the second one won't, since there will already be an error at predication index in the tree, but really there should be two different errors recorded since these are disjunction variants:
+
+> solution6: .1@2.3@1     (failed) 
+> solution7: .1@2.3@2     (failed)
+
+The natural solution is to remember errors *by unique disjunction tree*. However, at the point of execution we may not know which tree a given lineage applies to.  For example:
+
+> solution0: .1@1
+
+is in two unique trees since it is early in execution:
+
+> solution0: .1@1         (failed at `adj1` because `x1` contained a large boy)
+> solution1: .1@1.3@1     (succeeded)
+> solution2: .1@1         (failed at `adj1` because `x1` contained a different large boy)
+> solution3: .1@1.3@1     (succeeded)
+
+> solution0: .1@1         (failed at `adj1` because `x1` contained a large boy)
+> solution2: .1@1         (failed at `adj1` because `x1` contained a different large boy)
+> solution4: .1@1.3@2     (succeeded)
+
+To fix this, we will modify `report_error` to pay attention to the current lineage and register its error with any "active lineage" that has this lineage as its prefix (including equality), using a special context kept for each. Because only successful predications can create new lineages, the "active lineage" list above will always have it available.
+
+We also have to create the same behavior on other operations that change or access the error context like `clear_error`, `get_error`, `get_error_info` and `set_error_info`.
+
+That way, we would have the "best" error for any given lineage.

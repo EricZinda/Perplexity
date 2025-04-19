@@ -41,132 +41,16 @@ def quantifier_from_binding(state, binding):
 
 # Needs to be called before all_plural_groups_stream. Allows the caller to
 # Gather useful stats that all_plural_groups_stream also consumes
-def plural_groups_stream_initial_stats(execution_context, var_criteria):
+def plural_groups_stream_initial_stats(interpretation_solver, var_criteria):
     variable_metadata = {}
     for criteria in var_criteria:
-        variable_metadata[criteria.variable_name] = execution_context.get_variable_metadata(criteria.variable_name)
+        variable_metadata[criteria.variable_name] = interpretation_solver.get_variable_metadata(criteria.variable_name)
 
     # Create the initial stats
     initial_stats_group = StatsGroup()
     has_global_constraint, variable_has_inf_max = initial_stats_group.initialize(var_criteria)
 
     return variable_metadata, initial_stats_group, has_global_constraint, variable_has_inf_max
-
-
-# Returns a (possibly different) solution group that meets the code criteria
-# or None if the incoming group does not meet the criteria
-def check_group_against_code_criteria(execution_context, handlers, optimized_criteria_list, index_predication, group):
-    phase2_context = execution_context.create_phase2_context()
-    created_solution_group, group_list, next_best_error_info = run_handlers(phase2_context,
-                                                                            handlers,
-                                                                            optimized_criteria_list,
-                                                                            group,
-                                                                            index_predication)
-
-    # Solution groups can return formNotUnderstood to indicate they are not appropriate, the solution group handler
-    # is not included as part of the interpretation.
-    # Any errors are returned by next_best_error_info
-    execution_context.clear_error()
-
-    if created_solution_group is None:
-        pipeline_logger.debug(f"No solution group handlers, or none handled it: just do the default behavior")
-        # if it contains Concepts and there wasn't a solution group handler, then the constraints did not get
-        # validated, and we can't, so fail
-        # TODO
-        return group_list, next_best_error_info
-
-    elif isinstance(created_solution_group, (tuple, list)) and len(created_solution_group) == 0:
-        pipeline_logger.debug(f"Handler said this is not a valid solution group. best error: {next_best_error_info}")
-        return None, next_best_error_info
-
-    else:
-        pipeline_logger.debug(f"Handler said this is a valid solution group")
-        return created_solution_group, next_best_error_info
-
-
-# If a handler:
-# 1. yields len([...]) > 0 -> Says the group is a solution, provides a (potentially different) solution group, stop further processing
-# 2. doesn't yield and:
-#   - report_error("formNotUnderstood") then it means the group handler was N/A, ignore the handler and continue trying others
-#   - report_error(any other error): it means fail this solution and stop further processing. We understood and failure with this error is the right answer
-#
-# Why is this different from a predication which simply yields a value for success or returns without yielding for failure?
-#   The solution group has already passed phase 1 and has been checked to meet phase 2 criteria.  The group
-#   handler is designed for actually "doing whatever we should do" with the solution group
-#   If we treated handlers as "Solution Group Interpretations"
-#
-# Errors:
-# - Handlers will be run against one solution group, and they are all operating off of the same tree
-#   so, since the tree is the same, we can use the same "deepest error logic" to return the best error
-def run_handlers(execution_context, handlers, variable_constraints, group, index_predication):
-    # Remember the initial error information because we may need to reset it if we run multiple handlers
-    initial_error_info = execution_context.get_error_info()
-    state_list = CachedIterable(group)
-    if len(handlers) > 0:
-        pipeline_logger.debug(f"Running {len(handlers)} solution group handlers")
-
-        for is_predication_handler_name in handlers:
-            execution_context.set_error_info(initial_error_info)
-            handler_function = is_predication_handler_name[1]
-            if is_predication_handler_name[0]:
-                # This is a predication-style solution group handler
-                # Build up an arg structure to call the predication with that
-                # has the same arguments as the normal predication but has a list for each argument that represents the solution group
-                handler_args = []
-                for arg_index in range(len(index_predication.args)):
-                    arg = index_predication.args[arg_index]
-                    found_constraint = None
-                    for constraint in variable_constraints:
-                        if constraint.variable_name == arg:
-                            found_constraint = constraint
-                            break
-                    if found_constraint is None:
-                        found_constraint = VariableCriteria(index_predication, arg)
-                    handler_args.append(GroupVariableValues(found_constraint, state_list, index_predication.argument_types()[arg_index], arg))
-
-                handler_args = [execution_context, state_list] + handler_args
-
-            else:
-                handler_args = (execution_context, state_list) + (variable_constraints, )
-
-            debug_name = is_predication_handler_name[2][0] + "." + is_predication_handler_name[2][1]
-            pipeline_logger.debug(f"Running {debug_name} solution group handler")
-            created_solution_group = None
-
-            # Start with a cleared error context so we properly capture any initial errors
-            execution_context.clear_error()
-
-            # Continue to clear the error context every time we are successful so that old errors don't bleed into
-            # the next call
-            for next_solution_group in perplexity.execution.clear_error_when_yield_generator(execution_context, handler_function(*handler_args)):
-                assert not (isinstance(next_solution_group, (tuple, list)) and len(next_solution_group) == 0), \
-                    f"yielded value from solution group {debug_name} must be a tuple or list where len() > 0. Was: {str(next_solution_group)}"
-                created_solution_group = next_solution_group
-                pipeline_logger.debug(f"{debug_name} succeeded")
-                break
-
-            # First solution_group handler that yields, wins
-            if created_solution_group:
-                pipeline_logger.debug(f"{debug_name} succeeded. No more solution group handlers will be run.")
-                break
-
-            else:
-                if execution_context.has_not_understood_error():
-                    # That handler was N/A for this solution group, keep trying
-                    pipeline_logger.debug(f"{debug_name} reported formNotUnderstood, trying alternative solution group handlers...")
-
-                else:
-                    # Return an empty solution group to indicate failure
-                    # The error context will contain any error generated by the handler
-                    pipeline_logger.debug(f"{debug_name} failed. No more solution group handlers will be run.")
-                    created_solution_group = []
-                    break
-
-        pipeline_logger.debug(f"Done trying solution group handlers, best error: {execution_context.get_error_info()}")
-        return created_solution_group, state_list, execution_context.get_error_info()
-
-    else:
-        return None, state_list, perplexity.execution.ExecutionContext.blank_error_info()
 
 
 # Support iterating over just one variable value from a state iterator but
@@ -232,13 +116,13 @@ def report_last_error(target_context, context):
                                         phase=last_error_info[3])
 
 
-# Run solution_group constraints (not code checks) within all_plural_groups_stream2() so that failed solution groups cause the right alternative sets to be created
-# Problems:
-#     - SingleGroupGenerator assumes that, if it gets a new group with the same lineage, that there will be *more* records in it
-#         - and furthermore that the records that we already returned are still there
-#     - Neither is true anymore because the group handler can completely swap things out
-def all_plural_groups_stream(execution_context, solutions, var_criteria, variable_metadata, initial_stats_group, has_global_constraint,
-                              handlers, optimized_criteria_list, index_predication):
+# Start with a set of solutions from a single disjunction interpretation represented by interpretation_lineage
+# and yield solution groups that meet the solution_group constraints (but not code checks).
+# We run the constraints so that failed solution groups cause the right alternative sets to be created
+# The result is either at least one solution group for the disjunction interpretation (in which case there is no error since there was a solution)
+# or a single error which represents the best failure for this disjunction interpretation
+# which is recorded in the interpretation solver for the interpretation
+def all_plural_groups_stream(disjunction_interpretation, solutions, var_criteria, initial_stats_group, has_global_constraint):
     # Give a unique set_id to every group that gets created
     set_id = 0
     sets = []
@@ -253,18 +137,16 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
 
     # When we know we have failed early (early_fail_quit)
     early_fail_quit = False
-    context_for_best_error = execution_context.new_initial_context()
     for next_solution in solutions:
         if groups_logger.level == logging.DEBUG:
             groups_logger.debug(f"Processing solution: {next_solution}")
 
         # If this solution fails phase 2 criteria all by itself, count its failures as phase 1
-        merge, state = check_criteria_all(execution_context, var_criteria, initial_empty_set().stats_group.copy(), next_solution, phase=1)
+        merge, state = check_criteria_all(disjunction_interpretation, var_criteria, initial_empty_set().stats_group.copy(), next_solution, phase=1)
         if state in [CriteriaResult.fail_one, CriteriaResult.fail_all]:
             # Failed already, so adding more will never make it succeed
             if groups_logger.level == logging.DEBUG:
                 groups_logger.debug(f"Solution failed phase 2 by itself: {next_solution}")
-            report_last_error(context_for_best_error, execution_context)
             continue
 
         new_sets = []
@@ -277,10 +159,10 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
                 continue
 
             new_set_stats_group = existing_group_set.stats_group.copy()
-            merge, state = check_criteria_all(execution_context, var_criteria, new_set_stats_group, next_solution, phase=2)
+            merge, state = check_criteria_all(disjunction_interpretation, var_criteria, new_set_stats_group, next_solution, phase=2)
             if groups_logger.level == logging.DEBUG and state in [CriteriaResult.fail_one, CriteriaResult.fail_all]:
                 nl = "\n     "
-                groups_logger.debug(f"Solution group state: {state}: (values next) \n     {nl.join(str(x) for x in (existing_group_set.raw_set + [next_solution]))}")
+                groups_logger.debug(f"Solution group (merged = {merge}): {state} (values next): \n     {nl.join(str(x) for x in (existing_group_set.raw_set + [next_solution]))}")
 
             if state == CriteriaResult.fail_one:
                 # Fail (doesn't meet criteria): don't add, don't yield
@@ -297,11 +179,6 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
                 raw_set = existing_group_set.raw_set + [next_solution]
                 final_set = None
                 if state == CriteriaResult.meets:
-                    if groups_logger.level == logging.DEBUG:
-                        nl = "\n     "
-                        groups_logger.debug(
-                            f"Pre-code criteria Solution group raw (merged = {merge}): {state} values next \n     {nl.join(str(x) for x in raw_set)}")
-
                     final_set = raw_set
 
                 # Decide whether to merge into the existing set or create a new one
@@ -336,12 +213,9 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
 
                 if groups_logger.level == logging.DEBUG:
                     nl = "\n     "
-                    groups_logger.debug(f"Solution group raw (merged: {next_solution_was_merged}): {state}: (values next) \n     {nl.join(str(x) for x in new_group_set.raw_set)}")
+                    groups_logger.debug(f"Solution group (merged: {next_solution_was_merged}): {state}: (values next) \n     {nl.join(str(x) for x in new_group_set.raw_set)}")
 
                 if state == CriteriaResult.meets:
-                    # Clear any errors that occurred trying to generate solution groups that didn't work
-                    # so that the error that gets returned is whatever happens while *processing* the solution group
-                    execution_context.clear_error()
                     yield new_group_set.final_set, new_group_set.set_id, new_group_set.stats_group, new_group_set.raw_set
 
                 elif state == CriteriaResult.meets_pending_global:
@@ -352,21 +226,15 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
                     # Not yet a solution, don't track it as one
                     pass
 
-        # Remember the "best" phase 2 error than happened across all the solution groups that failed
-        report_last_error(context_for_best_error, execution_context)
         sets += new_sets
 
         if early_fail_quit:
             break
 
-    # Record the last failure and set the error context to be the best error we got before we process global context
-    report_last_error(context_for_best_error, execution_context)
-    execution_context.set_error_info(context_for_best_error.get_error_info())
-
     # If early_fail_quit is True, the error should already be set
     if not early_fail_quit and has_global_constraint and len(pending_global_criteria) > 0:
         for criteria in var_criteria:
-            if not criteria.meets_global_criteria(execution_context):
+            if not criteria.meets_global_criteria(disjunction_interpretation):
                 if groups_logger.level == logging.DEBUG:
                     nl = "\n     "
                     groups_logger.debug(f"Didn't meet global criteria: {criteria}")
@@ -382,6 +250,8 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
             else:
                 # Fail (doesn't meet code criteria): don't add, don't yield
                 continue
+
+    return
 
 
 class StatsGroup(object):
@@ -498,7 +368,7 @@ class VariableStats(object):
     # adding this solution to the group this stats object is tracking
     # Succeeds if the group, only considering this variable, can be interpreted as any (or multiple) of
     # cumulative/collective/distributive across all variables
-    def add_solution(self, execution_context, variable_criteria, solution, phase):
+    def add_solution(self, disjunction_interpretation, variable_criteria, solution, phase):
         binding_value = solution.get_binding(self.variable_name).value
 
         # Solutions can't have different types of values in the same solution group
@@ -542,7 +412,9 @@ class VariableStats(object):
             self.whole_group_unique_values[binding_value][1].append(solution)
 
         # See if there are any required_values criteria and make sure we meet them
-        required_values_state = variable_criteria.meets_required_values_criteria(execution_context, self.whole_group_unique_individuals, self.whole_group_unique_values, phase)
+        required_values_state = variable_criteria.meets_required_values_criteria(disjunction_interpretation,
+                                                                                 self.whole_group_unique_individuals,
+                                                                                 self.whole_group_unique_values, phase)
         if required_values_state in [CriteriaResult.fail_one, CriteriaResult.fail_all]:
             self.current_state = required_values_state
             return new_individuals, required_values_state
@@ -554,8 +426,9 @@ class VariableStats(object):
 
             # Otherwise: we assume it meets the numeric criteria
             # and allow the group handler to finalize the decision
-            sanity_check = variable_criteria.meets_criteria(execution_context,
-                                                                     self.whole_group_unique_individuals, phase)
+            sanity_check = variable_criteria.meets_criteria(disjunction_interpretation,
+                                                            self.whole_group_unique_individuals,
+                                                            phase)
             if sanity_check in [CriteriaResult.fail_one, CriteriaResult.fail_all]:
                 self.current_state = sanity_check
             else:
@@ -576,7 +449,9 @@ class VariableStats(object):
 
                 # The *previous* variable is a concept, so we will pretend it meets the criteria for anything. Thus:
                 # If this variable's values meets its own criteria, it could possibly be collective or cuml
-                self.cumulative_state = variable_criteria.meets_criteria(execution_context, self.whole_group_unique_individuals, phase)
+                self.cumulative_state = variable_criteria.meets_criteria(disjunction_interpretation,
+                                                                         self.whole_group_unique_individuals,
+                                                                         phase)
                 self.collective_state = self.cumulative_state
 
                 # For distributive: Since the *previous* variable is a concept, we just need to prove there is *some number of previous values*
@@ -645,14 +520,18 @@ class VariableStats(object):
 
                     # Cumulative
                     if self.cumulative_state != CriteriaResult.fail_one:
-                        self.cumulative_state = variable_criteria.meets_criteria(execution_context, self.whole_group_unique_individuals, phase)
+                        self.cumulative_state = variable_criteria.meets_criteria(disjunction_interpretation,
+                                                                                 self.whole_group_unique_individuals,
+                                                                                 phase)
 
                     # Distributive
                     # for each prev_unique_value: len(unique_values) meets criteria
                     if self.distributive_state != CriteriaResult.fail_one:
                         self.distributive_state = CriteriaResult.meets
                         for prev_unique_value_item in self.prev_variable_stats.whole_group_unique_values.items():
-                            distributive_value_state = variable_criteria.meets_criteria(execution_context, prev_unique_value_item[1][0], phase)
+                            distributive_value_state = variable_criteria.meets_criteria(disjunction_interpretation,
+                                                                                        prev_unique_value_item[1][0],
+                                                                                        phase)
                             self.distributive_state = criteria_transitions[self.distributive_state][distributive_value_state]
                             if self.distributive_state == CriteriaResult.fail_one:
                                 break
@@ -660,7 +539,9 @@ class VariableStats(object):
                 else:
                     if self.collective_state != CriteriaResult.fail_one:
                         # Collective
-                        self.collective_state = variable_criteria.meets_criteria(execution_context, self.whole_group_unique_individuals, phase)
+                        self.collective_state = variable_criteria.meets_criteria(disjunction_interpretation,
+                                                                                 self.whole_group_unique_individuals,
+                                                                                 phase)
 
             # Now figure out what to return
             # If the previous variable is conceptual all 3 modes may be supported
@@ -750,7 +631,7 @@ class VariableStats(object):
 #       collective if len(prev_unique_values) == 1 and len(unique_values) meets criteria
 #       distributive if len(prev_unique_values) > 1 and for each prev_unique_value: len(unique_values) meets criteria
 #       cumulative if len(prev_unique_values) > 1 and len(unique_values) meets criteria
-def check_criteria_all(execution_context, var_criteria, new_set_stats_group, new_solution, phase):
+def check_criteria_all(disjunction_interpretation, var_criteria, new_set_stats_group, new_solution, phase):
     current_set_state = CriteriaResult.meets
     merge = True
     for index in range(len(var_criteria)):
@@ -771,7 +652,7 @@ def check_criteria_all(execution_context, var_criteria, new_set_stats_group, new
 
             # See what the CriteriaResult is for the whole solution group plus the new solution
             # but only for this particular variable
-            new_individuals, state = variable_stats.add_solution(execution_context, criteria, new_solution, phase)
+            new_individuals, state = variable_stats.add_solution(disjunction_interpretation, criteria, new_solution, phase)
 
         # Decide the new state of the entire solution group, so far, based on the previous variable
         # state and the new state
@@ -837,7 +718,7 @@ class VariableCriteria(object):
     def __repr__(self):
         return f"{{{self.variable_name}: min={self.min_size}, max={self.max_size}, global={self.global_criteria}, required_values={self.required_values}, pred={self.predication.name}({self.predication.args[0]})}}"
 
-    def meets_criteria(self, execution_context, value_list, phase):
+    def meets_criteria(self, disjunction_interpretation, value_list, phase):
         values_count = count_set(value_list)
 
         # Check global criteria
@@ -852,24 +733,36 @@ class VariableCriteria(object):
             # We can fail immediately if we have too many
             if len(self._unique_rstrs) > self.max_size:
                 # This is definitely the reason why something failed (since we are failing it here), so force=True
-                execution_context.report_error_for_index(self.predication_index, ["phase2MoreThanN", self._after_phrase_error_location, self.max_size], force=True, phase=phase)
+                disjunction_interpretation.state.error_info.report_error_for_index(self.predication_index,
+                                                                             ["phase2MoreThanN", self._after_phrase_error_location, self.max_size],
+                                                                             force=True,
+                                                                             phase=phase)
                 return CriteriaResult.fail_all
 
         if self.global_criteria == GlobalCriteria.all_rstr_meet_criteria:
             # We can fail immediately if we have too many
             if len(self._unique_rstrs) > self.max_size:
                 # This is definitely the reason why something failed (since we are failing it here), so force=True
-                execution_context.report_error_for_index(self.predication_index, ["phase2MoreThanN", self._predication_error_location, self.max_size], force=True, phase=phase)
+                disjunction_interpretation.state.error_info.report_error_for_index(self.predication_index,
+                                                                             ["phase2MoreThanN", self._predication_error_location, self.max_size],
+                                                                             force=True,
+                                                                             phase=phase)
                 return CriteriaResult.fail_all
 
         # Check numeric criteria
         if values_count > self.max_size:
             # It'll never get smaller so it fails forever
-            execution_context.report_error_for_index(self.predication_index, ["phase2MoreThan", self._after_phrase_error_location, self.max_size], force=True, phase=phase)
+            disjunction_interpretation.state.error_info.report_error_for_index(self.predication_index,
+                                                                         ["phase2MoreThan", self._after_phrase_error_location, self.max_size],
+                                                                         force=True,
+                                                                         phase=phase)
             return CriteriaResult.fail_one
 
         elif values_count < self.min_size:
-            execution_context.report_error_for_index(self.predication_index, ["phase2LessThan", self._after_phrase_error_location, self.min_size], force=True, phase=phase)
+            disjunction_interpretation.state.error_info.report_error_for_index(self.predication_index,
+                                                                         ["phase2LessThan", self._after_phrase_error_location, self.min_size],
+                                                                         force=True,
+                                                                         phase=phase)
             return CriteriaResult.contender
 
         else:
@@ -881,7 +774,7 @@ class VariableCriteria(object):
             else:
                 return CriteriaResult.meets
 
-    def meets_required_values_criteria(self, execution_context, unique_individuals_list, unique_values_list, phase):
+    def meets_required_values_criteria(self, disjunction_interpretation, unique_individuals_list, unique_values_list, phase):
         if self.required_values is not None:
             # Ensure the values are all singles or a single collective
             if len(unique_values_list) > 1:
@@ -905,31 +798,42 @@ class VariableCriteria(object):
 
                 # register a high priority (because of "force") error when and is a contender
                 # so that is the error that gets used if it is a failure
-                execution_context.report_error_for_index(self.predication_index,
-                                                         ["phase2NotAllRequiredValues",
-                                                          individuals_not_yet_included], force=True, phase=phase)
+                disjunction_interpretation.state.error_info.report_error_for_index(self.predication_index,
+                                                                             ["phase2NotAllRequiredValues", individuals_not_yet_included],
+                                                                             force=True,
+                                                                             phase=phase)
                 return CriteriaResult.contender
+
         else:
             return CriteriaResult.meets
 
     # Only called at the very end after all solutions have been generated
-    def meets_global_criteria(self, execution_context):
+    def meets_global_criteria(self, disjunction_interpretation):
         if self.global_criteria == GlobalCriteria.all_rstr_meet_criteria:
-            all_rstr_values = execution_context.get_variable_execution_data(self.variable_name)["AllRstrValues"]
+            all_rstr_values = disjunction_interpretation.state.get_variable_execution_data(self.variable_name)["AllRstrValues"]
             if groups_logger.level == logging.DEBUG:
                 nl = "\n     "
                 groups_logger.debug(f"all rstr values: {nl.join([str(x) for x in all_rstr_values])}")
 
             if len(all_rstr_values) < self.min_size:
-                execution_context.report_error_for_index(self.predication_index, ["phase2LessThan", self._predication_error_location, self.min_size, ], force=True, phase=2)
+                disjunction_interpretation.state.error_info.report_error_for_index(self.predication_index,
+                                                                             ["phase2LessThan", self._predication_error_location, self.min_size, ],
+                                                                             force=True,
+                                                                             phase=2)
                 return False
 
             elif len(all_rstr_values) > self.max_size:
-                execution_context.report_error_for_index(self.predication_index, ["phase2MoreThan", self._predication_error_location, self.max_size], force=True, phase=2)
+                disjunction_interpretation.state.error_info.report_error_for_index(self.predication_index,
+                                                                             ["phase2MoreThan", self._predication_error_location, self.max_size],
+                                                                             force=True,
+                                                                             phase=2)
                 return False
 
             elif len(all_rstr_values) != len(self._unique_rstrs):
-                execution_context.report_error_for_index(self.predication_index, ["phase2NotTrueForAll", self._predication_error_location], force=True, phase=2)
+                disjunction_interpretation.state.error_info.report_error_for_index(self.predication_index,
+                                                                             ["phase2NotTrueForAll", self._predication_error_location],
+                                                                             force=True,
+                                                                             phase=2)
                 return False
 
         if self.global_criteria == GlobalCriteria.exactly or self.global_criteria == GlobalCriteria.all_rstr_meet_criteria:
@@ -939,11 +843,17 @@ class VariableCriteria(object):
                 groups_logger.debug(f"unique rstr values: {nl.join([str(x) for x in self._unique_rstrs])}")
 
             if len(self._unique_rstrs) < self.min_size:
-                execution_context.report_error_for_index(self.predication_index, ["phase2LessThan", self._after_phrase_error_location, self.min_size], force=True, phase=2)
+                disjunction_interpretation.state.error_info.report_error_for_index(self.predication_index,
+                                                                             ["phase2LessThan", self._after_phrase_error_location, self.min_size],
+                                                                             force=True,
+                                                                             phase=2)
                 return False
 
             elif len(self._unique_rstrs) > self.max_size:
-                execution_context.report_error_for_index(self.predication_index, ["phase2MoreThan", self._after_phrase_error_location, self.max_size], force=True, phase=2)
+                disjunction_interpretation.state.error_info.report_error_for_index(self.predication_index,
+                                                                             ["phase2MoreThan", self._after_phrase_error_location, self.max_size],
+                                                                             force=True,
+                                                                             phase=2)
                 return False
 
         return True

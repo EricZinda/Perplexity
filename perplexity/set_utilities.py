@@ -188,7 +188,6 @@ class DisjunctionIterable(object):
         if self.cached_item:
             value = self.cached_item
             self.cached_item = None
-            print(value)
             return value
         else:
             return next(self.generator)

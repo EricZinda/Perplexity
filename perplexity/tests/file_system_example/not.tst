@@ -3,7 +3,7 @@
     "TestItems": [
         {
             "Command": "/new samples.file_system_example.examples.Example29_reset",
-            "Expected": "",
+            "Expected": "State reset using samples.file_system_example.examples.Example29_reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "2725fccc-1b69-4c22-a5ff-b4f0e8ecc806"
@@ -73,7 +73,7 @@
         },
         {
             "Command": "/new samples.file_system_example.examples.Example28_reset",
-            "Expected": "",
+            "Expected": "State reset using samples.file_system_example.examples.Example28_reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "5f940c11-9891-4c2d-830e-59e7a936e73e"
@@ -87,7 +87,7 @@
         },
         {
             "Command": "/new samples.file_system_example.examples.Example27_reset",
-            "Expected": "",
+            "Expected": "State reset using samples.file_system_example.examples.Example27_reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "345401ee-1396-4f4c-999e-d6bc96f2fa6f"
@@ -101,7 +101,7 @@
         },
         {
             "Command": "/new samples.file_system_example.examples.Example27_reset",
-            "Expected": "",
+            "Expected": "State reset using samples.file_system_example.examples.Example27_reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "b42e40ad-2bea-4029-b72f-086b38f50a22"
@@ -136,7 +136,7 @@
         },
         {
             "Command": "/new samples.file_system_example.examples.Example27_reset",
-            "Expected": "",
+            "Expected": "State reset using samples.file_system_example.examples.Example27_reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "71f9fe80-3337-41c4-9548-049aa54e7b06"
@@ -150,7 +150,7 @@
         },
         {
             "Command": "/new samples.file_system_example.examples.Example31_reset",
-            "Expected": "",
+            "Expected": "State reset using samples.file_system_example.examples.Example31_reset().",
             "Tree": "None",
             "Enabled": true,
             "ID": "27f5936a-5de7-4b70-a047-e561f4b5a6ee"

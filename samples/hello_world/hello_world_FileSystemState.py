@@ -602,19 +602,16 @@ def compound_concept(context, state, e_introduced_binding, x_base_binding, x_mod
 
 # Generates all the responses that predications can
 # return when an error occurs
-def generate_custom_message(state, tree_info, error_term):
+def generate_custom_message(state, tree_info, error_info):
     # See if the system can handle converting the error
     # to a message first
-    system_message = perplexity.messages.generate_message(state, tree_info, error_term)
+    system_message = perplexity.messages.generate_message(state, tree_info, error_info)
     if system_message is not None:
         return system_message
 
     else:
-        # error_term is of the form: [index, error] where "error" is another
-        # list like: ["name", arg1, arg2, ...]. The first item is the error
-        # constant (i.e. its name). What the args mean depends on the error
-        error_predicate_index = error_term[0]
-        error_arguments = error_term[1]
+        error_predicate_index = error_info.error_predication_index
+        error_arguments = error_info.error
         error_constant = error_arguments[0] if error_arguments is not None else "no error set"
         arg_length = len(error_arguments) if error_arguments is not None else 0
         arg1 = error_arguments[1] if arg_length > 1 else None
@@ -652,9 +649,9 @@ def generate_custom_message(state, tree_info, error_term):
 
         else:
             # No custom message, just return the raw error for debugging
-            return str(error_term)
+            return str(error_info)
 
-1000000
+
 def reset():
     return FileSystemState(FileSystemMock([(True, "/documents/file1.txt", {"size": 1000}),
                                            (False, "/Desktop", {"size": 10000000}),
