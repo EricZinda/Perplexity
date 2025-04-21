@@ -118,7 +118,8 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
                         - If we can't clear it out, we need it to respect the conjunction behavior somehow
                 - Design
                     - START HERE NEXT: Run /runfolder ESL, hello world, internals, solvertests until it succeeds
-
+                    - for my son, please get the salmon -> "done"
+                        - bug: commands will always run the default handler which doesn't do anything
                     - (fixed) Which two dishes are specials?
                         - now hangs
                             '_which_q(x5,[_dish_n_of(x5,i11), card(2,e10,x5)],udef_q(x3,_special_n_1(x3),_be_v_id(e2,x3,x5)))'

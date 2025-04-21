@@ -366,10 +366,15 @@ def run_handlers(execution_context, disjunction_interpretation, group_handler_in
                     break
 
         if created_solution_group is None:
-            pipeline_logger.debug(f"No solution group handlers, or none handled it: just do the default behavior")
-            # TODO: if it contains Concepts and there wasn't a solution group handler, then the constraints did not get
-            # validated, and we can't, so fail
-            return state_list
+            if sentence_force(state_list[0].get_binding("tree").value[0]["Variables"]) == "comm":
+                pipeline_logger.debug(f"No solution group handlers, or none handled it and this is a command. No more solution group handlers will be run.")
+                created_solution_group = []
+
+            else:
+                pipeline_logger.debug(f"No solution group handlers, or none handled it: just do the default behavior")
+                # TODO: if it contains Concepts and there wasn't a solution group handler, then the constraints did not get
+                # validated, and we can't validate them, so fail
+                return state_list
 
         pipeline_logger.debug(f"Done trying solution group handlers, best error: {disjunction_interpretation.state.error_info}")
         return created_solution_group
