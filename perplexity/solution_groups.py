@@ -305,8 +305,6 @@ def run_handlers(execution_context, disjunction_interpretation, group_handler_in
     state_list = CachedIterable(group)
     if len(handlers) > 0:
         pipeline_logger.debug(f"Running {len(handlers)} solution group handlers")
-        for state in state_list:
-            print(state)
         created_solution_group = None
         for is_predication_handler_name in handlers:
             group_handler_context.set_error_info(initial_error_info)
@@ -431,7 +429,7 @@ def solution_groups(execution_context,
                                                                                              "solution_group")
         # Use an index larger than any of the predications as the index for error reporting
         group_handler_index = perplexity.tree.find_last_predication(tree_info["Tree"]).index + 1
-        best_error_info = disjunction_interpretation.state.error_info
+        best_error_info = copy.deepcopy(disjunction_interpretation.state.error_info)
         best_error_info_priority = execution_context.error_priority_function(best_error_info)
         for solution_group in group_generator:
             created_solution_group = run_handlers(
@@ -447,7 +445,7 @@ def solution_groups(execution_context,
                 yield created_solution_group
 
             else:
-                error_info = disjunction_interpretation.state.error_info
+                error_info = copy.deepcopy(disjunction_interpretation.state.error_info)
                 error_info_priority = execution_context.error_priority_function(error_info)
                 if error_info_priority > best_error_info_priority:
                     best_error_info = error_info

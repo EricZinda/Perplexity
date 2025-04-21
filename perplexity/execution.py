@@ -600,7 +600,7 @@ class TreeSolver(object):
 
                 tree_record["SolutionGroups"] = all_solution_groups
                 tree_record["Interpretation"] = ", ".join([f"{x.module}.{x.function}" for x in interpretation_solver.interpretation().values()])
-                tree_record["Error"] = disjunction_interpretation.state.error_info
+                tree_record["Error"] = copy.deepcopy(disjunction_interpretation.state.error_info)
                 tree_record["TreeIndex"] = current_tree_index_recorded
                 if pipeline_logger.level == logging.DEBUG:
                     pipeline_logger.debug(f"Returning tree_record for {disjunction_interpretation.lineage} '{tree_info['Tree']}'")
