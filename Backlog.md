@@ -118,14 +118,12 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
                         - If we can't clear it out, we need it to respect the conjunction behavior somehow
                 - Design
                     - START HERE NEXT: Run /runfolder ESL, hello world, internals, solvertests until it succeeds
-                    - what is not soup (includes soup)
-                        not depends on formNotUnderstood being the error from the solution group so it knows if it wasn't handled
 
                     - (fixed) Which two dishes are specials?
                         - now hangs
                             '_which_q(x5,[_dish_n_of(x5,i11), card(2,e10,x5)],udef_q(x3,_special_n_1(x3),_be_v_id(e2,x3,x5)))'
                             Tree #0, interpretation #19: 'perplexity.system_vocabulary.which_q, samples.esl.tutorial.match_all_n_i_instances, perplexity.system_vocabulary.card_cex, perplexity.system_vocabulary.generic_q, samples.esl.tutorial.match_all_n_concepts, samples.esl.tutorial._be_v_id_order_2'
-                            suspect it is because all are formnotunderstood
+                            suspect it is because all are formnotunderstood and formNotUnderstood is not returned from solutiongroup
                             because there are more than two specials
                             and it takes forever to exhaustively list the specials
                         - (fixed) assert not self.has_not_understood_error()

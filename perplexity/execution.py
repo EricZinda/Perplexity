@@ -456,11 +456,17 @@ class TreeSolver(object):
                 current_lineage = self._current_lineage
                 while True:
                     # Reset the error state to where we first started so we don't bleed the error into the next attempt
+                    last_error_info = self._interpretation_solver.get_error_info_lineage(self._current_lineage)
                     self._call_context.set_error_info(self._initial_error_info)
-                    next_solution, next_lineage = self._get_next_interpretation_value()
-                    if next_lineage != current_lineage:
-                        logger.debug(f"Continuing next disjunction predication of {self._call_context.current_predication()} due to formNotUnderstood")
-                        return next_solution
+                    try:
+                        next_solution, next_lineage = self._get_next_interpretation_value()
+                        if next_lineage != current_lineage:
+                            logger.debug(f"Continuing next disjunction predication of {self._call_context.current_predication()} due to formNotUnderstood")
+                            return next_solution
+
+                    except StopIteration:
+                        self._interpretation_solver.set_error_info_lineage(self._current_lineage, last_error_info)
+                        raise
 
             elif self._call_context.has_not_understood_error():
                 # A normal (i.e. non-disjunction) predication should just stop iterating if the tree
@@ -750,10 +756,7 @@ class ErrorInfo:
 
     def clear_error(self):
         blank = ErrorInfo()
-        self.error = blank.error
-        self.error_was_forced = blank.error_was_forced
-        self.error_predication_index = blank.error_predication_index
-        self.error_phase = blank.error_phase
+        self.set_error_info(blank)
 
     def has_not_understood_error(self):
         # System errors that indicate the phrase can't be understood can't be replaced
@@ -770,11 +773,7 @@ class ErrorInfo:
     def report_error_for_index(self, predication_index, error, force=False, phase=1):
         if self.error_phase <= phase and (force or self.error_predication_index < predication_index or error[0] == "formNotUnderstood"):
             assert not self.has_not_understood_error()
-            self.error = error
-            self.error_predication_index = predication_index
-            self.error_phase = phase
-            if force:
-                self.error_was_forced = True
+            self.set_error_info(ErrorInfo(error, force, predication_index, phase))
 
 
 # ExecutionContext tracks information used for processing the whole tree
