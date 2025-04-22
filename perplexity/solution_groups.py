@@ -112,7 +112,6 @@ class SolutionMaximalGroupGenerator(object):
         # Use a dict so that we retain the order things got added in
         # but also have a fast way to find ids
         self.unyielded_solution_groups = dict()
-        self.final_stream_return_value = None
         self.complete = False
 
     def __iter__(self):
@@ -144,7 +143,6 @@ class SolutionMaximalGroupGenerator(object):
 
             except StopIteration as stop_exception:
                 self.complete = True
-                self.final_stream_return_value = stop_exception.value
                 return False
 
             # The ID reflects the lineage, so we can get the
@@ -450,6 +448,13 @@ def solution_groups(execution_context,
                 if error_info_priority > best_error_info_priority:
                     best_error_info = error_info
                     best_error_info_priority = error_info_priority
+
+        # Make sure we give the last error a chance to be best
+        error_info = copy.deepcopy(disjunction_interpretation.state.error_info)
+        error_info_priority = execution_context.error_priority_function(error_info)
+        if error_info_priority > best_error_info_priority:
+            best_error_info = error_info
+            best_error_info_priority = error_info_priority
 
         disjunction_interpretation.state.error_info.set_error_info(best_error_info)
 
