@@ -277,7 +277,7 @@
         },
         {
             "Command": "which files are in a folder?",
-            "Expected": "(File(name=/temp/59.txt, size=1000),)(File(name=/documents/file1.txt, size=1000),)(File(name=/Desktop/the yearly budget.txt, size=10000000),)(File(name=/Desktop/blue, size=10000000),)\n(there are more)",
+            "Expected": "(File(name=/temp/59.txt, size=1000),)\n(there are more)",
             "Tree": "_which_q(x3,_file_n_of(x3,i8),_a_q(x9,_folder_n_of(x9,i14),_in_p_loc(e2,x3,x9)))",
             "Enabled": true,
             "ID": "349d0ab3-36dd-4f81-a51b-705a0b888227"
@@ -458,11 +458,25 @@
             "ID": "1a73a9fb-0c5e-49bc-8063-a85df202a70c"
         },
         {
+            "Command": "/timeout",
+            "Expected": "",
+            "Tree": "",
+            "Enabled": true,
+            "ID": "5d7c83a9-84b6-48cd-a96f-14bc100ed973"
+        },
+        {
             "Command": "which files are in a folder?",
             "Expected": "(File(name=/documents/file0.txt, size=10000000),)(File(name=/documents/file1.txt, size=10000000),)(File(name=/documents/file2.txt, size=10000000),)(File(name=/documents/file3.txt, size=10000000),)(File(name=/documents/file4.txt, size=10000000),)(File(name=/documents/file5.txt, size=10000000),)(File(name=/documents/file6.txt, size=10000000),)(File(name=/documents/file7.txt, size=10000000),)(File(name=/documents/file8.txt, size=10000000),)(File(name=/documents/file9.txt, size=10000000),)(File(name=/documents/file10.txt, size=10000000),)(File(name=/documents/file11.txt, size=10000000),)(File(name=/documents/file12.txt, size=10000000),)(File(name=/documents/file13.txt, size=10000000),)(File(name=/documents/file14.txt, size=10000000),)(File(name=/documents/file15.txt, size=10000000),)(File(name=/documents/file16.txt, size=10000000),)(File(name=/documents/file17.txt, size=10000000),)(File(name=/documents/file18.txt, size=10000000),)(File(name=/documents/file19.txt, size=10000000),)\n(there are more)",
             "Tree": "_which_q(x3,_file_n_of(x3,i8),_a_q(x9,_folder_n_of(x9,i14),_in_p_loc(e2,x3,x9)))",
             "Enabled": true,
             "ID": "6f118fcc-9f49-46b9-9703-bbcd95ca84d8"
+        },
+        {
+            "Command": "/timeout 15",
+            "Expected": "",
+            "Tree": "",
+            "Enabled": true,
+            "ID": "770c9620-e4e4-4c87-8234-eaba3ce856ca"
         },
         {
             "Command": "the 2 files are in 3 folders",
@@ -602,7 +616,7 @@
             "Expected": "",
             "Tree": "",
             "Enabled": true,
-            "ID": "5d7c83a9-84b6-48cd-a96f-14bc100ed973"
+            "ID": "06e2a8f6-3c6f-4ae8-bb1f-10503ec871b2"
         },
         {
             "Command": "'file1.txt' and 'file2.txt' are in a folder together",

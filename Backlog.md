@@ -118,8 +118,6 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
                         - If we can't clear it out, we need it to respect the conjunction behavior somehow
                 - Design
                     - START HERE NEXT: Run /runfolder ESL, hello world, internals, solvertests until it succeeds
-                    - for my son, please get the salmon -> "done"
-                        - bug: commands will always run the default handler which doesn't do anything
                     - (fixed) Which two dishes are specials?
                         - now hangs
                             '_which_q(x5,[_dish_n_of(x5,i11), card(2,e10,x5)],udef_q(x3,_special_n_1(x3),_be_v_id(e2,x3,x5)))'
@@ -204,8 +202,22 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
             - Also: which files are 20mb. Now only returns the first set
             - https://github.com/EricZinda/Perplexity/commit/4eab3fe573465d318f10b785f0acae3ebd57d832
                 changed plural to be 1..inf if it is a wh question so that "which chicken items are on the menu" will work
-
-
+            - It looks like we are missing some of the distributive options
+            This should succeed in distributive:
+                SolutionGroups 2025-04-22 17:57:52,805: Solution group (merged = None): CriteriaResult.fail_one (values next):
+                     tree_lineage=('-1@0',), x3=(File(name=/temp/59.txt, size=1000),), x9=(Folder(name=/temp, size=0),), interpretation=({0: VocabularyEntry(module='perplexity.system_vocabulary', function='which_q', extra_arg=None, id=51), 1: VocabularyEntry(module='samples.file_system_example.vocabulary', function='noun_n_selector_2', extra_arg=['file'], id=141), 2: VocabularyEntry(module='perplexity.system_vocabulary', function='a_q', extra_arg=None, id=1), 3: VocabularyEntry(module='samples.file_system_example.vocabulary', function='noun_n_selector_2', extra_arg=['folder'], id=141), 4: VocabularyEntry(module='samples.file_system_example.vocabulary', function='in_p_loc', extra_arg=None, id=192)},)
+                     tree_lineage=('-1@0',), x3=(File(name=/documents/file1.txt, size=1000),), x9=(Folder(name=/, size=0),), interpretation=({0: VocabularyEntry(module='perplexity.system_vocabulary', function='which_q', extra_arg=None, id=51), 1: VocabularyEntry(module='samples.file_system_example.vocabulary', function='noun_n_selector_2', extra_arg=['file'], id=141), 2: VocabularyEntry(module='perplexity.system_vocabulary', function='a_q', extra_arg=None, id=1), 3: VocabularyEntry(module='samples.file_system_example.vocabulary', function='noun_n_selector_2', extra_arg=['folder'], id=141), 4: VocabularyEntry(module='samples.file_system_example.vocabulary', function='in_p_loc', extra_arg=None, id=192)},)
+                Problem is that the stats say there are two previous values
+            - Need to do some basic tests to ensure the solver is working right
+                - It seems like the stats are getting updated on previous solution groups and kept around?
+                    existing_group_set.stats_group.copy() happens but maybe:
+                        - we still have pointers
+                        OR
+                        - the stats got updated from the previous solution group (that maybe failed) and so we started from that one, where we should have started from
+                            the original single row:
+                                     tree_lineage=('-1@0',), x3=(File(name=/temp/59.txt, size=1000),), x9=(Folder(name=/temp, size=0),), interpretation=({0: VocabularyEntry(module='perplexity.system_vocabulary', function='which_q', extra_arg=None, id=51), 1: VocabularyEntry(module='samples.file_system_example.vocabulary', function='noun_n_selector_2', extra_arg=['file'], id=141), 2: VocabularyEntry(module='perplexity.system_vocabulary', function='a_q', extra_arg=None, id=1), 3: VocabularyEntry(module='samples.file_system_example.vocabulary', function='noun_n_selector_2', extra_arg=['folder'], id=141), 4: VocabularyEntry(module='samples.file_system_example.vocabulary', function='in_p_loc', extra_arg=None, id=192)},)
+                            This does seem like what is happening
+                            actually copy
         - Fix negation
             - "salmon and salad are not vegetarian" -> Yes, that is true.
             - Make Non-logical Failures work properly by returning the right error when the final predication doesn't run

@@ -558,7 +558,8 @@ class TreeSolver(object):
     # yields a tree_record for every complete interpretation
     # that was attempted (including records if they were skipped
     # for debugging purposes or failed to generate solutions)
-    def tree_solutions(self, state,
+    def tree_solutions(self,
+                       state,
                        tree_info,
                        current_tree_index=None,
                        target_interpretation_index=None,

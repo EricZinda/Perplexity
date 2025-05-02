@@ -1,7 +1,7 @@
 import enum
 import itertools
 import logging
-from copy import copy
+from copy import copy, deepcopy
 from math import inf
 import perplexity.predications
 import perplexity.execution
@@ -299,7 +299,7 @@ class StatsGroup(object):
         for stat in self.variable_stats:
             new_stat = VariableStats(stat.variable_name,
                                      stat.whole_group_unique_individuals.copy(),
-                                     stat.whole_group_unique_values.copy(),
+                                     deepcopy(stat.whole_group_unique_values),
                                      stat.distributive_state,
                                      stat.collective_state,
                                      stat.cumulative_state,
@@ -403,6 +403,7 @@ class VariableStats(object):
             elif (self.only_single_values and len(binding_value) > 1) or \
                     (not self.only_single_values and len(binding_value) == 1):
                 # Don't allow a mix of sets of 1 and sets > 1
+                groups_logger.debug(f"Criteria: CriteriaResult.fail_one because {self.variable_name} is a mix of sets of 1 and sets > 1")
                 self.current_state = CriteriaResult.fail_one
                 return new_individuals, self.current_state
 
@@ -416,6 +417,7 @@ class VariableStats(object):
                                                                                  self.whole_group_unique_individuals,
                                                                                  self.whole_group_unique_values, phase)
         if required_values_state in [CriteriaResult.fail_one, CriteriaResult.fail_all]:
+            groups_logger.debug(f"Criteria: {required_values_state} because {self.variable_name} failed to meet the required values criteria")
             self.current_state = required_values_state
             return new_individuals, required_values_state
 
@@ -423,13 +425,13 @@ class VariableStats(object):
         if not is_instance_solution:
             # This variable is a concept: do the one sanity check we can do: if there are more concepts
             # than the criteria allows, it can't possibly work
-
             # Otherwise: we assume it meets the numeric criteria
             # and allow the group handler to finalize the decision
             sanity_check = variable_criteria.meets_criteria(disjunction_interpretation,
                                                             self.whole_group_unique_individuals,
                                                             phase)
             if sanity_check in [CriteriaResult.fail_one, CriteriaResult.fail_all]:
+                groups_logger.debug(f"Criteria: {sanity_check} because concept in {self.variable_name} failed to meet the numeric criteria")
                 self.current_state = sanity_check
             else:
                 self.current_state = required_values_state

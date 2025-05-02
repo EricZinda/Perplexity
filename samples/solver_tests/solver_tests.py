@@ -1,4 +1,5 @@
 from perplexity.execution import TreeSolver, ExecutionContext
+import perplexity.messages
 from perplexity.state import State
 from perplexity.system_vocabulary import system_vocabulary
 from perplexity.tree import DisjunctionInterpretationGenerator, TreePredication, set_disjunction_lineage
@@ -7,6 +8,30 @@ from perplexity.utilities import at_least_one_generator, ShowLogging
 from perplexity.vocabulary import Predication
 
 vocabulary = system_vocabulary()
+
+
+def error_priority(error_info):
+    system_priority = perplexity.messages.error_priority(error_info)
+    if system_priority is not None:
+        return system_priority
+    else:
+        # Must be a message from our code
+        error_constant = error_info.error[0]
+        priority = perplexity.messages.error_priority_dict["defaultPriority"]
+        priority += (error_info.error_phase - 1) * perplexity.messages.error_priority_dict["success"]
+        return priority
+
+
+def test_solution_groups(tree_info, state=None):
+    state = State([] if state is None else state)
+    solver = TreeSolver.create_top_level_solver(vocabulary, error_priority, None, None)
+    for tree_record in solver.tree_solutions(state, tree_info):
+        if tree_record["SolutionGroupGenerator"] is not None:
+            print("Tree")
+            for solution_group in tree_record["SolutionGroupGenerator"]:
+                print("SolutionGroup")
+                for solution in solution_group:
+                    print(solution)
 
 
 def test_tree(tree_info, state=None):
@@ -31,7 +56,7 @@ def test_tree(tree_info, state=None):
             for solution in disjunction_interpretation_solutions:
                 result += f"{str(solution)}\n"
         else:
-            result += f"{disjunction_interpretation.lineage} interpretation has error: {disjunction_interpretation.error_info.error}\n"
+            result += f"{disjunction_interpretation.lineage} interpretation has error: {disjunction_interpretation.state.error_info.error}\n"
 
     return result
 
@@ -135,16 +160,32 @@ def predication1(context, state, x_binding):
 
 
 @Predication(vocabulary,
+             names=["predication1a"])
+def predication1a(context, state, x_binding):
+    values = state.objects
+    for value in values["predication1a"]:
+        state1 = state.set_x(x_binding.variable.name, (value[0],))
+        if value[1] is not None:
+            state1 = set_disjunction_lineage(state1, context, value[1])
+        yield state1
+
+    context.report_error(["predication1a", "Fail"])
+
+
+@Predication(vocabulary,
              names=["predication2"])
 def predication2(context, state, x_binding_1, x_binding_2):
     values = state.objects
     x1_value = x_binding_1.value[0]
     for value in values["predication2"]:
         if value[0][0] == x1_value:
-            state1 = state.set_x(x_binding_2.variable.name, (value[0][1],))
-            if value[1] is not None:
-                state1 = set_disjunction_lineage(state1, context, value[1])
-            yield state1
+            if x_binding_2.value is None:
+                state1 = state.set_x(x_binding_2.variable.name, (value[0][1],))
+                if value[1] is not None:
+                    state1 = set_disjunction_lineage(state1, context, value[1])
+                yield state1
+            elif x_binding_2.value[0] == value[0][1]:
+                yield state
 
     context.report_error(["predication2", "Fail", str(x_binding_1)])
 
@@ -258,13 +299,52 @@ def p11c_p12c__p11_p21_p12_p22__p11_p21_p31c_p12_p22_p32c():
                       test_state)
 
 
+def two_girls_have_an_ice_cream():
+    test_state = {
+        "predication1": [
+            ("girl1", None),
+            ("girl2", None),
+        ],
+        "predication1a": [
+            ("icecream1", None),
+            ("icecream2", None),
+        ],
+        "predication2": [
+            (("girl1", "icecream1"), None),
+            (("girl2", "icecream2"), None),
+        ]
+    }
+
+    an_ice_cream = [TreePredication(2,
+                                    "_a_q",
+                                    ["x2",
+                                     TreePredication(3, "predication1a", ["x2"], ["ARG0"]),
+                                     TreePredication(4, "predication2", ["x1", "x2"], ["ARG0", "ARG1"])],
+                                    ["ARG0", "RSTR", "BODY"])]
+
+    tree = [TreePredication(0,
+                            "udef_q",
+                            ["x1",
+                             TreePredication(1, "predication1", ["x1"], ["ARG0"]),
+                             an_ice_cream],
+                            ["ARG0", "RSTR", "BODY"])]
+    variables = {"x1": {"SF": "prop"},
+                 "x2": {"NUM": "sg"}}
+
+    return test_solution_groups({"Index": "x1",
+                      "Variables": variables,
+                      "Tree": tree,
+                      "SyntacticHeads": ["x1"]},
+                      test_state)
+
+
 if __name__ == '__main__':
-    ShowLogging("Pipeline")
-    # ShowLogging("SolutionGroups")
+    # ShowLogging("Pipeline")
+    ShowLogging("SolutionGroups")
     # ShowLogging("Execution")
     # ShowLogging("Generation")
     # ShowLogging("UserInterface")
     # ShowLogging("SString")
     # ShowLogging("Determiners")
 
-    print(p11c_p12c__p11_p21_p12_p22__p11_p21_p31c_p12_p22_p32c())
+    print(two_girls_have_an_ice_cream())

@@ -142,11 +142,25 @@
             "ID": "71f9fe80-3337-41c4-9548-049aa54e7b06"
         },
         {
+            "Command": "/timeout",
+            "Expected": "",
+            "Tree": "",
+            "Enabled": true,
+            "ID": "082d7d3e-6087-44b3-907b-3b1c6f46348c"
+        },
+        {
             "Command": "which files are not in 2 folders?",
             "Expected": "(File(name=/temp/59.txt, size=1000),)(File(name=/documents/file1.txt, size=1000),)(File(name=/Desktop/the yearly budget.txt, size=10000000),)(File(name=/Desktop/bigfile.txt, size=20000000),)(File(name=/Desktop/bigfile2.txt, size=20000000),)(File(name=/Desktop/bigfile3.txt, size=20000000),)(File(name=/Desktop/blue, size=10000000),)(File(name=/Desktop/green, size=10000000),)\n(there are more)",
             "Tree": "_which_q(x3,_file_n_of(x3,i8),udef_q(x12,[_folder_n_of(x12,i19), card(2,e18,x12)],neg(e9,_in_p_loc(e2,x3,x12))))",
             "Enabled": true,
             "ID": "eded6930-5e46-4850-92f4-51cb3f81ebc3"
+        },
+        {
+            "Command": "/timeout 15",
+            "Expected": "",
+            "Tree": "",
+            "Enabled": true,
+            "ID": "7361be61-a89e-42d0-a8fa-ad32f90e9605"
         },
         {
             "Command": "/new samples.file_system_example.examples.Example31_reset",
@@ -170,5 +184,5 @@
             "ID": "863f82ba-f37f-4ebd-a8f4-0fd35aafa5fb"
         }
     ],
-    "ElapsedTime": 10.83803
+    "ElapsedTime": 40.60043
 }
