@@ -139,5 +139,6 @@
 "BooleanCompletionApproach(is_food_or_drink_predication): Is Johhny either a food or a drink": "false",
 "BooleanCompletionApproach(is_food_or_drink_predication): Is sandwich for dish either a food or a drink": "true",
 "BooleanCompletionApproach(is_food_or_drink_predication): Is beet either a food or a drink": "true",
-"BooleanCompletionApproach(is_food_or_drink_predication): Is restaurant either a food or a drink": "false"
+"BooleanCompletionApproach(is_food_or_drink_predication): Is restaurant either a food or a drink": "false",
+"BooleanCompletionApproach(is_food_or_drink_predication): Is leave either a food or a drink": "false"
 }
